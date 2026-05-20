@@ -70,7 +70,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
                           id={`bau-${op.id}`}
                           checked={op.bau ?? false}
                           onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                          className="w-3 h-3 border-zinc-300 dark:border-zinc-600 rounded-[3px] data-[state=checked]:bg-zinc-900 dark:data-[state=checked]:bg-zinc-100 data-[state=checked]:border-zinc-900 dark:data-[state=checked]:border-zinc-100 data-[state=checked]:text-white dark:data-[state=checked]:text-zinc-900"
+                          className="w-3.5 h-3.5 rounded-[4px]"
                         />
                         <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest select-none">
                           BAÚ
