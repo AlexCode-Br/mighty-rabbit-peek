@@ -44,18 +44,18 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
         <div className="space-y-4">
           {cycle.operations.map((op) => (
             <div key={op.id} className="grid grid-cols-[auto_1fr_1fr] items-center gap-3 bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-xl">
-              <div className="font-semibold text-sm w-12 flex flex-col gap-1 items-start">
+              <div className="font-semibold text-sm w-12 flex flex-col gap-1.5 items-start">
                 <span>{op.type}</span>
                 {op.type === 'MAE' && (
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1.5 mt-1 cursor-pointer group" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
                     <Checkbox
                       id={`bau-${op.id}`}
                       checked={op.bau ?? false}
                       onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                      className="h-3 w-3 rounded-[3px]"
+                      className="pointer-events-none"
                     />
-                    <Label htmlFor={`bau-${op.id}`} className="text-[9px] font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                      Baú
+                    <Label htmlFor={`bau-${op.id}`} className="text-[11px] font-bold text-orange-600 dark:text-orange-400 cursor-pointer select-none">
+                      BAÚ
                     </Label>
                   </div>
                 )}
