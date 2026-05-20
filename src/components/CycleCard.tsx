@@ -86,11 +86,16 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
 
 // Separate component to handle currency input cleanly
 function CurrencyInput({ initialValue, onChange }: { initialValue: number | null, onChange: (val: number | null) => void }) {
-  const [inputValue, setInputValue] = useState(initialValue !== null ? formatBRL(initialValue) : '');
+  // Formata apenas como número inteiro para evitar saltos de cursor com os centavos
+  const formatIntegerBRL = (val: number) => {
+    return `R$ ${val.toLocaleString('pt-BR')}`;
+  };
+
+  const [inputValue, setInputValue] = useState(initialValue !== null ? formatIntegerBRL(initialValue) : '');
 
   useEffect(() => {
-    if (initialValue !== null && inputValue !== formatBRL(initialValue)) {
-      setInputValue(formatBRL(initialValue));
+    if (initialValue !== null && inputValue !== formatIntegerBRL(initialValue)) {
+      setInputValue(formatIntegerBRL(initialValue));
     }
   }, [initialValue]);
 
@@ -106,10 +111,10 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
       return;
     }
 
-    // Converte os dígitos em um valor numérico (divide por 100 para criar os centavos)
-    const numValue = parseInt(digits, 10) / 100;
+    // Converte os dígitos DIRETAMENTE em um valor inteiro numérico
+    const numValue = parseInt(digits, 10);
     
-    setInputValue(formatBRL(numValue));
+    setInputValue(formatIntegerBRL(numValue));
     onChange(numValue);
   };
 
@@ -117,7 +122,7 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
     <Input
       type="text"
       inputMode="numeric"
-      placeholder="R$ 0,00"
+      placeholder="R$ 0"
       value={inputValue}
       onChange={handleChange}
       className="h-8 px-2 sm:px-3 text-right text-xs sm:text-sm font-mono font-medium rounded-lg bg-zinc-900 border-white/10 text-white focus-visible:ring-1 focus-visible:ring-orange-500 focus-visible:border-orange-500/50 transition-all placeholder:text-zinc-600 w-full"
