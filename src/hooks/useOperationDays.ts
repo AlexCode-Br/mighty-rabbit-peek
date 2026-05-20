@@ -1,7 +1,9 @@
+import { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
-import { useLocalStorage } from './useLocalStorage';
 import { AppData, AppSettings, Cycle, OperationDay, Operation } from '../types';
 import { calculateCycleProfit, calculateDailyProfit, calculateOperationProfit, checkDailyStatus } from '../utils/calculations';
+import { supabase } from '../integrations/supabase/client';
+import { useAuth } from '../components/AuthProvider';
 
 const DEFAULT_SETTINGS: AppSettings = {
   dailyGoal: 100,
@@ -16,7 +18,75 @@ const INITIAL_DATA: AppData = {
 };
 
 export const useOperationDays = () => {
-  const [data, setData] = useLocalStorage<AppData>('controle-ciclos-data', INITIAL_DATA);
+  const { user } = useAuth();
+  const [data, setData] = useState<AppData>(INITIAL_DATA);
+  const [loading, setLoading] = useState(true);
+  const dataRef = useRef<AppData>(INITIAL_DATA);
+
+  // Carrega os dados da Nuvem no início
+  useEffect(() => {
+    if (!user) return;
+    
+    const loadData = async () => {
+      setLoading(true);
+      const { data: remoteData, error } = await supabase
+        .from('app_data')
+        .select('settings, history')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading data', error);
+      }
+
+      if (remoteData) {
+        const mergedData = {
+          settings: remoteData.settings || DEFAULT_SETTINGS,
+          history: remoteData.history || {},
+        };
+        setData(mergedData);
+        dataRef.current = mergedData;
+      } else {
+        // Cria a linha inicial na nuvem se for a primeira vez
+        await supabase.from('app_data').insert({
+          user_id: user.id,
+          settings: DEFAULT_SETTINGS,
+          history: {}
+        });
+        setData(INITIAL_DATA);
+        dataRef.current = INITIAL_DATA;
+      }
+      setLoading(false);
+    };
+
+    loadData();
+  }, [user]);
+
+  // Sincroniza ativamente com o Banco de Dados
+  const saveToDatabase = async (newData: AppData) => {
+    if (!user) return;
+    
+    setData(newData);
+    dataRef.current = newData;
+
+    const { error } = await supabase
+      .from('app_data')
+      .update({
+        settings: newData.settings,
+        history: newData.history,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Save error:', error);
+    }
+  };
+
+  const updateData = (updater: (prev: AppData) => AppData) => {
+    const newData = updater(dataRef.current);
+    saveToDatabase(newData);
+  };
 
   const getTodayId = () => format(new Date(), 'yyyy-MM-dd');
 
@@ -36,7 +106,7 @@ export const useOperationDays = () => {
   };
 
   const updateSettings = (newSettings: AppSettings) => {
-    setData((prev) => ({ ...prev, settings: newSettings }));
+    updateData((prev) => ({ ...prev, settings: newSettings }));
   };
 
   const addCycle = () => {
@@ -53,7 +123,7 @@ export const useOperationDays = () => {
       completed: false,
     };
 
-    setData((prev) => ({
+    updateData((prev) => ({
       ...prev,
       history: {
         ...prev.history,
@@ -88,7 +158,7 @@ export const useOperationDays = () => {
     const newDailyProfit = calculateDailyProfit(newCycles);
     const { goalReached, stopLossReached } = checkDailyStatus(newDailyProfit, data.settings.dailyGoal, data.settings.stopLoss);
 
-    setData((prev) => ({
+    updateData((prev) => ({
       ...prev,
       history: {
         ...prev.history,
@@ -111,7 +181,7 @@ export const useOperationDays = () => {
     const newDailyProfit = calculateDailyProfit(newCycles);
     const { goalReached, stopLossReached } = checkDailyStatus(newDailyProfit, data.settings.dailyGoal, data.settings.stopLoss);
 
-    setData((prev) => ({
+    updateData((prev) => ({
       ...prev,
       history: {
         ...prev.history,
@@ -127,11 +197,12 @@ export const useOperationDays = () => {
   }
 
   const importData = (importedData: AppData) => {
-    setData(importedData);
+    updateData(() => importedData);
   }
 
   return {
     data,
+    loading,
     todayData: getTodayData(),
     updateSettings,
     addCycle,
