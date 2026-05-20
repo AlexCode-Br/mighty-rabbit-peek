@@ -49,34 +49,31 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
 
   return (
     <div className="space-y-4">
-      <Card className="border border-zinc-200/60 shadow-sm bg-white rounded-3xl overflow-hidden">
+      <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
         <CardContent className="p-6">
           <div className="w-full max-w-sm mx-auto select-none">
-            {/* Calendar Header */}
             <div className="flex items-center justify-between mb-8">
-              <button onClick={prevMonth} className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-50 hover:text-zinc-900 transition-colors">
+              <button onClick={prevMonth} className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 dark:text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
                 <ChevronLeft size={20} />
               </button>
               
-              <div className="text-base font-semibold text-zinc-900 capitalize tracking-tight">
+              <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100 capitalize tracking-tight">
                 {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
               </div>
               
-              <button onClick={nextMonth} className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-50 hover:text-zinc-900 transition-colors">
+              <button onClick={nextMonth} className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 dark:text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
                 <ChevronRight size={20} />
               </button>
             </div>
 
-            {/* Weekdays */}
             <div className="grid grid-cols-7 mb-4">
               {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
-                <div key={i} className="text-center text-[10px] font-semibold text-zinc-400">
+                <div key={i} className="text-center text-[10px] font-semibold text-zinc-400 dark:text-zinc-500">
                   {day}
                 </div>
               ))}
             </div>
 
-            {/* Days Grid */}
             <div className="grid grid-cols-7 gap-y-2">
               {days.map((day, idx) => {
                 const isCurrentMonth = isSameMonth(day, currentMonth);
@@ -85,9 +82,9 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
                 const dayIsProfit = isProfit(day);
                 const dayIsLoss = isLoss(day);
                 
-                let textClass = "text-zinc-900";
-                if (!isCurrentMonth) textClass = "text-zinc-300";
-                else if (isDayToday) textClass = "text-zinc-900 font-bold";
+                let textClass = "text-zinc-900 dark:text-zinc-100";
+                if (!isCurrentMonth) textClass = "text-zinc-300 dark:text-zinc-700";
+                else if (isDayToday) textClass = "text-zinc-900 dark:text-white font-bold";
 
                 return (
                   <div key={idx} className="flex flex-col items-center justify-center h-12 relative group">
@@ -95,15 +92,15 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
                       onClick={() => handleSelectDate(day)}
                       disabled={!isCurrentMonth || !dayHasData}
                       className={`h-9 w-9 flex items-center justify-center text-sm rounded-full transition-all duration-200 
-                        ${dayHasData ? 'hover:bg-zinc-100' : 'cursor-default'} 
-                        ${isDayToday && !dayHasData ? 'bg-zinc-50' : ''}
+                        ${dayHasData ? 'hover:bg-zinc-100 dark:hover:bg-zinc-800' : 'cursor-default'} 
+                        ${isDayToday && !dayHasData ? 'bg-zinc-50 dark:bg-zinc-800/50' : ''}
                       `}
                     >
                       <span className={textClass}>{format(day, 'd')}</span>
                     </button>
                     
                     {dayHasData && isCurrentMonth && (
-                      <div className={`absolute bottom-0 w-1 h-1 rounded-full ${dayIsProfit ? 'bg-emerald-500' : dayIsLoss ? 'bg-rose-500' : 'bg-zinc-400'}`} />
+                      <div className={`absolute bottom-0 w-1 h-1 rounded-full ${dayIsProfit ? 'bg-emerald-500' : dayIsLoss ? 'bg-rose-500' : 'bg-zinc-400 dark:bg-zinc-600'}`} />
                     )}
                   </div>
                 );
@@ -114,19 +111,18 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
       </Card>
 
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
-        {/* Usando [&>button]:hidden para esconder o fechar nativo do shadcn e renderizar o nosso */}
-        <DialogContent className="sm:max-w-md rounded-[32px] h-[80vh] flex flex-col p-0 bg-[#FAFAFA] border-none shadow-2xl [&>button]:hidden outline-none">
-          <DialogHeader className="p-8 pb-6 shrink-0 border-b border-zinc-200/50 bg-white rounded-t-[32px] relative text-left">
+        <DialogContent className="sm:max-w-md rounded-[32px] h-[80vh] flex flex-col p-0 bg-[#FAFAFA] dark:bg-zinc-950 border-none shadow-2xl [&>button]:hidden outline-none">
+          <DialogHeader className="p-8 pb-6 shrink-0 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white dark:bg-zinc-900 rounded-t-[32px] relative text-left">
             <button 
               onClick={() => setSelectedDay(null)}
-              className="absolute right-6 top-6 h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900 transition-colors"
+              className="absolute right-6 top-6 h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
               <X size={16} strokeWidth={2.5} />
             </button>
-            <DialogTitle className="text-xl font-semibold text-zinc-900 tracking-tight pr-10">
+            <DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight pr-10">
               {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM", { locale: ptBR })}
             </DialogTitle>
-            <DialogDescription className="text-zinc-500 text-sm mt-1.5 flex justify-between items-center pr-10">
+            <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-sm mt-1.5 flex justify-between items-center pr-10">
               <span>{selectedDay?.cycles.length} ciclos</span>
               <span className={`font-semibold ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                 {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}
@@ -141,17 +137,17 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
                 const cycleNumber = selectedDay.cycles.length - i;
 
                 return (
-                  <div key={cycle.id} className="bg-white rounded-3xl p-5 border border-zinc-200/60 shadow-sm">
-                    <div className="flex justify-between items-center mb-4 pb-4 border-b border-zinc-100">
-                      <h4 className="font-semibold text-sm text-zinc-900 flex items-center gap-2">
+                  <div key={cycle.id} className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm">
+                    <div className="flex justify-between items-center mb-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+                      <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                         Ciclo {cycleNumber}
                         {cycle.createdAt && (
-                          <span className="text-xs font-medium text-zinc-400">
+                          <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
                             • {format(parseISO(cycle.createdAt), 'HH:mm')}
                           </span>
                         )}
                       </h4>
-                      <span className={`text-sm font-semibold ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : cycle.totalProfit < 0 ? 'text-rose-500' : 'text-zinc-900') : 'text-zinc-400'}`}>
+                      <span className={`text-sm font-semibold ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : cycle.totalProfit < 0 ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100') : 'text-zinc-400 dark:text-zinc-500'}`}>
                         {cycle.completed ? (isCycleProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
                       </span>
                     </div>
@@ -159,8 +155,8 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
                     <div className="space-y-3">
                       {cycle.operations.map((op) => (
                         <div key={op.id} className="flex justify-between items-center text-xs">
-                          <span className="font-semibold text-zinc-400 w-12">{op.type}</span>
-                          <span className="text-zinc-900 font-medium">{formatBRL(op.deposit)} <span className="text-zinc-300 mx-2">→</span> {op.withdraw !== null ? formatBRL(op.withdraw) : '-'}</span>
+                          <span className="font-semibold text-zinc-400 dark:text-zinc-500 w-12">{op.type}</span>
+                          <span className="text-zinc-900 dark:text-zinc-100 font-medium">{formatBRL(op.deposit)} <span className="text-zinc-300 dark:text-zinc-600 mx-2">→</span> {op.withdraw !== null ? formatBRL(op.withdraw) : '-'}</span>
                         </div>
                       ))}
                     </div>

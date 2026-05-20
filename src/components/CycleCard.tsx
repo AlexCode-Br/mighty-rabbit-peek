@@ -18,7 +18,6 @@ interface CycleCardProps {
 export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: CycleCardProps) {
   const isProfit = cycle.totalProfit > 0;
   const isLoss = cycle.totalProfit < 0;
-  const isNeutral = cycle.totalProfit === 0;
 
   return (
     <motion.div
@@ -28,16 +27,15 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
       exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)", transition: { duration: 0.2 } }}
       transition={{ type: "spring", stiffness: 500, damping: 40 }}
     >
-      <Card className="border border-zinc-200/60 shadow-sm bg-white rounded-3xl mb-4 overflow-hidden group">
+      <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl mb-4 overflow-hidden group">
         <CardContent className="p-0">
-          {/* Header do Ciclo */}
-          <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-100">
+          <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50">
             <div className="flex items-center gap-2.5">
-              <div className={`w-2 h-2 rounded-full shrink-0 ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300') : 'bg-zinc-900 animate-pulse'}`} />
-              <h3 className="font-semibold text-sm text-zinc-900 flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full shrink-0 ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-zinc-900 dark:bg-zinc-100 animate-pulse'}`} />
+              <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                 Ciclo {index}
                 {cycle.createdAt && (
-                  <span className="text-xs font-medium text-zinc-400">
+                  <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
                     • {format(parseISO(cycle.createdAt), 'HH:mm')}
                   </span>
                 )}
@@ -45,37 +43,36 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
             </div>
             
             <div className="flex items-center gap-3 shrink-0">
-              <span className={`text-sm font-semibold tracking-tight ${cycle.completed ? (isProfit ? 'text-emerald-500' : isLoss ? 'text-rose-500' : 'text-zinc-400') : 'text-zinc-400'}`}>
+              <span className={`text-sm font-semibold tracking-tight ${cycle.completed ? (isProfit ? 'text-emerald-500' : isLoss ? 'text-rose-500' : 'text-zinc-400 dark:text-zinc-500') : 'text-zinc-400 dark:text-zinc-500'}`}>
                 {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => onDeleteCycle(cycle.id)}
-                className="text-zinc-300 hover:text-rose-500 hover:bg-rose-50 h-8 w-8 rounded-full transition-colors -mr-2 shrink-0"
+                className="text-zinc-300 dark:text-zinc-600 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 h-8 w-8 rounded-full transition-colors -mr-2 shrink-0"
               >
                 <Trash2 size={16} />
               </Button>
             </div>
           </div>
 
-          {/* Operações */}
           <div className="p-2 space-y-1">
             {cycle.operations.map((op) => (
-              <div key={op.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-zinc-50 transition-colors">
+              <div key={op.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
                 
                 <div className="flex items-center gap-4 w-1/3">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[11px] font-semibold text-zinc-900 uppercase tracking-wider">{op.type}</span>
+                    <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">{op.type}</span>
                     {op.type === 'MAE' && (
                       <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
                         <Checkbox
                           id={`bau-${op.id}`}
                           checked={op.bau ?? false}
                           onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                          className="w-3 h-3 border-zinc-300 rounded-[3px] data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900"
+                          className="w-3 h-3 border-zinc-300 dark:border-zinc-600 rounded-[3px] data-[state=checked]:bg-zinc-900 dark:data-[state=checked]:bg-zinc-100 data-[state=checked]:border-zinc-900 dark:data-[state=checked]:border-zinc-100"
                         />
-                        <span className="text-[9px] font-medium text-zinc-500 uppercase tracking-widest select-none">
+                        <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest select-none">
                           BAÚ
                         </span>
                       </div>
@@ -84,12 +81,12 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
                 </div>
                 
                 <div className="flex flex-col w-1/3 px-2">
-                  <span className="text-[10px] text-zinc-400 font-medium mb-1">Entrada</span>
-                  <span className="font-medium text-zinc-900 text-sm">{formatBRL(op.deposit)}</span>
+                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium mb-1">Entrada</span>
+                  <span className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">{formatBRL(op.deposit)}</span>
                 </div>
                 
                 <div className="flex flex-col w-1/3">
-                  <span className="text-[10px] text-zinc-400 font-medium mb-1 text-right">Saque</span>
+                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium mb-1 text-right">Saque</span>
                   <CurrencyInput
                     initialValue={op.withdraw}
                     onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
@@ -137,7 +134,7 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
       placeholder="R$ 0"
       value={inputValue}
       onChange={handleChange}
-      className="w-full text-right text-sm font-semibold text-zinc-900 bg-transparent outline-none border-b border-transparent focus:border-zinc-300 transition-colors placeholder:text-zinc-300 py-1"
+      className="w-full text-right text-sm font-semibold text-zinc-900 dark:text-zinc-100 bg-transparent outline-none border-b border-transparent focus:border-zinc-300 dark:focus:border-zinc-600 transition-colors placeholder:text-zinc-300 dark:placeholder:text-zinc-600 py-1"
     />
   );
 }
