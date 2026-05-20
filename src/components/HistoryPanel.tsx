@@ -8,7 +8,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Target } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
@@ -227,11 +227,20 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
             <DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight pr-10">
               {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM", { locale: ptBR })}
             </DialogTitle>
-            <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-sm mt-1.5 flex justify-between items-center pr-10">
-              <span>{selectedDay?.cycles.length} ciclos</span>
-              <span className={`font-semibold ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}
+            
+            <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-sm mt-3 flex justify-between items-center pr-8">
+              <span className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-lg text-xs font-medium">
+                <Target size={12} className={selectedDay && selectedDay.dailyProfit >= data.settings.dailyGoal ? "text-emerald-500" : "text-zinc-400"} />
+                {selectedDay ? Math.min((selectedDay.dailyProfit / data.settings.dailyGoal) * 100, 100).toFixed(0) : 0}% da meta
               </span>
+              <div className="flex flex-col items-end">
+                <span className={`font-bold text-lg leading-none ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider font-semibold mt-1">
+                  {selectedDay?.cycles.length} ciclos
+                </span>
+              </div>
             </DialogDescription>
           </DialogHeader>
           
