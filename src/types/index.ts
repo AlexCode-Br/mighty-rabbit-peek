@@ -11,6 +11,7 @@ export interface Cycle {
   operations: [Operation, Operation]; // Sempre MÃE e FILHA
   totalProfit: number;
   completed: boolean;
+  createdAt?: string;
 }
 
 export interface OperationDay {

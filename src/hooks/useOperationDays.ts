@@ -44,6 +44,7 @@ export const useOperationDays = () => {
     const todayData = getTodayData();
     const newCycle: Cycle = {
       id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
       operations: [
         { id: crypto.randomUUID(), type: 'MAE', deposit: data.settings.defaultMaeDeposit, withdraw: null, profit: 0 },
         { id: crypto.randomUUID(), type: 'FILHA', deposit: data.settings.defaultFilhaDeposit, withdraw: null, profit: 0 },
