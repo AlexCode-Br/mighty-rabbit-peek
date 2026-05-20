@@ -19,55 +19,58 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
   const isProfit = cycle.totalProfit >= 0;
 
   return (
-    <Card className="shadow-sm border-none bg-white dark:bg-zinc-900 rounded-2xl mb-4 overflow-hidden relative group">
-      <div className={`absolute top-0 left-0 w-1.5 h-full ${cycle.completed ? (isProfit ? 'bg-green-500' : 'bg-red-500') : 'bg-orange-500'}`} />
+    <Card className="shadow-xl border border-white/5 bg-zinc-900/80 backdrop-blur-md rounded-3xl mb-4 overflow-hidden relative group">
+      <div className={`absolute top-0 left-0 w-1.5 h-full ${cycle.completed ? (isProfit ? 'bg-emerald-500 shadow-[0_0_15px_rgba(52,211,153,0.5)]' : 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]') : 'bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.5)]'} transition-colors`} />
       
-      <CardContent className="p-4 pl-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg text-orange-500">Ciclo {index}</h3>
+      <CardContent className="p-5 pl-7">
+        <div className="flex justify-between items-center mb-5">
+          <div className="flex items-center gap-2">
+            <h3 className="font-black text-lg tracking-tight text-white">Operação {index}</h3>
+            {!cycle.completed && <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse ml-1" />}
+          </div>
           
           <div className="flex items-center gap-3">
-            <div className={`font-bold ${cycle.completed ? (isProfit ? 'text-green-500' : 'text-red-500') : 'text-muted-foreground'}`}>
+            <div className={`font-mono text-sm font-bold tracking-tight px-3 py-1 rounded-full border ${cycle.completed ? (isProfit ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20') : 'bg-zinc-800 text-zinc-400 border-white/5'}`}>
               {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onDeleteCycle(cycle.id)}
-              className="text-muted-foreground hover:text-red-500 h-8 w-8 rounded-full"
+              className="text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8 rounded-full transition-colors"
             >
               <Trash2 size={16} />
             </Button>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {cycle.operations.map((op) => (
-            <div key={op.id} className="grid grid-cols-[auto_1fr_1fr] items-center gap-3 bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-xl">
-              <div className="font-semibold text-sm w-12 flex flex-col gap-1.5 items-start">
-                <span>{op.type}</span>
+            <div key={op.id} className="grid grid-cols-[auto_1fr_1fr] items-center gap-4 bg-black/40 border border-white/[0.03] p-3.5 rounded-2xl relative overflow-hidden group-hover:border-white/[0.06] transition-colors">
+              <div className="font-black text-sm w-12 flex flex-col gap-1.5 items-start text-zinc-300">
+                <span className="tracking-widest">{op.type}</span>
                 {op.type === 'MAE' && (
-                  <div className="flex items-center gap-1.5 mt-1 cursor-pointer group" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
+                  <div className="flex items-center gap-1.5 mt-1 cursor-pointer group/bau" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
                     <Checkbox
                       id={`bau-${op.id}`}
                       checked={op.bau ?? false}
                       onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
                       className="pointer-events-none"
                     />
-                    <Label htmlFor={`bau-${op.id}`} className="text-[11px] font-bold text-orange-600 dark:text-orange-400 cursor-pointer select-none">
+                    <Label htmlFor={`bau-${op.id}`} className="text-[10px] font-black tracking-widest text-orange-500/80 group-hover/bau:text-orange-400 cursor-pointer select-none transition-colors">
                       BAÚ
                     </Label>
                   </div>
                 )}
               </div>
               
-              <div className="flex flex-col">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Entrada</span>
-                <span className="font-medium">{formatBRL(op.deposit)}</span>
+              <div className="flex flex-col border-l border-white/5 pl-4">
+                <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Entrada</span>
+                <span className="font-mono text-white font-medium">{formatBRL(op.deposit)}</span>
               </div>
               
-              <div className="flex flex-col">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Saque</span>
+              <div className="flex flex-col border-l border-white/5 pl-4">
+                <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Saque</span>
                 <CurrencyInput
                   initialValue={op.withdraw}
                   onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
@@ -117,7 +120,7 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
       placeholder="R$ 0,00"
       value={inputValue}
       onChange={handleChange}
-      className="h-8 text-right font-medium rounded-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+      className="h-8 text-right font-mono font-medium rounded-lg bg-zinc-900 border-white/10 text-white focus-visible:ring-1 focus-visible:ring-orange-500 focus-visible:border-orange-500/50 transition-all placeholder:text-zinc-600"
     />
   );
 }
