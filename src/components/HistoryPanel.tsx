@@ -54,25 +54,25 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
               profit: "bg-emerald-500/10 text-emerald-400 font-black border border-emerald-500/30 hover:bg-emerald-500/20 hover:text-emerald-300 transition-colors shadow-[0_0_15px_rgba(52,211,153,0.15)]",
               loss: "bg-rose-500/10 text-rose-500 font-black border border-rose-500/30 hover:bg-rose-500/20 hover:text-rose-400 transition-colors shadow-[0_0_15px_rgba(244,63,94,0.15)]"
             }}
-            className="text-white w-full max-w-full"
+            className="text-white w-full flex justify-center p-0"
             classNames={{
-              day: "h-10 w-10 sm:h-12 sm:w-12 text-center text-sm p-0 relative focus-within:relative focus-within:z-20 rounded-xl hover:bg-white/10 transition-colors flex items-center justify-center mx-auto",
-              day_button: "h-10 w-10 sm:h-12 sm:w-12 p-0 font-medium aria-selected:opacity-100 flex items-center justify-center",
+              day: "h-9 w-9 sm:h-11 sm:w-11 text-center text-sm p-0 rounded-2xl hover:bg-white/10 transition-colors mx-auto flex items-center justify-center",
+              day_button: "h-full w-full font-medium flex items-center justify-center",
               selected: "bg-orange-500 text-white hover:bg-orange-600 hover:text-white focus:bg-orange-500 focus:text-white font-black shadow-[0_0_15px_rgba(249,115,22,0.5)] border-none",
-              today: "bg-white/10 text-white font-bold border border-white/20",
-              months: "flex flex-col w-full items-center",
-              month: "space-y-4 w-full flex flex-col items-center",
-              table: "border-collapse space-y-1 mx-auto",
-              head_row: "flex justify-center w-full mb-2 gap-1 sm:gap-2",
-              head_cell: "text-zinc-500 rounded-md w-10 sm:w-12 font-black text-[10px] uppercase tracking-widest flex items-center justify-center",
-              row: "flex justify-center w-full mt-2 gap-1 sm:gap-2",
-              cell: "w-10 sm:w-12 h-10 sm:h-12 text-center text-sm p-0 relative focus-within:relative focus-within:z-20 flex items-center justify-center",
-              caption: "flex justify-center pt-1 relative items-center mb-4 w-full",
-              caption_label: "text-lg font-black tracking-tight capitalize",
-              nav: "space-x-1 flex items-center bg-black/40 rounded-xl border border-white/5 p-1",
-              nav_button: "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center text-white",
-              nav_button_previous: "absolute left-1",
-              nav_button_next: "absolute right-1",
+              today: "bg-zinc-800 text-white font-bold border border-white/20",
+              months: "w-full max-w-[320px] sm:max-w-[380px]",
+              month: "w-full space-y-4",
+              table: "w-full border-collapse table-fixed mx-auto",
+              head_row: "",
+              head_cell: "text-zinc-500 font-black text-[10px] uppercase tracking-widest text-center pb-2 w-[14.28%]",
+              row: "",
+              cell: "text-center p-1 align-middle relative",
+              caption: "flex justify-center pt-2 relative items-center mb-4 px-12",
+              caption_label: "text-xl font-black tracking-tight capitalize",
+              nav: "flex items-center",
+              nav_button: "h-10 w-10 bg-zinc-800/80 hover:bg-orange-500 border border-white/10 hover:border-orange-500/50 rounded-2xl transition-all flex items-center justify-center text-zinc-300 hover:text-white shadow-lg active:scale-95 z-10",
+              nav_button_previous: "absolute left-0",
+              nav_button_next: "absolute right-0",
             }}
           />
         </CardContent>
