@@ -11,7 +11,6 @@ import { formatBRL } from '../utils/currency';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
-import { motion } from 'framer-motion';
 
 interface HistoryPanelProps {
   data: AppData;
@@ -144,7 +143,14 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
                 return (
                   <div key={cycle.id} className="bg-white rounded-3xl p-5 border border-zinc-200/60 shadow-sm">
                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-zinc-100">
-                      <h4 className="font-semibold text-sm text-zinc-900">Ciclo {cycleNumber}</h4>
+                      <h4 className="font-semibold text-sm text-zinc-900 flex items-center gap-2">
+                        Ciclo {cycleNumber}
+                        {cycle.createdAt && (
+                          <span className="text-xs font-medium text-zinc-400">
+                            • {format(parseISO(cycle.createdAt), 'HH:mm')}
+                          </span>
+                        )}
+                      </h4>
                       <span className={`text-sm font-semibold ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : cycle.totalProfit < 0 ? 'text-rose-500' : 'text-zinc-900') : 'text-zinc-400'}`}>
                         {cycle.completed ? (isCycleProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
                       </span>

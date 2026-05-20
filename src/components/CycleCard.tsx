@@ -6,6 +6,7 @@ import { Cycle, Operation } from '../types';
 import { formatBRL } from '../utils/currency';
 import { Checkbox } from './ui/checkbox';
 import { motion } from 'framer-motion';
+import { format, parseISO } from 'date-fns';
 
 interface CycleCardProps {
   index: number;
@@ -32,11 +33,18 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
           {/* Header do Ciclo */}
           <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-100">
             <div className="flex items-center gap-2.5">
-              <div className={`w-2 h-2 rounded-full ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300') : 'bg-zinc-900 animate-pulse'}`} />
-              <h3 className="font-semibold text-sm text-zinc-900">Ciclo {index}</h3>
+              <div className={`w-2 h-2 rounded-full shrink-0 ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300') : 'bg-zinc-900 animate-pulse'}`} />
+              <h3 className="font-semibold text-sm text-zinc-900 flex items-center gap-2">
+                Ciclo {index}
+                {cycle.createdAt && (
+                  <span className="text-xs font-medium text-zinc-400">
+                    • {format(parseISO(cycle.createdAt), 'HH:mm')}
+                  </span>
+                )}
+              </h3>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
               <span className={`text-sm font-semibold tracking-tight ${cycle.completed ? (isProfit ? 'text-emerald-500' : isLoss ? 'text-rose-500' : 'text-zinc-400') : 'text-zinc-400'}`}>
                 {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
               </span>
@@ -44,7 +52,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
                 variant="ghost"
                 size="icon"
                 onClick={() => onDeleteCycle(cycle.id)}
-                className="text-zinc-300 hover:text-rose-500 hover:bg-rose-50 h-8 w-8 rounded-full transition-colors -mr-2"
+                className="text-zinc-300 hover:text-rose-500 hover:bg-rose-50 h-8 w-8 rounded-full transition-colors -mr-2 shrink-0"
               >
                 <Trash2 size={16} />
               </Button>
