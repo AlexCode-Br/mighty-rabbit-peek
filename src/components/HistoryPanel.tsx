@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import { AppData, OperationDay } from '../types';
-import { format, parseISO, startOfDay } from 'date-fns';
+import { 
+  format, parseISO, startOfMonth, endOfMonth, 
+  startOfWeek, endOfWeek, eachDayOfInterval, 
+  addMonths, subMonths, isSameMonth, isSameDay, isToday 
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { Clock } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
-import { Calendar } from './ui/calendar';
 
 interface HistoryPanelProps {
   data: AppData;
@@ -15,13 +18,20 @@ interface HistoryPanelProps {
 
 export function HistoryPanel({ data }: HistoryPanelProps) {
   const [selectedDay, setSelectedDay] = useState<OperationDay | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const historyDays = Object.values(data.history).sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
 
-  const handleSelectDate = (date: Date | undefined) => {
-    if (!date) return;
+  const profitDays = historyDays.filter(day => day.dailyProfit >= 0 && day.cycles.length > 0).map(day => parseISO(day.date));
+  const lossDays = historyDays.filter(day => day.dailyProfit < 0 && day.cycles.length > 0).map(day => parseISO(day.date));
+
+  const isProfit = (date: Date) => profitDays.some(d => isSameDay(d, date));
+  const isLoss = (date: Date) => lossDays.some(d => isSameDay(d, date));
+  const hasData = (date: Date) => isProfit(date) || isLoss(date);
+
+  const handleSelectDate = (date: Date) => {
     const dayId = format(date, 'yyyy-MM-dd');
     const dayData = data.history[dayId];
     if (dayData && dayData.cycles.length > 0) {
@@ -29,8 +39,13 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
     }
   };
 
-  const profitDays = historyDays.filter(day => day.dailyProfit >= 0 && day.cycles.length > 0).map(day => parseISO(day.date));
-  const lossDays = historyDays.filter(day => day.dailyProfit < 0 && day.cycles.length > 0).map(day => parseISO(day.date));
+  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+
+  const days = eachDayOfInterval({
+    start: startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 }),
+    end: endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 })
+  });
 
   return (
     <div className="space-y-4">
@@ -40,41 +55,85 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
       </div>
       
       <Card className="border border-white/5 shadow-2xl bg-zinc-900/80 backdrop-blur-xl rounded-[2rem] overflow-hidden">
-        <CardContent className="p-2 sm:p-6 flex justify-center">
-          <Calendar
-            mode="single"
-            locale={ptBR}
-            selected={selectedDay ? parseISO(selectedDay.date) : undefined}
-            onSelect={handleSelectDate}
-            modifiers={{
-              profit: profitDays,
-              loss: lossDays
-            }}
-            modifiersClassNames={{
-              profit: "bg-emerald-500/10 text-emerald-400 font-black border border-emerald-500/30 hover:bg-emerald-500/20 hover:text-emerald-300 transition-colors shadow-[0_0_15px_rgba(52,211,153,0.15)]",
-              loss: "bg-rose-500/10 text-rose-500 font-black border border-rose-500/30 hover:bg-rose-500/20 hover:text-rose-400 transition-colors shadow-[0_0_15px_rgba(244,63,94,0.15)]"
-            }}
-            className="text-white w-full flex justify-center p-0"
-            classNames={{
-              day: "h-9 w-9 sm:h-11 sm:w-11 text-center text-sm p-0 rounded-2xl hover:bg-white/10 transition-colors mx-auto flex items-center justify-center",
-              day_button: "h-full w-full font-medium flex items-center justify-center",
-              selected: "bg-orange-500 text-white hover:bg-orange-600 hover:text-white focus:bg-orange-500 focus:text-white font-black shadow-[0_0_15px_rgba(249,115,22,0.5)] border-none",
-              today: "bg-zinc-800 text-white font-bold border border-white/20",
-              months: "w-full max-w-[320px] sm:max-w-[380px]",
-              month: "w-full space-y-4",
-              table: "w-full border-collapse table-fixed mx-auto",
-              head_row: "",
-              head_cell: "text-zinc-500 font-black text-[10px] uppercase tracking-widest text-center pb-2 w-[14.28%]",
-              row: "",
-              cell: "text-center p-1 align-middle relative",
-              caption: "flex justify-center pt-2 relative items-center mb-4 px-12",
-              caption_label: "text-xl font-black tracking-tight capitalize",
-              nav: "flex items-center",
-              nav_button: "h-10 w-10 bg-zinc-800/80 hover:bg-orange-500 border border-white/10 hover:border-orange-500/50 rounded-2xl transition-all flex items-center justify-center text-zinc-300 hover:text-white shadow-lg active:scale-95 z-10",
-              nav_button_previous: "absolute left-0",
-              nav_button_next: "absolute right-0",
-            }}
-          />
+        <CardContent className="p-4 sm:p-6">
+          
+          <div className="w-full max-w-sm mx-auto select-none">
+            {/* Calendar Header */}
+            <div className="flex items-center justify-between mb-6">
+              <button 
+                onClick={prevMonth} 
+                className="h-10 w-10 flex items-center justify-center rounded-2xl bg-zinc-800/40 hover:bg-white/10 text-zinc-400 hover:text-white transition-all border border-white/5 hover:border-white/10 shadow-sm active:scale-95"
+              >
+                <ChevronLeft size={18} strokeWidth={2.5} />
+              </button>
+              
+              <div className="text-base sm:text-lg font-bold text-white capitalize tracking-wide">
+                {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
+              </div>
+              
+              <button 
+                onClick={nextMonth} 
+                className="h-10 w-10 flex items-center justify-center rounded-2xl bg-zinc-800/40 hover:bg-white/10 text-zinc-400 hover:text-white transition-all border border-white/5 hover:border-white/10 shadow-sm active:scale-95"
+              >
+                <ChevronRight size={18} strokeWidth={2.5} />
+              </button>
+            </div>
+
+            {/* Weekdays */}
+            <div className="grid grid-cols-7 mb-2">
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                <div key={day} className="text-center text-[10px] font-bold text-zinc-500 uppercase tracking-widest pb-2">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Days Grid */}
+            <div className="grid grid-cols-7 gap-y-1 sm:gap-y-2">
+              {days.map((day, idx) => {
+                const isSelected = selectedDay && isSameDay(parseISO(selectedDay.date), day);
+                const isCurrentMonth = isSameMonth(day, currentMonth);
+                const isDayToday = isToday(day);
+                const dayHasData = hasData(day);
+                const dayIsProfit = isProfit(day);
+                
+                let baseClasses = "relative h-10 w-10 sm:h-11 sm:w-11 mx-auto flex flex-col items-center justify-center text-sm rounded-2xl transition-all duration-300";
+                
+                if (!isCurrentMonth) {
+                  baseClasses += " text-zinc-700 opacity-40 cursor-default";
+                } else if (isSelected) {
+                  baseClasses += " bg-gradient-to-br from-orange-500 to-amber-500 text-white font-black shadow-[0_4px_20px_rgba(249,115,22,0.4)]";
+                } else if (dayHasData) {
+                  baseClasses += " hover:bg-white/10 cursor-pointer text-zinc-200 font-bold bg-white/[0.02] border border-white/[0.02]";
+                } else {
+                  baseClasses += " hover:bg-white/5 cursor-pointer text-zinc-400 font-medium";
+                  if (isDayToday) baseClasses += " border border-white/10 text-white bg-white/5";
+                }
+
+                return (
+                  <div key={idx} className="flex items-center justify-center py-0.5">
+                    <button 
+                      onClick={() => handleSelectDate(day)}
+                      disabled={!isCurrentMonth}
+                      className={baseClasses}
+                    >
+                      <span className={`${isSelected ? 'translate-y-0' : dayHasData ? '-translate-y-0.5' : ''} transition-transform`}>
+                        {format(day, 'd')}
+                      </span>
+                      
+                      {/* Minimalist Indicators - Dots below the number */}
+                      {dayHasData && !isSelected && (
+                        <span className={`absolute bottom-2 w-1.5 h-1.5 rounded-full ${dayIsProfit ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]'}`} />
+                      )}
+                      {dayHasData && isSelected && (
+                        <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-white opacity-80" />
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -96,9 +155,6 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
             <div className="space-y-4 pt-4">
               {selectedDay?.cycles.map((cycle, i) => {
                 const isCycleProfit = cycle.totalProfit >= 0;
-                // Os ciclos são exibidos do mais novo pro mais antigo, ou seja, index 0 é o último ciclo.
-                // Mas queremos mostrar "Operação X" crescente de baixo pra cima ou decrescente igual no painel principal.
-                // No painel principal (App.tsx): index = todayData.cycles.length - index
                 const cycleNumber = selectedDay.cycles.length - i;
 
                 return (
