@@ -37,7 +37,7 @@ export default function DashboardApp() {
     addCycle(cycleData);
     setNewCycleOpen(false);
     showSuccess('Ciclo adicionado com sucesso!');
-    setActiveTab('ciclos'); // Redireciona APÓS preencher o modal
+    // Removido o redirecionamento automático para 'ciclos'
   };
 
   const toggleTheme = () => {
