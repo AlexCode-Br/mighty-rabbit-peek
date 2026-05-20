@@ -6,14 +6,14 @@ import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
 import { ImportExportPanel } from '../components/ImportExportPanel';
 import { useAuth } from '../components/AuthProvider';
-import { LogOut, Activity, CalendarDays, HardDrive } from 'lucide-react';
+import { LogOut, Activity, CalendarDays, Home } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardApp() {
   const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle, importData } = useOperationDays();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'ciclos' | 'historico' | 'dados'>('ciclos');
+  const [activeTab, setActiveTab] = useState<'ciclos' | 'home' | 'historico'>('home');
   const { signOut } = useAuth();
 
   if (loading) {
@@ -30,7 +30,7 @@ export default function DashboardApp() {
 
   const handleNewCycle = () => {
     addCycle();
-    setActiveTab('ciclos'); // Garante que volta para a aba de ciclos ao criar um novo
+    setActiveTab('ciclos'); // Redireciona automaticamente para a aba de ciclos após criar
   };
 
   return (
@@ -38,7 +38,7 @@ export default function DashboardApp() {
       <div className="w-full max-w-md h-full flex flex-col relative bg-[#FAFAFA] sm:border-x border-zinc-200/50 shadow-2xl">
         
         {/* TOPO FIXO: Header Minimalista */}
-        <div className="px-4 pt-4 pb-3 shrink-0">
+        <div className="px-4 pt-4 pb-4 shrink-0">
           <header className="bg-white/80 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-200/60 rounded-full px-5 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center">
@@ -55,47 +55,66 @@ export default function DashboardApp() {
           </header>
         </div>
 
-        {/* TOPO FIXO: Menu Inicial / Principais Informações */}
-        <div className="px-4 shrink-0 mb-2">
-          <Dashboard 
-            dailyProfit={todayData.dailyProfit}
-            dailyGoal={data.settings.dailyGoal}
-            stopLoss={data.settings.stopLoss}
-            cyclesCount={todayData.cycles.length}
-            onNewCycle={handleNewCycle}
-            onOpenSettings={() => setSettingsOpen(true)}
-          />
-        </div>
-
-        {/* MEIO: Conteúdo Flexível (apenas esta área rola internamente se tiver muitos itens) */}
+        {/* MEIO: Conteúdo Dinâmico (Rolável) */}
         <div className="flex-1 px-4 overflow-y-auto no-scrollbar relative z-0 pb-4">
           <style dangerouslySetInnerHTML={{__html: `
             .no-scrollbar::-webkit-scrollbar { display: none; }
             .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           `}} />
 
+          {activeTab === 'home' && (
+            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} className="space-y-6">
+              
+              {/* Painel Principal movido para cá */}
+              <Dashboard 
+                dailyProfit={todayData.dailyProfit}
+                dailyGoal={data.settings.dailyGoal}
+                stopLoss={data.settings.stopLoss}
+                cyclesCount={todayData.cycles.length}
+                onNewCycle={handleNewCycle}
+                onOpenSettings={() => setSettingsOpen(true)}
+              />
+
+              {/* Seção de Dados movida para o final da página Home */}
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-900 mb-3 px-2">Gerenciamento de Dados</h3>
+                <ImportExportPanel data={data} onImport={importData} />
+              </div>
+
+            </motion.div>
+          )}
+
           {activeTab === 'ciclos' && (
             <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
               {todayData.cycles.length === 0 ? (
-                <div className="text-center py-10 flex flex-col items-center justify-center h-full">
+                <div className="text-center py-20 flex flex-col items-center justify-center h-full">
                   <div className="w-16 h-16 bg-zinc-100 text-zinc-400 rounded-full flex items-center justify-center mb-4">
                     <Activity size={24} strokeWidth={1.5} />
                   </div>
                   <h3 className="font-semibold text-lg text-zinc-900 mb-1">Nenhum ciclo hoje</h3>
-                  <p className="text-zinc-500 text-sm">Clique em Novo Ciclo para começar.</p>
+                  <p className="text-zinc-500 text-sm">Vá para o Início e adicione um Novo Ciclo.</p>
+                  <Button 
+                    onClick={() => setActiveTab('home')} 
+                    variant="outline" 
+                    className="mt-6 rounded-xl border-zinc-200"
+                  >
+                    Voltar ao Início
+                  </Button>
                 </div>
               ) : (
-                <AnimatePresence mode="popLayout">
-                  {todayData.cycles.map((cycle, index) => (
-                    <CycleCard 
-                      key={cycle.id}
-                      index={todayData.cycles.length - index} 
-                      cycle={cycle}
-                      onUpdateOperation={updateOperation}
-                      onDeleteCycle={deleteCycle}
-                    />
-                  ))}
-                </AnimatePresence>
+                <div className="space-y-4">
+                  <AnimatePresence mode="popLayout">
+                    {todayData.cycles.map((cycle, index) => (
+                      <CycleCard 
+                        key={cycle.id}
+                        index={todayData.cycles.length - index} 
+                        cycle={cycle}
+                        onUpdateOperation={updateOperation}
+                        onDeleteCycle={deleteCycle}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
               )}
             </motion.div>
           )}
@@ -105,36 +124,30 @@ export default function DashboardApp() {
               <HistoryPanel data={data} />
             </motion.div>
           )}
-
-          {activeTab === 'dados' && (
-            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
-              <ImportExportPanel data={data} onImport={importData} />
-            </motion.div>
-          )}
         </div>
 
-        {/* BASE FIXA: Menu de Navegação Inferior (Estilo App) */}
+        {/* BASE FIXA: Menu de Navegação Inferior (3 Abas Exatas) */}
         <div 
-          className="shrink-0 bg-white border-t border-zinc-200/60 px-6 py-2 flex justify-between items-center shadow-[0_-4px_20px_rgb(0,0,0,0.02)] z-10"
+          className="shrink-0 bg-white border-t border-zinc-200/60 px-8 py-2 flex justify-between items-center shadow-[0_-4px_20px_rgb(0,0,0,0.02)] z-10"
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
         >
           <NavButton 
             active={activeTab === 'ciclos'} 
             onClick={() => setActiveTab('ciclos')} 
-            icon={<Activity size={20} />} 
+            icon={<Activity size={22} />} 
             label="Ciclos" 
+          />
+          <NavButton 
+            active={activeTab === 'home'} 
+            onClick={() => setActiveTab('home')} 
+            icon={<Home size={22} />} 
+            label="Início" 
           />
           <NavButton 
             active={activeTab === 'historico'} 
             onClick={() => setActiveTab('historico')} 
-            icon={<CalendarDays size={20} />} 
+            icon={<CalendarDays size={22} />} 
             label="Histórico" 
-          />
-          <NavButton 
-            active={activeTab === 'dados'} 
-            onClick={() => setActiveTab('dados')} 
-            icon={<HardDrive size={20} />} 
-            label="Dados" 
           />
         </div>
 
@@ -155,7 +168,7 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
   return (
     <button 
       onClick={onClick}
-      className={`flex flex-col items-center justify-center w-20 h-14 rounded-2xl transition-all duration-200 ${
+      className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all duration-200 relative ${
         active ? 'text-zinc-900' : 'text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600'
       }`}
     >
@@ -165,9 +178,9 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
       <span className={`text-[10px] tracking-wide transition-all ${active ? 'font-bold' : 'font-medium'}`}>
         {label}
       </span>
-      {/* Indicador de aba ativa */}
+      {/* Indicador de aba ativa no topo do botão */}
       {active && (
-        <motion.div layoutId="nav-indicator" className="absolute bottom-0 w-8 h-1 bg-zinc-900 rounded-t-full" />
+        <motion.div layoutId="nav-indicator" className="absolute -top-2 w-8 h-1 bg-zinc-900 rounded-b-full" />
       )}
     </button>
   );
