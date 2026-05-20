@@ -34,78 +34,72 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-[2rem] bg-white border-none shadow-2xl p-6 sm:p-8">
-        <DialogHeader>
-          <DialogTitle className="text-slate-800 font-black text-2xl tracking-tight">Configurações</DialogTitle>
+      <DialogContent className="sm:max-w-md rounded-[32px] bg-white border-none shadow-2xl p-8">
+        <DialogHeader className="mb-6">
+          <DialogTitle className="text-xl font-semibold text-zinc-900 tracking-tight">Ajustes</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-8 py-2">
+        <div className="space-y-6">
           <div className="space-y-4">
-            <h4 className="font-bold text-xs text-indigo-600 uppercase tracking-widest bg-indigo-50 inline-block px-3 py-1 rounded-md">Metas e Limites</h4>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="dailyGoal" className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Meta Diária (R$)</Label>
+            <h4 className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest">Diário</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
+                <Label className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mb-1.5 block">Meta</Label>
                 <Input
-                  id="dailyGoal"
                   name="dailyGoal"
                   type="number"
                   inputMode="decimal"
                   value={formData.dailyGoal || ''}
                   onChange={handleChange}
-                  className="rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-mono font-bold focus-visible:ring-2 focus-visible:ring-indigo-500 h-12 shadow-sm"
+                  className="h-8 p-0 border-none bg-transparent text-zinc-900 font-semibold shadow-none focus-visible:ring-0 text-lg"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="stopLoss" className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Stop Loss (R$)</Label>
+              <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
+                <Label className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mb-1.5 block">Stop Loss</Label>
                 <Input
-                  id="stopLoss"
                   name="stopLoss"
                   type="number"
                   inputMode="decimal"
                   value={formData.stopLoss || ''}
                   onChange={handleChange}
-                  className="rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-mono font-bold focus-visible:ring-2 focus-visible:ring-rose-500 h-12 shadow-sm"
+                  className="h-8 p-0 border-none bg-transparent text-rose-500 font-semibold shadow-none focus-visible:ring-0 text-lg"
                 />
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-bold text-xs text-indigo-600 uppercase tracking-widest bg-indigo-50 inline-block px-3 py-1 rounded-md">Entradas Padrão</h4>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="defaultMaeDeposit" className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">MÃE (R$)</Label>
+            <h4 className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest">Valores Padrão</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
+                <Label className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mb-1.5 block">MÃE</Label>
                 <Input
-                  id="defaultMaeDeposit"
                   name="defaultMaeDeposit"
                   type="number"
                   inputMode="decimal"
                   value={formData.defaultMaeDeposit || ''}
                   onChange={handleChange}
-                  className="rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-mono font-bold focus-visible:ring-2 focus-visible:ring-indigo-500 h-12 shadow-sm"
+                  className="h-8 p-0 border-none bg-transparent text-zinc-900 font-semibold shadow-none focus-visible:ring-0 text-lg"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="defaultFilhaDeposit" className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">FILHA (R$)</Label>
+              <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
+                <Label className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mb-1.5 block">FILHA</Label>
                 <Input
-                  id="defaultFilhaDeposit"
                   name="defaultFilhaDeposit"
                   type="number"
                   inputMode="decimal"
                   value={formData.defaultFilhaDeposit || ''}
                   onChange={handleChange}
-                  className="rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-mono font-bold focus-visible:ring-2 focus-visible:ring-indigo-500 h-12 shadow-sm"
+                  className="h-8 p-0 border-none bg-transparent text-zinc-900 font-semibold shadow-none focus-visible:ring-0 text-lg"
                 />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end pt-4">
-          <Button onClick={handleSave} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 font-bold text-sm rounded-2xl h-12 transition-all">
-            Salvar Alterações
+        <div className="mt-8">
+          <Button onClick={handleSave} className="w-full h-12 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-medium shadow-[0_4px_14px_0_rgb(0,0,0,0.1)]">
+            Salvar
           </Button>
         </div>
       </DialogContent>

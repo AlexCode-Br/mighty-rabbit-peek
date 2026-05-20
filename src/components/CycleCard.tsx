@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { Trash2 } from 'lucide-react';
 import { Cycle, Operation } from '../types';
@@ -17,78 +15,79 @@ interface CycleCardProps {
 }
 
 export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: CycleCardProps) {
-  const isProfit = cycle.totalProfit >= 0;
+  const isProfit = cycle.totalProfit > 0;
+  const isLoss = cycle.totalProfit < 0;
+  const isNeutral = cycle.totalProfit === 0;
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)", transition: { duration: 0.2 } }}
+      transition={{ type: "spring", stiffness: 500, damping: 40 }}
     >
-      <Card className="border-none shadow-lg shadow-slate-200/40 bg-white rounded-[2rem] mb-4 overflow-hidden relative">
-        <div className={`absolute top-0 left-0 w-1.5 h-full ${cycle.completed ? (isProfit ? 'bg-emerald-500' : 'bg-rose-500') : 'bg-indigo-400'} transition-colors`} />
-        
-        <CardContent className="p-5 pl-6 sm:p-6 sm:pl-8">
-          <div className="flex justify-between items-center mb-5">
-            <div className="flex items-center gap-2">
-              <h3 className="font-black text-lg text-slate-800">Ciclo {index}</h3>
-              {!cycle.completed && <span className="flex h-2.5 w-2.5 rounded-full bg-indigo-500 animate-pulse ml-1" />}
+      <Card className="border border-zinc-200/60 shadow-sm bg-white rounded-3xl mb-4 overflow-hidden group">
+        <CardContent className="p-0">
+          {/* Header do Ciclo */}
+          <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-100">
+            <div className="flex items-center gap-2.5">
+              <div className={`w-2 h-2 rounded-full ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300') : 'bg-zinc-900 animate-pulse'}`} />
+              <h3 className="font-semibold text-sm text-zinc-900">Ciclo {index}</h3>
             </div>
             
-            <div className="flex items-center gap-2">
-              <motion.div 
-                key={cycle.totalProfit}
-                initial={{ scale: 1.1 }}
-                animate={{ scale: 1 }}
-                className={`font-mono text-sm font-bold px-3 py-1.5 rounded-xl border ${cycle.completed ? (isProfit ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100') : 'bg-slate-50 text-slate-500 border-slate-100'}`}
-              >
-                {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Em aberto'}
-              </motion.div>
+            <div className="flex items-center gap-3">
+              <span className={`text-sm font-semibold tracking-tight ${cycle.completed ? (isProfit ? 'text-emerald-500' : isLoss ? 'text-rose-500' : 'text-zinc-400') : 'text-zinc-400'}`}>
+                {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
+              </span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => onDeleteCycle(cycle.id)}
-                className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 h-9 w-9 rounded-full transition-colors"
+                className="text-zinc-300 hover:text-rose-500 hover:bg-rose-50 h-8 w-8 rounded-full transition-colors -mr-2"
               >
-                <Trash2 size={18} />
+                <Trash2 size={16} />
               </Button>
             </div>
           </div>
 
-          <div className="space-y-3">
+          {/* Operações */}
+          <div className="p-2 space-y-1">
             {cycle.operations.map((op) => (
-              <div key={op.id} className="grid grid-cols-[auto_auto_1fr] sm:grid-cols-[auto_1fr_1.2fr] items-center gap-3 bg-slate-50 border border-slate-100 p-3 sm:p-4 rounded-2xl relative transition-colors hover:border-slate-200">
-                <div className="font-black text-sm w-12 flex flex-col gap-1 items-start text-slate-700">
-                  <span className="tracking-widest">{op.type}</span>
-                  {op.type === 'MAE' && (
-                    <motion.div whileTap={{ scale: 0.95 }} className="flex items-center gap-1 mt-1 cursor-pointer" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
-                      <Checkbox
-                        id={`bau-${op.id}`}
-                        checked={op.bau ?? false}
-                        onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                        className="pointer-events-none scale-[0.8] border-indigo-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-                      />
-                      <Label htmlFor={`bau-${op.id}`} className="text-[10px] font-bold text-indigo-600 cursor-pointer select-none">
-                        BAÚ
-                      </Label>
-                    </motion.div>
-                  )}
+              <div key={op.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-zinc-50 transition-colors">
+                
+                <div className="flex items-center gap-4 w-1/3">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[11px] font-semibold text-zinc-900 uppercase tracking-wider">{op.type}</span>
+                    {op.type === 'MAE' && (
+                      <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
+                        <Checkbox
+                          id={`bau-${op.id}`}
+                          checked={op.bau ?? false}
+                          onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
+                          className="w-3 h-3 border-zinc-300 rounded-[3px] data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900"
+                        />
+                        <span className="text-[9px] font-medium text-zinc-500 uppercase tracking-widest select-none">
+                          BAÚ
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="flex flex-col border-l border-slate-200 pl-3 pr-2">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Entrada</span>
-                  <span className="font-mono text-slate-800 text-sm font-bold">{formatBRL(op.deposit)}</span>
+                <div className="flex flex-col w-1/3 px-2">
+                  <span className="text-[10px] text-zinc-400 font-medium mb-1">Entrada</span>
+                  <span className="font-medium text-zinc-900 text-sm">{formatBRL(op.deposit)}</span>
                 </div>
                 
-                <div className="flex flex-col border-l border-slate-200 pl-3">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Saque Retorno</span>
+                <div className="flex flex-col w-1/3">
+                  <span className="text-[10px] text-zinc-400 font-medium mb-1 text-right">Saque</span>
                   <CurrencyInput
                     initialValue={op.withdraw}
                     onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
                   />
                 </div>
+
               </div>
             ))}
           </div>
@@ -124,13 +123,13 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
   };
 
   return (
-    <Input
+    <input
       type="text"
       inputMode="numeric"
       placeholder="R$ 0"
       value={inputValue}
       onChange={handleChange}
-      className="h-10 px-3 text-right text-sm font-mono font-bold rounded-xl bg-white border-slate-200 text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all placeholder:text-slate-300 w-full shadow-sm"
+      className="w-full text-right text-sm font-semibold text-zinc-900 bg-transparent outline-none border-b border-transparent focus:border-zinc-300 transition-colors placeholder:text-zinc-300 py-1"
     />
   );
 }

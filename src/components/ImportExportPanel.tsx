@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Download, Upload, FileJson, FileSpreadsheet } from 'lucide-react';
+import { Download, Upload, FileSpreadsheet, Database } from 'lucide-react';
 import { AppData } from '../types';
 import { exportToCSV } from '../utils/exportCsv';
 import { exportToJSON, importFromJSON } from '../utils/backup';
@@ -14,9 +14,7 @@ interface ImportExportPanelProps {
 export function ImportExportPanel({ data, onImport }: ImportExportPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
+  const handleImportClick = () => fileInputRef.current?.click();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -28,65 +26,52 @@ export function ImportExportPanel({ data, onImport }: ImportExportPanelProps) {
       alert('Dados importados com sucesso!');
     } catch (error) {
       alert('Erro ao importar arquivo. Verifique se o formato está correto.');
-      console.error(error);
     }
-    
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
     <div className="space-y-4">
-      <h3 className="font-bold text-lg px-2 text-slate-800 tracking-tight">Gerenciamento de Dados</h3>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card className="border-none shadow-lg shadow-slate-200/50 bg-white rounded-3xl">
-          <CardContent className="p-6 flex flex-col gap-4 h-full">
-            <div className="flex items-center gap-3 text-emerald-600">
-              <div className="p-2.5 bg-emerald-50 rounded-xl">
-                <FileSpreadsheet size={22} strokeWidth={2.5} />
-              </div>
-              <h4 className="font-black text-slate-800 tracking-tight">Planilha Excel</h4>
+      <Card className="border border-zinc-200/60 shadow-sm bg-white rounded-3xl overflow-hidden">
+        <CardContent className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <FileSpreadsheet size={20} />
             </div>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed">
-              Exporte todos os seus dados estruturados para análise avançada no Excel ou Google Sheets.
-            </p>
-            <Button onClick={() => exportToCSV(data)} variant="outline" className="w-full rounded-2xl border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold transition-all mt-auto h-11">
-              <Download className="mr-2 h-4 w-4" /> Baixar CSV
-            </Button>
-          </CardContent>
-        </Card>
+            <div>
+              <h4 className="font-semibold text-zinc-900 text-sm">Exportar Planilha</h4>
+              <p className="text-xs text-zinc-500">Baixe em formato CSV</p>
+            </div>
+          </div>
+          <Button onClick={() => exportToCSV(data)} variant="outline" className="rounded-full px-4 border-zinc-200 font-medium">
+            Baixar
+          </Button>
+        </CardContent>
+      </Card>
 
-        <Card className="border-none shadow-lg shadow-slate-200/50 bg-white rounded-3xl">
-          <CardContent className="p-6 flex flex-col gap-4 h-full">
-            <div className="flex items-center gap-3 text-indigo-600">
-              <div className="p-2.5 bg-indigo-50 rounded-xl">
-                <FileJson size={22} strokeWidth={2.5} />
-              </div>
-              <h4 className="font-black text-slate-800 tracking-tight">Backup Sistema</h4>
+      <Card className="border border-zinc-200/60 shadow-sm bg-white rounded-3xl overflow-hidden">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-10 h-10 rounded-full bg-zinc-100 text-zinc-900 flex items-center justify-center">
+              <Database size={20} />
             </div>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed">
-              Salve um backup completo para restaurar suas configurações e histórico futuramente.
-            </p>
-            <div className="grid grid-cols-2 gap-3 mt-auto">
-              <Button onClick={() => exportToJSON(data)} className="w-full rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-none font-bold transition-all h-11">
-                <Download className="mr-2 h-4 w-4" /> Salvar
-              </Button>
-              <Button onClick={handleImportClick} variant="outline" className="w-full rounded-2xl border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold transition-all h-11">
-                <Upload className="mr-2 h-4 w-4" /> Restaurar
-              </Button>
-              <input
-                type="file"
-                accept=".json"
-                className="hidden"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-              />
+            <div>
+              <h4 className="font-semibold text-zinc-900 text-sm">Backup do Sistema</h4>
+              <p className="text-xs text-zinc-500">Arquivo JSON local</p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <Button onClick={() => exportToJSON(data)} variant="outline" className="w-full rounded-xl border-zinc-200 font-medium gap-2">
+              <Download size={16} /> Salvar
+            </Button>
+            <Button onClick={handleImportClick} variant="outline" className="w-full rounded-xl border-zinc-200 font-medium gap-2">
+              <Upload size={16} /> Restaurar
+            </Button>
+            <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
