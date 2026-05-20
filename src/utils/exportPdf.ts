@@ -1,5 +1,5 @@
 import { AppData } from '../types';
-import { format, parseISO, subDays, isSameDay } from 'date-fns';
+import { format, parseISO, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -52,12 +52,12 @@ export const exportToPDF = (data: AppData) => {
 
   // --- 3. CARTÕES DE RESUMO ---
   const drawCard = (x: number, y: number, w: number, h: number, title: string, value: string, isPositive?: boolean) => {
-    doc.setDrawColor(228, 228, 231); // zinc-200
-    doc.setFillColor(250, 250, 250); // zinc-50
+    doc.setDrawColor(228, 228, 231);
+    doc.setFillColor(250, 250, 250);
     doc.roundedRect(x, y, w, h, 3, 3, 'FD');
 
     doc.setFontSize(9);
-    doc.setTextColor(113, 113, 122); // zinc-500
+    doc.setTextColor(113, 113, 122);
     doc.text(title, x + 5, y + 8);
 
     doc.setFontSize(14);
@@ -65,10 +65,10 @@ export const exportToPDF = (data: AppData) => {
     
     if (isPositive === true) doc.setTextColor(16, 185, 129); // emerald-500
     else if (isPositive === false) doc.setTextColor(244, 63, 94); // rose-500
-    else doc.setTextColor(24, 24, 27); // zinc-900
+    else doc.setTextColor(24, 24, 27);
 
     doc.text(value, x + 5, y + 18);
-    doc.setFont('helvetica', 'normal'); // reset
+    doc.setFont('helvetica', 'normal');
   };
 
   const cardW = (pageWidth - 40) / 3;
@@ -86,19 +86,16 @@ export const exportToPDF = (data: AppData) => {
   
   cursorY += 10;
   
-  // Fundo do gráfico
   const chartHeight = 40;
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(228, 228, 231);
   doc.roundedRect(15, cursorY, pageWidth - 30, chartHeight, 3, 3, 'FD');
 
-  // Linha zero
   const zeroY = cursorY + (chartHeight / 2);
   doc.setDrawColor(212, 212, 216);
   doc.setLineWidth(0.5);
   doc.line(15, zeroY, pageWidth - 15, zeroY);
 
-  // Pegar os últimos 7 dias que têm dados
   const sortedDays = Object.values(data.history)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 7)
@@ -114,13 +111,11 @@ export const exportToPDF = (data: AppData) => {
       const barX = 25 + (index * barSpacing);
       const barY = isProfit ? zeroY - barH : zeroY;
 
-      // Desenhar barra
-      if (isProfit) doc.setFillColor(16, 185, 129); // emerald
-      else doc.setFillColor(244, 63, 94); // rose
+      if (isProfit) doc.setFillColor(16, 185, 129);
+      else doc.setFillColor(244, 63, 94);
       
-      doc.rect(barX, barY, 10, Math.max(barH, 1), 'F'); // min 1px altura
+      doc.rect(barX, barY, 10, Math.max(barH, 1), 'F');
 
-      // Desenhar data e valor
       doc.setFontSize(7);
       doc.setTextColor(113, 113, 122);
       const dayLabel = format(parseISO(day.date), 'dd/MM');
@@ -140,17 +135,96 @@ export const exportToPDF = (data: AppData) => {
 
   cursorY += chartHeight + 15;
 
-  // --- 5. TABELA DE CICLOS ---
+  // --- 5. RESUMO DIÁRIO ---
   doc.setFontSize(12);
   doc.setTextColor(24, 24, 27);
   doc.setFont('helvetica', 'bold');
-  doc.text('Histórico Detalhado', 15, cursorY);
+  doc.text('Desempenho Diário', 15, cursorY);
+  
+  cursorY += 5;
+
+  const dailyTableData: any[][] = [];
+  const dailyGoal = data.settings.dailyGoal;
+  
+  const allSortedDates = Object.keys(data.history).sort((a, b) => b.localeCompare(a));
+  allSortedDates.forEach((dateKey) => {
+    const day = data.history[dateKey];
+    if (!day.cycles || day.cycles.length === 0) return;
+
+    const dateStr = format(parseISO(day.date), 'dd/MM/yyyy');
+    const profit = day.dailyProfit;
+    const formatCurr = (val: number) => `R$ ${val.toFixed(2)}`;
+    const percent = dailyGoal > 0 ? (profit / dailyGoal) * 100 : 0;
+    
+    let status = 'Empate';
+    if (profit >= dailyGoal) status = 'Meta Batida';
+    else if (profit > 0) status = 'Lucro';
+    else if (profit < 0) status = 'Loss';
+
+    dailyTableData.push([
+      dateStr,
+      day.cycles.length.toString(),
+      formatCurr(profit),
+      `${percent.toFixed(0)}%`,
+      status
+    ]);
+  });
+
+  autoTable(doc, {
+    startY: cursorY,
+    head: [['Data', 'Ciclos', 'Resultado', '% da Meta', 'Status']],
+    body: dailyTableData,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [24, 24, 27], // zinc-900
+      textColor: 255,
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    bodyStyles: {
+      textColor: [39, 39, 42],
+      valign: 'middle',
+      halign: 'center'
+    },
+    alternateRowStyles: {
+      fillColor: [250, 250, 250]
+    },
+    styles: {
+      cellPadding: 3,
+      fontSize: 9,
+      lineColor: [228, 228, 231],
+      lineWidth: 0.1,
+    },
+    willDrawCell: (data) => {
+      if (data.section === 'body') {
+        const statusVal = data.row.raw[4];
+        if (statusVal === 'Meta Batida' || statusVal === 'Lucro') {
+          if (data.column.index === 2 || data.column.index === 3 || data.column.index === 4) {
+            doc.setTextColor(16, 185, 129); // emerald
+            doc.setFont('helvetica', 'bold');
+          }
+        } else if (statusVal === 'Loss') {
+          if (data.column.index === 2 || data.column.index === 3 || data.column.index === 4) {
+            doc.setTextColor(244, 63, 94); // rose
+            doc.setFont('helvetica', 'bold');
+          }
+        }
+      }
+    }
+  });
+
+  cursorY = (doc as any).lastAutoTable.finalY + 15;
+
+  // --- 6. TABELA DE CICLOS DETALHADOS ---
+  doc.setFontSize(12);
+  doc.setTextColor(24, 24, 27);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Histórico Detalhado (Operações)', 15, cursorY);
   
   cursorY += 5;
 
   const tableData: any[][] = [];
   
-  const allSortedDates = Object.keys(data.history).sort((a, b) => b.localeCompare(a));
   allSortedDates.forEach((dateKey) => {
     const day = data.history[dateKey];
     (day.cycles || []).forEach(cycle => {
@@ -179,7 +253,7 @@ export const exportToPDF = (data: AppData) => {
     body: tableData,
     theme: 'grid',
     headStyles: {
-      fillColor: [24, 24, 27], // zinc-900
+      fillColor: [24, 24, 27],
       textColor: 255,
       fontStyle: 'bold',
       halign: 'center'
@@ -199,9 +273,8 @@ export const exportToPDF = (data: AppData) => {
       lineWidth: 0.1,
     },
     willDrawCell: (data) => {
-      // Colorir a coluna de "Lucro Total" e "Status"
       if (data.section === 'body') {
-        const statusVal = data.row.raw[4]; // Status
+        const statusVal = data.row.raw[4];
         if (statusVal === 'Lucro') {
           if (data.column.index === 3 || data.column.index === 4) {
             doc.setTextColor(16, 185, 129); // emerald
@@ -217,7 +290,11 @@ export const exportToPDF = (data: AppData) => {
     }
   });
 
-  // Salvar PDF
+  // Salvar PDF e Abrir Automaticamente
   const fileName = `TradeTracker_Relatorio_${format(new Date(), 'ddMMyyyy_HHmm')}.pdf`;
-  doc.save(fileName);
+  doc.save(fileName); // Baixa o arquivo localmente
+
+  // Gera a URL do blob interno e abre uma nova aba no navegador (isso aciona a visualização de PDF do Chrome/Safari/Edge)
+  const pdfBlobUrl = URL.createObjectURL(doc.output('blob'));
+  window.open(pdfBlobUrl, '_blank');
 };
