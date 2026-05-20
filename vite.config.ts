@@ -13,5 +13,8 @@ export default defineConfig(() => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // Força o Vite a usar apenas a instância principal do React, 
+    // resolvendo o erro de múltiplos hooks/Reacts.
+    dedupe: ["react", "react-dom"],
   },
 }));
