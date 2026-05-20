@@ -3,7 +3,6 @@ import { useOperationDays } from './hooks/useOperationDays';
 import { Dashboard } from './components/Dashboard';
 import { GoalSettings } from './components/GoalSettings';
 import { CycleCard } from './components/CycleCard';
-import { Charts } from './components/Charts';
 import { HistoryPanel } from './components/HistoryPanel';
 import { ImportExportPanel } from './components/ImportExportPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
@@ -40,14 +39,14 @@ export default function App() {
 
         <Tabs defaultValue="operacoes" className="w-full">
           <TabsList className="w-full grid grid-cols-3 rounded-2xl bg-zinc-900 border border-white/5 p-1 mb-6">
-            <TabsTrigger value="operacoes" className="rounded-xl text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            <TabsTrigger value="operacoes" className="rounded-xl text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all font-bold tracking-wide">
               Operações
             </TabsTrigger>
-            <TabsTrigger value="graficos" className="rounded-xl text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
-              Evolução
-            </TabsTrigger>
-            <TabsTrigger value="dados" className="rounded-xl text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            <TabsTrigger value="historico" className="rounded-xl text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all font-bold tracking-wide">
               Histórico
+            </TabsTrigger>
+            <TabsTrigger value="dados" className="rounded-xl text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all font-bold tracking-wide">
+              Dados
             </TabsTrigger>
           </TabsList>
 
@@ -77,12 +76,11 @@ export default function App() {
             )}
           </TabsContent>
 
-          <TabsContent value="graficos" className="outline-none">
-            <Charts todayData={todayData} />
+          <TabsContent value="historico" className="outline-none">
+            <HistoryPanel data={data} />
           </TabsContent>
 
           <TabsContent value="dados" className="space-y-8 outline-none">
-            <HistoryPanel data={data} />
             <ImportExportPanel data={data} onImport={importData} />
           </TabsContent>
         </Tabs>

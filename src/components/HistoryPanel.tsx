@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import { AppData, OperationDay } from '../types';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { TrendingUp, TrendingDown, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
+import { Calendar } from './ui/calendar';
 
 interface HistoryPanelProps {
   data: AppData;
@@ -19,58 +20,62 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
 
-  if (historyDays.length === 0) {
-    return (
-      <Card className="border border-white/5 shadow-xl bg-zinc-900/80 backdrop-blur-xl rounded-3xl">
-        <CardContent className="p-8 text-center text-zinc-500 font-medium">
-          Nenhum histórico disponível.
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const handleDayClick = (day: OperationDay) => {
-    setSelectedDay(day);
+  const handleSelectDate = (date: Date | undefined) => {
+    if (!date) return;
+    const dayId = format(date, 'yyyy-MM-dd');
+    const dayData = data.history[dayId];
+    if (dayData && dayData.cycles.length > 0) {
+      setSelectedDay(dayData);
+    }
   };
+
+  const profitDays = historyDays.filter(day => day.dailyProfit >= 0 && day.cycles.length > 0).map(day => parseISO(day.date));
+  const lossDays = historyDays.filter(day => day.dailyProfit < 0 && day.cycles.length > 0).map(day => parseISO(day.date));
 
   return (
     <div className="space-y-4">
-      <h3 className="font-bold text-lg px-2 text-white tracking-tight">Histórico</h3>
+      <div className="flex items-center justify-between px-2">
+        <h3 className="font-bold text-lg text-white tracking-tight">Histórico</h3>
+        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">{historyDays.length} Dias operados</p>
+      </div>
       
-      {historyDays.map((day) => {
-        const isProfit = day.dailyProfit >= 0;
-        const formattedDate = format(parseISO(day.date), "dd 'de' MMMM", { locale: ptBR });
-        
-        return (
-          <Card
-            key={day.id}
-            className="border border-white/5 shadow-xl bg-zinc-900/80 backdrop-blur-xl rounded-3xl overflow-hidden cursor-pointer hover:bg-zinc-800/80 transition-colors"
-            onClick={() => handleDayClick(day)}
-          >
-            <CardContent className="p-4 px-5 flex items-center justify-between">
-              <div>
-                <p className="font-bold text-white tracking-tight">{formattedDate}</p>
-                <p className="text-xs text-zinc-500 font-semibold tracking-wide uppercase mt-0.5">{day.cycles.length} operações</p>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className={`font-mono font-bold tracking-tight ${isProfit ? 'text-emerald-400' : 'text-rose-500'}`}>
-                    {isProfit ? '+' : ''}{formatBRL(day.dailyProfit)}
-                  </p>
-                  <div className="flex justify-end gap-1.5 mt-1">
-                    {day.goalReached && <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Meta</span>}
-                    {day.stopLossReached && <span className="text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Stop</span>}
-                  </div>
-                </div>
-                <div className={`p-2.5 rounded-2xl border ${isProfit ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
-                  {isProfit ? <TrendingUp size={18} strokeWidth={2.5} /> : <TrendingDown size={18} strokeWidth={2.5} />}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+      <Card className="border border-white/5 shadow-2xl bg-zinc-900/80 backdrop-blur-xl rounded-[2rem] overflow-hidden">
+        <CardContent className="p-2 sm:p-6 flex justify-center">
+          <Calendar
+            mode="single"
+            locale={ptBR}
+            selected={selectedDay ? parseISO(selectedDay.date) : undefined}
+            onSelect={handleSelectDate}
+            modifiers={{
+              profit: profitDays,
+              loss: lossDays
+            }}
+            modifiersClassNames={{
+              profit: "bg-emerald-500/10 text-emerald-400 font-black border border-emerald-500/30 hover:bg-emerald-500/20 hover:text-emerald-300 transition-colors shadow-[0_0_15px_rgba(52,211,153,0.15)]",
+              loss: "bg-rose-500/10 text-rose-500 font-black border border-rose-500/30 hover:bg-rose-500/20 hover:text-rose-400 transition-colors shadow-[0_0_15px_rgba(244,63,94,0.15)]"
+            }}
+            className="text-white w-full max-w-full"
+            classNames={{
+              day: "h-10 w-10 sm:h-12 sm:w-12 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-white/5 [&:has([aria-selected])]:bg-white/10 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 rounded-xl m-0.5",
+              day_button: "h-10 w-10 sm:h-12 sm:w-12 p-0 font-medium aria-selected:opacity-100 hover:bg-white/10 rounded-xl transition-colors",
+              selected: "bg-orange-500 text-white hover:bg-orange-600 hover:text-white focus:bg-orange-500 focus:text-white font-black shadow-[0_0_15px_rgba(249,115,22,0.5)] border-none",
+              today: "bg-white/10 text-white font-bold border border-white/20",
+              months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full justify-center",
+              month: "space-y-4 w-full",
+              table: "w-full border-collapse space-y-1 mx-auto",
+              head_row: "flex justify-between w-full mb-2",
+              head_cell: "text-zinc-500 rounded-md w-10 sm:w-12 font-black text-[10px] uppercase tracking-widest text-center",
+              row: "flex w-full mt-2 justify-between",
+              caption: "flex justify-center pt-1 relative items-center mb-4",
+              caption_label: "text-lg font-black tracking-tight capitalize",
+              nav: "space-x-1 flex items-center bg-black/40 rounded-xl border border-white/5 p-1",
+              nav_button: "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center text-white",
+              nav_button_previous: "absolute left-1",
+              nav_button_next: "absolute right-1",
+            }}
+          />
+        </CardContent>
+      </Card>
 
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
         <DialogContent className="sm:max-w-md rounded-[2rem] h-[80vh] flex flex-col p-0 bg-zinc-950 border border-white/10 shadow-2xl">
