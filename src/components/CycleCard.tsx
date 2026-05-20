@@ -22,68 +22,68 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, filter: "blur(8px)", transition: { duration: 0.2 } }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
     >
-      <Card className="shadow-2xl border border-white/10 bg-zinc-900/60 backdrop-blur-2xl rounded-3xl mb-4 overflow-hidden relative group transition-colors hover:border-white/20">
-        <div className={`absolute top-0 left-0 w-1.5 h-full ${cycle.completed ? (isProfit ? 'bg-emerald-500 shadow-[0_0_20px_rgba(52,211,153,0.8)]' : 'bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.8)]') : 'bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.8)]'} transition-colors duration-500`} />
+      <Card className="border-none shadow-lg shadow-slate-200/40 bg-white rounded-[2rem] mb-4 overflow-hidden relative">
+        <div className={`absolute top-0 left-0 w-1.5 h-full ${cycle.completed ? (isProfit ? 'bg-emerald-500' : 'bg-rose-500') : 'bg-indigo-400'} transition-colors`} />
         
-        <CardContent className="p-5 pl-7">
+        <CardContent className="p-5 pl-6 sm:p-6 sm:pl-8">
           <div className="flex justify-between items-center mb-5">
             <div className="flex items-center gap-2">
-              <h3 className="font-black text-lg tracking-tight text-white">Operação {index}</h3>
-              {!cycle.completed && <span className="flex h-2.5 w-2.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)] animate-pulse ml-1" />}
+              <h3 className="font-black text-lg text-slate-800">Ciclo {index}</h3>
+              {!cycle.completed && <span className="flex h-2.5 w-2.5 rounded-full bg-indigo-500 animate-pulse ml-1" />}
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <motion.div 
                 key={cycle.totalProfit}
-                initial={{ scale: 1.2, color: '#fff' }}
+                initial={{ scale: 1.1 }}
                 animate={{ scale: 1 }}
-                className={`font-mono text-sm font-bold tracking-tight px-3 py-1.5 rounded-full border ${cycle.completed ? (isProfit ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(52,211,153,0.15)]' : 'bg-rose-500/10 text-rose-400 border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.15)]') : 'bg-zinc-800 text-zinc-400 border-white/10'}`}
+                className={`font-mono text-sm font-bold px-3 py-1.5 rounded-xl border ${cycle.completed ? (isProfit ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100') : 'bg-slate-50 text-slate-500 border-slate-100'}`}
               >
-                {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
+                {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Em aberto'}
               </motion.div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => onDeleteCycle(cycle.id)}
-                className="text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8 rounded-full transition-colors"
+                className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 h-9 w-9 rounded-full transition-colors"
               >
-                <Trash2 size={16} />
+                <Trash2 size={18} />
               </Button>
             </div>
           </div>
 
           <div className="space-y-3">
             {cycle.operations.map((op) => (
-              <div key={op.id} className="grid grid-cols-[auto_auto_1fr] sm:grid-cols-[auto_1fr_1.2fr] items-center gap-2 sm:gap-3 bg-black/40 border border-white/[0.05] p-3 rounded-2xl relative overflow-hidden hover:bg-white/[0.02] transition-colors">
-                <div className="font-black text-sm w-10 flex flex-col gap-1.5 items-start text-zinc-300">
+              <div key={op.id} className="grid grid-cols-[auto_auto_1fr] sm:grid-cols-[auto_1fr_1.2fr] items-center gap-3 bg-slate-50 border border-slate-100 p-3 sm:p-4 rounded-2xl relative transition-colors hover:border-slate-200">
+                <div className="font-black text-sm w-12 flex flex-col gap-1 items-start text-slate-700">
                   <span className="tracking-widest">{op.type}</span>
                   {op.type === 'MAE' && (
-                    <motion.div whileTap={{ scale: 0.9 }} className="flex items-center gap-1 mt-1 cursor-pointer group/bau" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
+                    <motion.div whileTap={{ scale: 0.95 }} className="flex items-center gap-1 mt-1 cursor-pointer" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
                       <Checkbox
                         id={`bau-${op.id}`}
                         checked={op.bau ?? false}
                         onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                        className="pointer-events-none scale-90 border-orange-500/50 data-[state=checked]:bg-orange-500 data-[state=checked]:text-white"
+                        className="pointer-events-none scale-[0.8] border-indigo-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
                       />
-                      <Label htmlFor={`bau-${op.id}`} className="text-[9px] font-black tracking-widest text-orange-500/80 group-hover/bau:text-orange-400 cursor-pointer select-none transition-colors">
+                      <Label htmlFor={`bau-${op.id}`} className="text-[10px] font-bold text-indigo-600 cursor-pointer select-none">
                         BAÚ
                       </Label>
                     </motion.div>
                   )}
                 </div>
                 
-                <div className="flex flex-col border-l border-white/10 pl-2.5 sm:pl-3 pr-1">
-                  <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Entrada</span>
-                  <span className="font-mono text-white text-xs sm:text-sm font-medium">{formatBRL(op.deposit)}</span>
+                <div className="flex flex-col border-l border-slate-200 pl-3 pr-2">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Entrada</span>
+                  <span className="font-mono text-slate-800 text-sm font-bold">{formatBRL(op.deposit)}</span>
                 </div>
                 
-                <div className="flex flex-col border-l border-white/10 pl-2.5 sm:pl-3">
-                  <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Saque</span>
+                <div className="flex flex-col border-l border-slate-200 pl-3">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Saque Retorno</span>
                   <CurrencyInput
                     initialValue={op.withdraw}
                     onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
@@ -130,7 +130,7 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
       placeholder="R$ 0"
       value={inputValue}
       onChange={handleChange}
-      className="h-9 px-3 text-right text-sm font-mono font-bold rounded-xl bg-zinc-950 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:border-orange-500 transition-all placeholder:text-zinc-700 w-full shadow-inner"
+      className="h-10 px-3 text-right text-sm font-mono font-bold rounded-xl bg-white border-slate-200 text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all placeholder:text-slate-300 w-full shadow-sm"
     />
   );
 }

@@ -34,18 +34,18 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-[2rem] bg-zinc-950 border border-white/10 shadow-2xl p-6">
+      <DialogContent className="sm:max-w-md rounded-[2rem] bg-white border-none shadow-2xl p-6 sm:p-8">
         <DialogHeader>
-          <DialogTitle className="text-orange-500 font-black text-2xl tracking-tight">Configurações</DialogTitle>
+          <DialogTitle className="text-slate-800 font-black text-2xl tracking-tight">Configurações</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-8 py-4">
+        <div className="space-y-8 py-2">
           <div className="space-y-4">
-            <h4 className="font-bold text-xs text-zinc-500 uppercase tracking-widest">Metas e Limites</h4>
+            <h4 className="font-bold text-xs text-indigo-600 uppercase tracking-widest bg-indigo-50 inline-block px-3 py-1 rounded-md">Metas e Limites</h4>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="dailyGoal" className="text-zinc-400 font-bold text-[10px] uppercase tracking-widest">Meta Diária (R$)</Label>
+                <Label htmlFor="dailyGoal" className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Meta Diária (R$)</Label>
                 <Input
                   id="dailyGoal"
                   name="dailyGoal"
@@ -53,11 +53,11 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
                   inputMode="decimal"
                   value={formData.dailyGoal || ''}
                   onChange={handleChange}
-                  className="rounded-xl bg-zinc-900 border-white/5 text-white font-mono focus-visible:ring-1 focus-visible:ring-orange-500 h-12"
+                  className="rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-mono font-bold focus-visible:ring-2 focus-visible:ring-indigo-500 h-12 shadow-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="stopLoss" className="text-zinc-400 font-bold text-[10px] uppercase tracking-widest">Stop Loss (R$)</Label>
+                <Label htmlFor="stopLoss" className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Stop Loss (R$)</Label>
                 <Input
                   id="stopLoss"
                   name="stopLoss"
@@ -65,18 +65,18 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
                   inputMode="decimal"
                   value={formData.stopLoss || ''}
                   onChange={handleChange}
-                  className="rounded-xl bg-zinc-900 border-white/5 text-white font-mono focus-visible:ring-1 focus-visible:ring-orange-500 h-12"
+                  className="rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-mono font-bold focus-visible:ring-2 focus-visible:ring-rose-500 h-12 shadow-sm"
                 />
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-bold text-xs text-zinc-500 uppercase tracking-widest">Entradas Padrão</h4>
+            <h4 className="font-bold text-xs text-indigo-600 uppercase tracking-widest bg-indigo-50 inline-block px-3 py-1 rounded-md">Entradas Padrão</h4>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="defaultMaeDeposit" className="text-zinc-400 font-bold text-[10px] uppercase tracking-widest">MÃE (R$)</Label>
+                <Label htmlFor="defaultMaeDeposit" className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">MÃE (R$)</Label>
                 <Input
                   id="defaultMaeDeposit"
                   name="defaultMaeDeposit"
@@ -84,11 +84,11 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
                   inputMode="decimal"
                   value={formData.defaultMaeDeposit || ''}
                   onChange={handleChange}
-                  className="rounded-xl bg-zinc-900 border-white/5 text-white font-mono focus-visible:ring-1 focus-visible:ring-orange-500 h-12"
+                  className="rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-mono font-bold focus-visible:ring-2 focus-visible:ring-indigo-500 h-12 shadow-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="defaultFilhaDeposit" className="text-zinc-400 font-bold text-[10px] uppercase tracking-widest">FILHA (R$)</Label>
+                <Label htmlFor="defaultFilhaDeposit" className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">FILHA (R$)</Label>
                 <Input
                   id="defaultFilhaDeposit"
                   name="defaultFilhaDeposit"
@@ -96,7 +96,7 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
                   inputMode="decimal"
                   value={formData.defaultFilhaDeposit || ''}
                   onChange={handleChange}
-                  className="rounded-xl bg-zinc-900 border-white/5 text-white font-mono focus-visible:ring-1 focus-visible:ring-orange-500 h-12"
+                  className="rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-mono font-bold focus-visible:ring-2 focus-visible:ring-indigo-500 h-12 shadow-sm"
                 />
               </div>
             </div>
@@ -104,7 +104,7 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
         </div>
 
         <div className="flex justify-end pt-4">
-          <Button onClick={handleSave} className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-[0_0_20px_rgba(249,115,22,0.3)] border-none font-bold text-sm tracking-wide rounded-2xl h-12">
+          <Button onClick={handleSave} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 font-bold text-sm rounded-2xl h-12 transition-all">
             Salvar Alterações
           </Button>
         </div>

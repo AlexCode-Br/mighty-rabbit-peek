@@ -7,7 +7,7 @@ import { HistoryPanel } from '../components/HistoryPanel';
 import { ImportExportPanel } from '../components/ImportExportPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useAuth } from '../components/AuthProvider';
-import { LogOut } from 'lucide-react';
+import { LogOut, LayoutDashboard, History, Database } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,57 +18,57 @@ export default function DashboardApp() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center text-orange-500 font-bold flex-col gap-6">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center flex-col gap-6">
         <motion.div 
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full" 
+          className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full" 
         />
         <motion.p 
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className="tracking-widest text-xs uppercase text-zinc-500 font-black"
+          className="tracking-widest text-xs uppercase text-slate-400 font-bold"
         >
-          Sincronizando Dados
+          Sincronizando...
         </motion.p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-50 font-sans pb-20 selection:bg-orange-500/30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed bg-opacity-5">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-24 selection:bg-indigo-100">
       {/* Header */}
-      <header className="bg-zinc-950/80 shadow-sm px-4 pt-12 pb-4 sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl">
+      <header className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-slate-200 sticky top-0 z-50 pt-10 pb-3 px-4">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-3"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.3)] border border-orange-400/20">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-600/20">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
             </div>
-            <h1 className="text-xl font-black text-white tracking-tight">
-              Trade<span className="text-orange-500">Tracker</span>
+            <h1 className="text-xl font-black tracking-tight text-slate-800">
+              Trade<span className="text-indigo-600">Tracker</span>
             </h1>
           </motion.div>
           
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2 sm:gap-4"
+            className="flex items-center gap-2"
           >
-            <span className="text-[10px] text-zinc-500 font-bold tracking-widest uppercase hidden sm:inline-block bg-white/5 px-3 py-1 rounded-full">
+            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full hidden sm:block">
               {user?.email?.split('@')[0]}
             </span>
-            <Button variant="ghost" size="icon" onClick={signOut} className="text-zinc-500 hover:text-rose-400 rounded-full h-9 w-9 hover:bg-rose-500/10 transition-colors border border-transparent hover:border-rose-500/20">
-              <LogOut size={16} strokeWidth={2.5} />
+            <Button variant="ghost" size="icon" onClick={signOut} className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-full h-10 w-10 transition-colors">
+              <LogOut size={18} strokeWidth={2.5} />
             </Button>
           </motion.div>
         </div>
       </header>
 
-      <main className="max-w-md mx-auto p-4 space-y-6 mt-4">
+      <main className="max-w-md mx-auto p-4 space-y-6 mt-2">
         <Dashboard 
           dailyProfit={todayData.dailyProfit}
           dailyGoal={data.settings.dailyGoal}
@@ -79,36 +79,31 @@ export default function DashboardApp() {
         />
 
         <Tabs defaultValue="operacoes" className="w-full">
-          <TabsList className="w-full grid grid-cols-3 rounded-2xl bg-zinc-900/80 backdrop-blur-md border border-white/10 p-1 mb-6 shadow-xl relative z-10">
-            <TabsTrigger value="operacoes" className="rounded-xl text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black tracking-wide text-xs sm:text-sm h-10">
-              Operações
+          <TabsList className="w-full grid grid-cols-3 rounded-2xl bg-slate-200/50 p-1 mb-6 shadow-inner">
+            <TabsTrigger value="operacoes" className="rounded-xl text-slate-500 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold tracking-wide text-xs sm:text-sm h-10 flex items-center justify-center gap-1.5">
+              <LayoutDashboard size={14} /> Operações
             </TabsTrigger>
-            <TabsTrigger value="historico" className="rounded-xl text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black tracking-wide text-xs sm:text-sm h-10">
-              Histórico
+            <TabsTrigger value="historico" className="rounded-xl text-slate-500 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold tracking-wide text-xs sm:text-sm h-10 flex items-center justify-center gap-1.5">
+              <History size={14} /> Histórico
             </TabsTrigger>
-            <TabsTrigger value="dados" className="rounded-xl text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black tracking-wide text-xs sm:text-sm h-10">
-              Dados
+            <TabsTrigger value="dados" className="rounded-xl text-slate-500 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold tracking-wide text-xs sm:text-sm h-10 flex items-center justify-center gap-1.5">
+              <Database size={14} /> Dados
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="operacoes" className="space-y-4 outline-none min-h-[300px]">
             {todayData.cycles.length === 0 ? (
               <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-20 px-4 bg-zinc-900/40 backdrop-blur-xl rounded-[2rem] border border-white/5 shadow-2xl relative overflow-hidden"
+                className="text-center py-16 px-4 bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40"
               >
-                <div className="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent opacity-50" />
-                <motion.div 
-                  animate={{ y: [0, -10, 0] }} 
-                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                  className="w-24 h-24 bg-gradient-to-br from-orange-500/20 to-amber-500/5 border border-orange-500/30 text-orange-400 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(249,115,22,0.2)] rotate-3"
-                >
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-rotate-3"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                </motion.div>
-                <h3 className="font-black text-2xl text-white mb-2 tracking-tight">Vazio por aqui</h3>
-                <p className="text-zinc-400 text-sm max-w-[250px] mx-auto leading-relaxed font-medium">
-                  Registre sua primeira operação do dia para ver a mágica acontecer.
+                <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                  <LayoutDashboard size={32} strokeWidth={2} />
+                </div>
+                <h3 className="font-black text-xl text-slate-800 mb-2">Nenhuma operação</h3>
+                <p className="text-slate-500 text-sm max-w-[250px] mx-auto font-medium">
+                  Registre sua primeira operação do dia para acompanhar seus lucros.
                 </p>
               </motion.div>
             ) : (
