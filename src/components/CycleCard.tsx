@@ -4,13 +4,14 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { Trash2 } from 'lucide-react';
-import { Cycle } from '../types';
+import { Cycle, Operation } from '../types';
 import { formatBRL, parseBRL } from '../utils/currency';
+import { Checkbox } from './ui/checkbox';
 
 interface CycleCardProps {
   index: number;
   cycle: Cycle;
-  onUpdateOperation: (cycleId: string, operationId: string, withdraw: number | null) => void;
+  onUpdateOperation: (cycleId: string, operationId: string, updates: Partial<Operation>) => void;
   onDeleteCycle: (cycleId: string) => void;
 }
 
@@ -43,7 +44,22 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
         <div className="space-y-4">
           {cycle.operations.map((op) => (
             <div key={op.id} className="grid grid-cols-[auto_1fr_1fr] items-center gap-3 bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-xl">
-              <div className="font-semibold text-sm w-12">{op.type}</div>
+              <div className="font-semibold text-sm w-12 flex flex-col gap-1 items-start">
+                <span>{op.type}</span>
+                {op.type === 'MAE' && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <Checkbox
+                      id={`bau-${op.id}`}
+                      checked={op.bau ?? false}
+                      onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
+                      className="h-3 w-3 rounded-[3px]"
+                    />
+                    <Label htmlFor={`bau-${op.id}`} className="text-[9px] font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
+                      Baú
+                    </Label>
+                  </div>
+                )}
+              </div>
               
               <div className="flex flex-col">
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Entrada</span>
@@ -54,7 +70,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Saque</span>
                 <CurrencyInput
                   initialValue={op.withdraw}
-                  onChange={(val) => onUpdateOperation(cycle.id, op.id, val)}
+                  onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
                 />
               </div>
             </div>

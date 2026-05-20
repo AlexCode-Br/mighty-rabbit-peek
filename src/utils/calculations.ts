@@ -1,6 +1,7 @@
-export const calculateOperationProfit = (deposit: number, withdraw: number | null): number => {
+export const calculateOperationProfit = (deposit: number, withdraw: number | null, isMae: boolean = false, hasBau: boolean = false): number => {
   if (withdraw === null) return 0;
-  return withdraw - deposit;
+  const finalWithdraw = (isMae && hasBau) ? withdraw + 20 : withdraw;
+  return finalWithdraw - deposit;
 };
 
 export const calculateCycleProfit = (maeProfit: number, filhaProfit: number): number => {

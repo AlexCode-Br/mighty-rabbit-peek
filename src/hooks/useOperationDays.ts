@@ -46,7 +46,7 @@ export const useOperationDays = () => {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       operations: [
-        { id: crypto.randomUUID(), type: 'MAE', deposit: data.settings.defaultMaeDeposit, withdraw: null, profit: 0 },
+        { id: crypto.randomUUID(), type: 'MAE', deposit: data.settings.defaultMaeDeposit, withdraw: null, profit: 0, bau: true },
         { id: crypto.randomUUID(), type: 'FILHA', deposit: data.settings.defaultFilhaDeposit, withdraw: null, profit: 0 },
       ],
       totalProfit: 0,
@@ -65,7 +65,7 @@ export const useOperationDays = () => {
     }));
   };
 
-  const updateOperation = (cycleId: string, operationId: string, withdraw: number | null) => {
+  const updateOperation = (cycleId: string, operationId: string, updates: Partial<Operation>) => {
     const todayId = getTodayId();
     const todayData = getTodayData();
 
@@ -74,8 +74,9 @@ export const useOperationDays = () => {
 
       const newOperations = cycle.operations.map(op => {
         if (op.id !== operationId) return op;
-        const profit = calculateOperationProfit(op.deposit, withdraw);
-        return { ...op, withdraw, profit };
+        const updatedOp = { ...op, ...updates };
+        const profit = calculateOperationProfit(updatedOp.deposit, updatedOp.withdraw, updatedOp.type === 'MAE', updatedOp.bau ?? false);
+        return { ...updatedOp, profit };
       }) as [Operation, Operation];
 
       const totalProfit = calculateCycleProfit(newOperations[0].profit, newOperations[1].profit);

@@ -4,6 +4,7 @@ export interface Operation {
   deposit: number;
   withdraw: number | null;
   profit: number;
+  bau?: boolean;
 }
 
 export interface Cycle {
