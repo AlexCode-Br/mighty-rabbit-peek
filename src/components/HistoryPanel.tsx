@@ -8,7 +8,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { motion } from 'framer-motion';
@@ -115,12 +115,19 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
       </Card>
 
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
-        <DialogContent className="sm:max-w-md rounded-[32px] h-[80vh] flex flex-col p-0 bg-[#FAFAFA] border-none shadow-2xl">
-          <DialogHeader className="p-8 pb-6 shrink-0 border-b border-zinc-200/50 bg-white rounded-t-[32px]">
-            <DialogTitle className="text-xl font-semibold text-zinc-900 tracking-tight">
+        {/* Usando [&>button]:hidden para esconder o fechar nativo do shadcn e renderizar o nosso */}
+        <DialogContent className="sm:max-w-md rounded-[32px] h-[80vh] flex flex-col p-0 bg-[#FAFAFA] border-none shadow-2xl [&>button]:hidden outline-none">
+          <DialogHeader className="p-8 pb-6 shrink-0 border-b border-zinc-200/50 bg-white rounded-t-[32px] relative text-left">
+            <button 
+              onClick={() => setSelectedDay(null)}
+              className="absolute right-6 top-6 h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900 transition-colors"
+            >
+              <X size={16} strokeWidth={2.5} />
+            </button>
+            <DialogTitle className="text-xl font-semibold text-zinc-900 tracking-tight pr-10">
               {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM", { locale: ptBR })}
             </DialogTitle>
-            <DialogDescription className="text-zinc-500 text-sm mt-1.5 flex justify-between items-center">
+            <DialogDescription className="text-zinc-500 text-sm mt-1.5 flex justify-between items-center pr-10">
               <span>{selectedDay?.cycles.length} ciclos</span>
               <span className={`font-semibold ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                 {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}

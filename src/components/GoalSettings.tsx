@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { AppSettings } from '../types';
+import { X } from 'lucide-react';
 
 interface GoalSettingsProps {
   open: boolean;
@@ -34,9 +35,16 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-[32px] bg-white border-none shadow-2xl p-8">
-        <DialogHeader className="mb-6">
-          <DialogTitle className="text-xl font-semibold text-zinc-900 tracking-tight">Ajustes</DialogTitle>
+      {/* [&>button]:hidden esconde o botão padrão para usarmos o nosso alinhado perfeitamente */}
+      <DialogContent className="sm:max-w-md rounded-[32px] bg-white border-none shadow-2xl p-8 [&>button]:hidden outline-none">
+        <DialogHeader className="mb-6 relative text-left">
+          <button 
+            onClick={() => onOpenChange(false)}
+            className="absolute -right-2 -top-2 h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900 transition-colors"
+          >
+            <X size={16} strokeWidth={2.5} />
+          </button>
+          <DialogTitle className="text-xl font-semibold text-zinc-900 tracking-tight pr-8">Ajustes</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
