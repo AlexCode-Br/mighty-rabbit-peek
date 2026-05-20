@@ -6,7 +6,7 @@ import { calculateCycleProfit, calculateDailyProfit, calculateOperationProfit, c
 const DEFAULT_SETTINGS: AppSettings = {
   dailyGoal: 100,
   stopLoss: 50,
-  defaultMaeDeposit: 10,
+  defaultMaeDeposit: 30,
   defaultFilhaDeposit: 20,
 };
 
