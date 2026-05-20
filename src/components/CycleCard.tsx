@@ -67,47 +67,40 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
 
 // Separate component to handle currency input cleanly
 function CurrencyInput({ initialValue, onChange }: { initialValue: number | null, onChange: (val: number | null) => void }) {
-  const [inputValue, setInputValue] = useState(initialValue !== null ? initialValue.toFixed(2).replace('.', ',') : '');
+  const [inputValue, setInputValue] = useState(initialValue !== null ? formatBRL(initialValue) : '');
 
   useEffect(() => {
-    if (initialValue !== null) {
-      setInputValue(initialValue.toFixed(2).replace('.', ','));
+    if (initialValue !== null && inputValue !== formatBRL(initialValue)) {
+      setInputValue(formatBRL(initialValue));
     }
   }, [initialValue]);
 
-  const handleBlur = () => {
-    if (inputValue.trim() === '') {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    
+    // Extrai apenas os números
+    const digits = rawValue.replace(/\D/g, '');
+    
+    if (!digits) {
+      setInputValue('');
       onChange(null);
       return;
     }
-    
-    // Parse the value
-    const normalized = inputValue.replace(/\./g, '').replace(',', '.');
-    const num = parseFloat(normalized);
-    
-    if (!isNaN(num)) {
-      setInputValue(num.toFixed(2).replace('.', ','));
-      onChange(num);
-    } else {
-      setInputValue('');
-      onChange(null);
-    }
-  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow numbers and comma/dot
-    const val = e.target.value.replace(/[^0-9.,]/g, '');
-    setInputValue(val);
+    // Converte os dígitos em um valor numérico (divide por 100 para criar os centavos)
+    const numValue = parseInt(digits, 10) / 100;
+    
+    setInputValue(formatBRL(numValue));
+    onChange(numValue);
   };
 
   return (
     <Input
       type="text"
-      inputMode="decimal"
-      placeholder="0,00"
+      inputMode="numeric"
+      placeholder="R$ 0,00"
       value={inputValue}
       onChange={handleChange}
-      onBlur={handleBlur}
       className="h-8 text-right font-medium rounded-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
     />
   );
