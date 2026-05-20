@@ -15,7 +15,7 @@ export default function App() {
     <div className="min-h-screen bg-[#09090b] text-zinc-50 font-sans pb-20 selection:bg-orange-500/30">
       {/* Header */}
       <header className="bg-zinc-950 shadow-sm px-4 pt-12 pb-4 sticky top-0 z-10 border-b border-white/5 backdrop-blur-xl">
-        <div className="max-w-xl mx-auto flex items-center justify-between">
+        <div className="max-w-md mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
@@ -27,7 +27,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-xl mx-auto p-4 space-y-6 md:space-y-8">
+      <main className="max-w-md mx-auto p-4 space-y-6">
         <Dashboard 
           dailyProfit={todayData.dailyProfit}
           dailyGoal={data.settings.dailyGoal}

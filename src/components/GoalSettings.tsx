@@ -76,7 +76,7 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="defaultMaeDeposit" className="text-zinc-400 font-bold text-[10px] uppercase tracking-widest">1ª Entrada (R$)</Label>
+                <Label htmlFor="defaultMaeDeposit" className="text-zinc-400 font-bold text-[10px] uppercase tracking-widest">MÃE (R$)</Label>
                 <Input
                   id="defaultMaeDeposit"
                   name="defaultMaeDeposit"
@@ -88,7 +88,7 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="defaultFilhaDeposit" className="text-zinc-400 font-bold text-[10px] uppercase tracking-widest">2ª Entrada (R$)</Label>
+                <Label htmlFor="defaultFilhaDeposit" className="text-zinc-400 font-bold text-[10px] uppercase tracking-widest">FILHA (R$)</Label>
                 <Input
                   id="defaultFilhaDeposit"
                   name="defaultFilhaDeposit"

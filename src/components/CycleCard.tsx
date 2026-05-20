@@ -44,38 +44,38 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {cycle.operations.map((op) => (
-            <div key={op.id} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 bg-black/40 border border-white/[0.04] p-4 sm:p-5 rounded-2xl relative overflow-hidden hover:border-white/[0.08] transition-all">
-              
-              <div className="flex flex-col w-full sm:w-[45%] border-b sm:border-b-0 sm:border-r border-white/5 pb-3 sm:pb-0 sm:pr-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Entrada</span>
-                  {op.type === 'MAE' && (
-                    <div className="flex items-center gap-1.5 cursor-pointer group/bau bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 px-2.5 py-1 rounded-md transition-colors" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
-                      <Checkbox
-                        id={`bau-${op.id}`}
-                        checked={op.bau ?? false}
-                        onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                        className="pointer-events-none h-3.5 w-3.5 border-orange-500/50 data-[state=checked]:bg-orange-500 rounded-[4px]"
-                      />
-                      <Label htmlFor={`bau-${op.id}`} className="text-[9px] font-black tracking-widest text-orange-400 group-hover/bau:text-orange-300 cursor-pointer select-none transition-colors">
-                        BAÚ
-                      </Label>
-                    </div>
-                  )}
-                </div>
-                <span className="font-mono text-white font-bold text-xl">{formatBRL(op.deposit)}</span>
+            <div key={op.id} className="grid grid-cols-[auto_1fr_1fr] items-center gap-4 bg-black/40 border border-white/[0.03] p-3.5 rounded-2xl relative overflow-hidden group-hover:border-white/[0.06] transition-colors">
+              <div className="font-black text-sm w-12 flex flex-col gap-1.5 items-start text-zinc-300">
+                <span className="tracking-widest">{op.type}</span>
+                {op.type === 'MAE' && (
+                  <div className="flex items-center gap-1.5 mt-1 cursor-pointer group/bau" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
+                    <Checkbox
+                      id={`bau-${op.id}`}
+                      checked={op.bau ?? false}
+                      onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
+                      className="pointer-events-none"
+                    />
+                    <Label htmlFor={`bau-${op.id}`} className="text-[10px] font-black tracking-widest text-orange-500/80 group-hover/bau:text-orange-400 cursor-pointer select-none transition-colors">
+                      BAÚ
+                    </Label>
+                  </div>
+                )}
               </div>
               
-              <div className="flex flex-col w-full sm:w-[55%] sm:pl-2">
-                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Valor do Saque</span>
+              <div className="flex flex-col border-l border-white/5 pl-4">
+                <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Entrada</span>
+                <span className="font-mono text-white font-medium">{formatBRL(op.deposit)}</span>
+              </div>
+              
+              <div className="flex flex-col border-l border-white/5 pl-4">
+                <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Saque</span>
                 <CurrencyInput
                   initialValue={op.withdraw}
                   onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
                 />
               </div>
-
             </div>
           ))}
         </div>
@@ -120,7 +120,7 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
       placeholder="R$ 0,00"
       value={inputValue}
       onChange={handleChange}
-      className="h-14 text-xl sm:text-2xl px-4 sm:px-5 text-right font-mono font-black rounded-xl bg-zinc-950/50 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:border-transparent transition-all placeholder:text-zinc-700 shadow-inner"
+      className="h-8 text-right font-mono font-medium rounded-lg bg-zinc-900 border-white/10 text-white focus-visible:ring-1 focus-visible:ring-orange-500 focus-visible:border-orange-500/50 transition-all placeholder:text-zinc-600"
     />
   );
 }

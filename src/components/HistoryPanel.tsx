@@ -119,23 +119,17 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
                       </span>
                     </div>
 
-                    <div className="space-y-2 ml-2 mt-4">
+                    <div className="space-y-2 ml-2">
                       {cycle.operations.map((op) => (
-                        <div key={op.id} className="grid grid-cols-2 items-center text-xs gap-3">
-                          <div className="bg-white/5 rounded-lg px-3 py-2 flex flex-col justify-center gap-1">
-                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest flex items-center justify-between">
-                              Entrada
-                              {op.type === 'MAE' && op.bau && (
-                                <span className="text-orange-400 bg-orange-500/10 px-1.5 py-0.5 rounded text-[8px]">BAÚ</span>
-                              )}
-                            </span>
-                            <span className="font-mono text-white font-medium text-sm">{formatBRL(op.deposit)}</span>
+                        <div key={op.id} className="grid grid-cols-[3rem_1fr_1fr] items-center text-xs gap-3">
+                          <div className="font-black text-zinc-500 tracking-widest">{op.type}</div>
+                          <div className="bg-white/5 rounded-md px-2 py-1 flex items-center justify-between">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Dep</span>
+                            <span className="font-mono text-white font-medium">{formatBRL(op.deposit)}</span>
                           </div>
-                          <div className="bg-white/5 rounded-lg px-3 py-2 flex flex-col justify-center gap-1">
-                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Saque</span>
-                            <span className="font-mono text-white font-medium text-sm">
-                              {op.withdraw !== null ? formatBRL(op.withdraw) : '-'}
-                            </span>
+                          <div className="bg-white/5 rounded-md px-2 py-1 flex items-center justify-between">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Saq</span>
+                            <span className="font-mono text-white font-medium">{op.withdraw !== null ? formatBRL(op.withdraw) : '-'}</span>
                           </div>
                         </div>
                       ))}
