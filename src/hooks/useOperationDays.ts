@@ -17,13 +17,20 @@ const INITIAL_DATA: AppData = {
   history: {},
 };
 
+export interface AddCycleData {
+  maeDeposit: number;
+  maeWithdraw: number | null;
+  maeBau: boolean;
+  filhaDeposit: number;
+  filhaWithdraw: number | null;
+}
+
 export const useOperationDays = () => {
   const { user } = useAuth();
   const [data, setData] = useState<AppData>(INITIAL_DATA);
   const [loading, setLoading] = useState(true);
   const dataRef = useRef<AppData>(INITIAL_DATA);
 
-  // Carrega os dados da Nuvem no início
   useEffect(() => {
     if (!user) return;
     
@@ -47,7 +54,6 @@ export const useOperationDays = () => {
         setData(mergedData);
         dataRef.current = mergedData;
       } else {
-        // Cria a linha inicial na nuvem se for a primeira vez
         await supabase.from('app_data').insert({
           user_id: user.id,
           settings: DEFAULT_SETTINGS,
@@ -62,7 +68,6 @@ export const useOperationDays = () => {
     loadData();
   }, [user]);
 
-  // Sincroniza ativamente com o Banco de Dados
   const saveToDatabase = async (newData: AppData) => {
     if (!user) return;
     
@@ -109,19 +114,44 @@ export const useOperationDays = () => {
     updateData((prev) => ({ ...prev, settings: newSettings }));
   };
 
-  const addCycle = () => {
+  const addCycle = (customData?: AddCycleData) => {
     const todayId = getTodayId();
     const todayData = getTodayData();
+    
     const newCycle: Cycle = {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       operations: [
-        { id: crypto.randomUUID(), type: 'MAE', deposit: data.settings.defaultMaeDeposit, withdraw: null, profit: 0, bau: true },
-        { id: crypto.randomUUID(), type: 'FILHA', deposit: data.settings.defaultFilhaDeposit, withdraw: null, profit: 0 },
+        { 
+          id: crypto.randomUUID(), 
+          type: 'MAE', 
+          deposit: customData ? customData.maeDeposit : data.settings.defaultMaeDeposit, 
+          withdraw: customData ? customData.maeWithdraw : null, 
+          profit: 0, 
+          bau: customData ? customData.maeBau : true 
+        },
+        { 
+          id: crypto.randomUUID(), 
+          type: 'FILHA', 
+          deposit: customData ? customData.filhaDeposit : data.settings.defaultFilhaDeposit, 
+          withdraw: customData ? customData.filhaWithdraw : null, 
+          profit: 0 
+        },
       ],
       totalProfit: 0,
       completed: false,
     };
+
+    if (customData) {
+      newCycle.operations[0].profit = calculateOperationProfit(newCycle.operations[0].deposit, newCycle.operations[0].withdraw, true, newCycle.operations[0].bau ?? false);
+      newCycle.operations[1].profit = calculateOperationProfit(newCycle.operations[1].deposit, newCycle.operations[1].withdraw, false, false);
+      newCycle.totalProfit = calculateCycleProfit(newCycle.operations[0].profit, newCycle.operations[1].profit);
+      newCycle.completed = newCycle.operations[0].withdraw !== null && newCycle.operations[1].withdraw !== null;
+    }
+
+    const newCycles = [newCycle, ...todayData.cycles];
+    const newDailyProfit = calculateDailyProfit(newCycles);
+    const { goalReached, stopLossReached } = checkDailyStatus(newDailyProfit, data.settings.dailyGoal, data.settings.stopLoss);
 
     updateData((prev) => ({
       ...prev,
@@ -129,7 +159,10 @@ export const useOperationDays = () => {
         ...prev.history,
         [todayId]: {
           ...todayData,
-          cycles: [newCycle, ...todayData.cycles],
+          cycles: newCycles,
+          dailyProfit: newDailyProfit,
+          goalReached,
+          stopLossReached,
         },
       },
     }));

@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
-import { useOperationDays } from '../hooks/useOperationDays';
+import { useOperationDays, AddCycleData } from '../hooks/useOperationDays';
 import { Dashboard } from '../components/Dashboard';
 import { GoalSettings } from '../components/GoalSettings';
 import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
 import { ImportExportPanel } from '../components/ImportExportPanel';
+import { NewCycleDialog } from '../components/NewCycleDialog';
 import { useAuth } from '../components/AuthProvider';
 import { LogOut, Activity, CalendarDays, Home, Sun, Moon } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
+import { showSuccess } from '../utils/toast';
 
 export default function DashboardApp() {
   const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle, importData } = useOperationDays();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [newCycleOpen, setNewCycleOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'ciclos' | 'home' | 'historico'>('home');
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -30,9 +33,11 @@ export default function DashboardApp() {
     );
   }
 
-  const handleNewCycle = () => {
-    addCycle();
-    setActiveTab('ciclos');
+  const handleSaveNewCycle = (cycleData: AddCycleData) => {
+    addCycle(cycleData);
+    setNewCycleOpen(false);
+    showSuccess('Ciclo adicionado com sucesso!');
+    setActiveTab('ciclos'); // Redireciona APÓS preencher o modal
   };
 
   const toggleTheme = () => {
@@ -80,7 +85,7 @@ export default function DashboardApp() {
                 dailyGoal={data.settings.dailyGoal}
                 stopLoss={data.settings.stopLoss}
                 cyclesCount={todayData.cycles.length}
-                onNewCycle={handleNewCycle}
+                onNewCycle={() => setNewCycleOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
               />
 
@@ -165,6 +170,13 @@ export default function DashboardApp() {
         onOpenChange={setSettingsOpen}
         settings={data.settings}
         onSave={updateSettings}
+      />
+
+      <NewCycleDialog 
+        open={newCycleOpen} 
+        onOpenChange={setNewCycleOpen} 
+        settings={data.settings}
+        onSave={handleSaveNewCycle} 
       />
     </div>
   );

@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './components/AuthProvider';
 import { ThemeProvider } from './components/ThemeProvider';
 import Login from './pages/Login';
 import DashboardApp from './pages/DashboardApp';
+import { Toaster } from 'sonner';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session } = useAuth();
@@ -26,6 +27,7 @@ export default function App() {
           </Routes>
         </Router>
       </AuthProvider>
+      <Toaster theme="system" position="top-center" />
     </ThemeProvider>
   );
 }
