@@ -30,23 +30,23 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Main Hero Card */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.98, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
       >
-        <Card className="border border-zinc-200/60 bg-white rounded-3xl overflow-hidden shadow-sm">
-          <CardContent className="p-8">
-            <div className="flex justify-between items-start mb-8">
+        <Card className="border border-zinc-200/60 bg-white rounded-[28px] overflow-hidden shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start mb-5">
               <div>
-                <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest mb-2">Resultado Diário</p>
+                <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">Resultado Diário</p>
                 <motion.h2 
                   key={dailyProfit}
                   initial={{ y: -10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className={`text-5xl tracking-tighter font-semibold ${
+                  className={`text-4xl tracking-tighter font-semibold ${
                     isNeutral ? 'text-zinc-900' :
                     isProfit ? 'text-emerald-500' : 'text-rose-500'
                   }`}
@@ -58,18 +58,18 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
                 variant="ghost"
                 size="icon"
                 onClick={onOpenSettings}
-                className="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-full h-10 w-10 transition-colors -mr-2 -mt-2"
+                className="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-full h-9 w-9 transition-colors -mr-2 -mt-2"
               >
                 <Settings size={18} strokeWidth={2} />
               </Button>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex justify-between items-end">
-                <span className="text-3xl font-semibold tracking-tight text-zinc-900">
-                  {progress.toFixed(0)}<span className="text-lg text-zinc-400">%</span>
+                <span className="text-2xl font-semibold tracking-tight text-zinc-900">
+                  {progress.toFixed(0)}<span className="text-sm text-zinc-400">%</span>
                 </span>
-                <span className="text-xs font-medium text-zinc-500 mb-1">
+                <span className="text-[11px] font-medium text-zinc-400 mb-1">
                   {isProfit ? 'da Meta' : 'do Stop'}
                 </span>
               </div>
@@ -83,7 +83,7 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
                 />
               </div>
               
-              <div className="flex justify-between text-[11px] font-medium text-zinc-400 uppercase tracking-wider pt-1">
+              <div className="flex justify-between text-[10px] font-semibold text-zinc-400 uppercase tracking-widest pt-1">
                 <span>Stop: {formatBRL(stopLoss)}</span>
                 <span>Meta: {formatBRL(dailyGoal)}</span>
               </div>
@@ -102,7 +102,7 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
         >
           <Button
             onClick={onNewCycle}
-            className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 font-medium"
+            className="w-full h-12 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 font-medium"
           >
             <Plus size={18} /> Novo Ciclo
           </Button>
@@ -112,11 +112,11 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="w-24 shrink-0"
+          className="w-20 shrink-0"
         >
-          <div className="w-full h-14 rounded-2xl bg-white border border-zinc-200/60 flex flex-col items-center justify-center shadow-sm">
-            <span className="text-lg font-semibold text-zinc-900 leading-none mb-0.5">{cyclesCount}</span>
-            <span className="text-[9px] font-medium text-zinc-400 uppercase tracking-widest">Ciclos</span>
+          <div className="w-full h-12 rounded-2xl bg-white border border-zinc-200/60 flex flex-col items-center justify-center shadow-sm">
+            <span className="text-base font-semibold text-zinc-900 leading-none mb-0.5">{cyclesCount}</span>
+            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Ciclos</span>
           </div>
         </motion.div>
       </div>
