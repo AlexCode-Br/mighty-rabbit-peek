@@ -46,30 +46,30 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
 
         <div className="space-y-3">
           {cycle.operations.map((op) => (
-            <div key={op.id} className="grid grid-cols-[auto_1fr_1fr] items-center gap-4 bg-black/40 border border-white/[0.03] p-3.5 rounded-2xl relative overflow-hidden group-hover:border-white/[0.06] transition-colors">
-              <div className="font-black text-sm w-12 flex flex-col gap-1.5 items-start text-zinc-300">
+            <div key={op.id} className="grid grid-cols-[auto_auto_1fr] sm:grid-cols-[auto_1fr_1.2fr] items-center gap-2 sm:gap-3 bg-black/40 border border-white/[0.03] p-3 rounded-2xl relative overflow-hidden group-hover:border-white/[0.06] transition-colors">
+              <div className="font-black text-sm w-10 flex flex-col gap-1.5 items-start text-zinc-300">
                 <span className="tracking-widest">{op.type}</span>
                 {op.type === 'MAE' && (
-                  <div className="flex items-center gap-1.5 mt-1 cursor-pointer group/bau" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
+                  <div className="flex items-center gap-1 mt-1 cursor-pointer group/bau" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
                     <Checkbox
                       id={`bau-${op.id}`}
                       checked={op.bau ?? false}
                       onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                      className="pointer-events-none"
+                      className="pointer-events-none scale-90"
                     />
-                    <Label htmlFor={`bau-${op.id}`} className="text-[10px] font-black tracking-widest text-orange-500/80 group-hover/bau:text-orange-400 cursor-pointer select-none transition-colors">
+                    <Label htmlFor={`bau-${op.id}`} className="text-[9px] font-black tracking-widest text-orange-500/80 group-hover/bau:text-orange-400 cursor-pointer select-none transition-colors">
                       BAÚ
                     </Label>
                   </div>
                 )}
               </div>
               
-              <div className="flex flex-col border-l border-white/5 pl-4">
+              <div className="flex flex-col border-l border-white/5 pl-2.5 sm:pl-3 pr-1">
                 <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Entrada</span>
-                <span className="font-mono text-white font-medium">{formatBRL(op.deposit)}</span>
+                <span className="font-mono text-white text-xs sm:text-sm font-medium">{formatBRL(op.deposit)}</span>
               </div>
               
-              <div className="flex flex-col border-l border-white/5 pl-4">
+              <div className="flex flex-col border-l border-white/5 pl-2.5 sm:pl-3">
                 <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Saque</span>
                 <CurrencyInput
                   initialValue={op.withdraw}
@@ -120,7 +120,7 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
       placeholder="R$ 0,00"
       value={inputValue}
       onChange={handleChange}
-      className="h-8 text-right font-mono font-medium rounded-lg bg-zinc-900 border-white/10 text-white focus-visible:ring-1 focus-visible:ring-orange-500 focus-visible:border-orange-500/50 transition-all placeholder:text-zinc-600"
+      className="h-8 px-2 sm:px-3 text-right text-xs sm:text-sm font-mono font-medium rounded-lg bg-zinc-900 border-white/10 text-white focus-visible:ring-1 focus-visible:ring-orange-500 focus-visible:border-orange-500/50 transition-all placeholder:text-zinc-600 w-full"
     />
   );
 }
