@@ -12,9 +12,10 @@ interface ChatPanelProps {
   onSendMessage: (text: string, category: 'sinal' | 'meta' | 'anotacao' | 'geral') => void;
   onUpdateMessage: (id: string, text: string) => void;
   onDeleteMessage: (id: string) => void;
+  onClose?: () => void;
 }
 
-export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDeleteMessage }: ChatPanelProps) {
+export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDeleteMessage, onClose }: ChatPanelProps) {
   const [inputText, setInputText] = useState('');
   const [activeMessage, setActiveMessage] = useState<ChatMessage | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -73,9 +74,15 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">Toque em uma mensagem para ver as opções</p>
           </div>
         </div>
-        <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
-          {messages.length} msg
-        </span>
+        
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+          >
+            <X size={18} strokeWidth={2.5} />
+          </button>
+        )}
       </div>
 
       {/* Área de Mensagens */}
@@ -171,7 +178,7 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-400 dark:focus:border-zinc-700 resize-none h-24"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl p-3 text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-400 dark:focus:border-zinc-700 resize-none h-24"
                 />
                 <Button 
                   onClick={handleSaveEdit}

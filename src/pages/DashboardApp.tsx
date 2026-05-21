@@ -502,6 +502,7 @@ export default function DashboardApp() {
                 onSendMessage={addChatMessage}
                 onUpdateMessage={updateChatMessage}
                 onDeleteMessage={deleteChatMessage}
+                onClose={() => setIsChatOpen(false)}
               />
             </motion.div>
           </>
