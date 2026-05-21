@@ -39,6 +39,16 @@ export default function DashboardApp() {
     showSuccess('Ciclo adicionado com sucesso!');
   };
 
+  const handleUpdateSettings = (newSettings: any) => {
+    updateSettings(newSettings);
+    showSuccess('Configurações salvas!');
+  };
+
+  const handleDeleteCycle = (cycleId: string) => {
+    deleteCycle(cycleId);
+    showSuccess('Ciclo removido.');
+  };
+
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
@@ -121,7 +131,7 @@ export default function DashboardApp() {
                         index={todayData.cycles.length - index} 
                         cycle={cycle}
                         onUpdateOperation={updateOperation}
-                        onDeleteCycle={deleteCycle}
+                        onDeleteCycle={handleDeleteCycle}
                       />
                     ))}
                   </AnimatePresence>
@@ -168,7 +178,7 @@ export default function DashboardApp() {
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         settings={data.settings}
-        onSave={updateSettings}
+        onSave={handleUpdateSettings}
       />
 
       <NewCycleDialog 

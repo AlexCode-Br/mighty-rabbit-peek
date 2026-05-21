@@ -5,6 +5,7 @@ import { FileSpreadsheet, FileText } from 'lucide-react';
 import { AppData } from '../types';
 import { exportToCSV } from '../utils/exportCsv';
 import { exportToPDF } from '../utils/exportPdf';
+import { showSuccess } from '../utils/toast';
 
 interface ImportExportPanelProps {
   data: AppData;
@@ -12,6 +13,17 @@ interface ImportExportPanelProps {
 }
 
 export function ImportExportPanel({ data }: ImportExportPanelProps) {
+  
+  const handleExportPDF = () => {
+    exportToPDF(data);
+    showSuccess('Relatório PDF gerado com sucesso!');
+  };
+
+  const handleExportCSV = () => {
+    exportToCSV(data);
+    showSuccess('Planilha CSV exportada com sucesso!');
+  };
+
   return (
     <div className="space-y-4">
       {/* Relatórios (PDF e CSV) */}
@@ -30,13 +42,13 @@ export function ImportExportPanel({ data }: ImportExportPanelProps) {
           
           <div className="grid grid-cols-2 gap-3">
             <Button 
-              onClick={() => exportToPDF(data)} 
+              onClick={handleExportPDF} 
               className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium gap-2 border-none shadow-sm"
             >
               <FileText size={16} /> Gerar PDF
             </Button>
             <Button 
-              onClick={() => exportToCSV(data)} 
+              onClick={handleExportCSV} 
               variant="outline" 
               className="w-full rounded-xl border-zinc-200 dark:border-zinc-700 font-medium gap-2 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
             >

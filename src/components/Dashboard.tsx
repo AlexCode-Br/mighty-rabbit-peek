@@ -18,6 +18,9 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
   const isProfit = dailyProfit >= 0;
   const isNeutral = dailyProfit === 0;
   
+  const isGoalReached = isProfit && dailyGoal > 0 && dailyProfit >= dailyGoal;
+  const isStopLossReached = !isProfit && stopLoss > 0 && Math.abs(dailyProfit) >= stopLoss;
+  
   let progress = 0;
   let progressColorClass = 'bg-zinc-900 dark:bg-zinc-100';
   
@@ -40,7 +43,19 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-5">
               <div>
-                <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">Resultado Diário</p>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Resultado Diário</p>
+                  {isGoalReached && (
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold uppercase tracking-wider border border-emerald-200 dark:border-emerald-500/20">
+                      Meta Batida 🎉
+                    </span>
+                  )}
+                  {isStopLossReached && (
+                    <span className="px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[9px] font-bold uppercase tracking-wider border border-rose-200 dark:border-rose-500/20">
+                      Stop Loss ⚠️
+                    </span>
+                  )}
+                </div>
                 <motion.h2 
                   key={dailyProfit}
                   initial={{ y: -10, opacity: 0 }}
@@ -57,7 +72,7 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
                 variant="ghost"
                 size="icon"
                 onClick={onOpenSettings}
-                className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full h-9 w-9 transition-colors -mr-2 -mt-2"
+                className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full h-9 w-9 transition-colors -mr-2 -mt-2 shrink-0"
               >
                 <Settings size={18} strokeWidth={2} />
               </Button>
