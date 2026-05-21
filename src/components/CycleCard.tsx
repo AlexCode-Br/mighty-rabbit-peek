@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Trash2, AlertTriangle, CopyPlus } from 'lucide-react';
+import { Trash2, AlertTriangle, CopyPlus, GripHorizontal } from 'lucide-react';
 import { Cycle, Operation } from '../types';
 import { formatBRL } from '../utils/currency';
 import { Checkbox } from './ui/checkbox';
-import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface CycleCardProps {
   index: number;
@@ -28,22 +29,47 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
     onDeleteCycle(cycle.id);
   };
 
+  // Drag and Drop Hooks
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: cycle.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 1,
+    opacity: isDragging ? 0.6 : 1,
+  };
+
   return (
     <>
-      <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, filter: "blur(4px)", transition: { duration: 0.2 } }}
-        transition={{ type: "spring", stiffness: 500, damping: 40 }}
-        className={className}
+      <div 
+        ref={setNodeRef} 
+        style={style} 
+        className={`${className} ${isDragging ? 'relative z-50 drop-shadow-2xl' : ''}`}
       >
         <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-md bg-white dark:bg-zinc-900 rounded-[20px] overflow-hidden group relative h-full flex flex-col">
           <CardContent className="p-0 flex-1 flex flex-col">
             
-            {/* Header do Ciclo (Mais Fino) */}
+            {/* Header do Ciclo */}
             <div className="flex justify-between items-center px-3.5 py-2 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/30 dark:bg-zinc-800/10">
               <div className="flex items-center gap-2 min-w-0 pr-2">
+                
+                {/* Puxador para arrastar */}
+                <div 
+                  {...attributes} 
+                  {...listeners} 
+                  className="cursor-grab active:cursor-grabbing p-1.5 -ml-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors flex items-center justify-center touch-none rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+                  title="Arrastar e Mover"
+                >
+                  <GripHorizontal size={16} strokeWidth={2.5} />
+                </div>
+                
                 <div className={`w-2 h-2 rounded-full shrink-0 shadow-sm ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-blue-500 animate-pulse'}`} />
                 <h3 className="font-bold text-[13px] text-zinc-900 dark:text-zinc-100 flex items-center gap-2 truncate">
                   Ciclo {index}
@@ -80,7 +106,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
               </div>
             </div>
 
-            {/* Operações (Mãe e Filha) - Espaçamentos Reduzidos */}
+            {/* Operações */}
             <div className="p-2 flex-1 flex flex-col justify-center gap-2">
               {cycle.operations.map((op) => {
                 const isOpCompleted = op.withdraw !== null;
@@ -90,8 +116,6 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
 
                 return (
                   <div key={op.id} className="p-2 bg-zinc-50/80 dark:bg-zinc-800/20 border border-zinc-200/50 dark:border-zinc-800/60 rounded-[14px] transition-colors w-full">
-                    
-                    {/* Linha 1: Título da Operação e Status */}
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-extrabold text-zinc-700 dark:text-zinc-300 bg-zinc-200/60 dark:bg-zinc-700/60 px-1.5 py-0.5 rounded-[4px] uppercase tracking-wider">
@@ -112,7 +136,6 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                         )}
                       </div>
 
-                      {/* Lucro individual */}
                       {isOpCompleted && (
                         <span className={`text-[10px] font-bold tracking-tight px-1.5 py-0.5 rounded-[4px] ${isOpWin ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10' : isOpLoss ? 'text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/10' : 'text-zinc-500 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800'}`}>
                           {isOpWin ? '+' : ''}{formatBRL(opProfit)}
@@ -120,10 +143,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                       )}
                     </div>
                     
-                    {/* Linha 2: Caixas de Entrada e Saque (Mais achatadas) */}
                     <div className="flex gap-1.5">
-                      
-                      {/* Caixa de Entrada */}
                       <div className="flex-1 bg-white dark:bg-zinc-900 rounded-[10px] px-2 py-1.5 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm flex flex-col justify-center">
                         <span className="text-[8px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider mb-0.5 block">Entrada</span>
                         <CurrencyInput
@@ -132,12 +152,9 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                         />
                       </div>
                       
-                      {/* Caixa de Saque */}
                       <div className="flex-[1.1] bg-white dark:bg-zinc-900 rounded-[10px] px-2 py-1.5 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm flex flex-col justify-center">
                         <div className="flex justify-between items-center mb-0.5">
                           <span className="text-[8px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Saque</span>
-                          
-                          {/* Botões de Atalho */}
                           {!isOpCompleted && (
                             <div className="flex items-center gap-1">
                               <button 
@@ -160,7 +177,6 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                           onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
                         />
                       </div>
-
                     </div>
                   </div>
                 );
@@ -168,7 +184,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent className="sm:max-w-xs w-[90vw] rounded-[24px] p-6 bg-white dark:bg-zinc-900 border-none shadow-2xl [&>button]:hidden outline-none text-center">

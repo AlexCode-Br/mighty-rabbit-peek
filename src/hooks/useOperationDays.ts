@@ -221,7 +221,27 @@ export const useOperationDays = () => {
         },
       },
     }));
-  }
+  };
+
+  const reorderCycles = (dateId: string, oldIndex: number, newIndex: number) => {
+    const dayData = getDayData(dateId);
+    if (oldIndex === newIndex) return;
+
+    const newCycles = [...dayData.cycles];
+    const [moved] = newCycles.splice(oldIndex, 1);
+    newCycles.splice(newIndex, 0, moved);
+
+    updateData((prev) => ({
+      ...prev,
+      history: {
+        ...prev.history,
+        [dateId]: {
+          ...dayData,
+          cycles: newCycles,
+        },
+      },
+    }));
+  };
 
   return {
     data,
@@ -231,5 +251,6 @@ export const useOperationDays = () => {
     addCycle,
     updateOperation,
     deleteCycle,
+    reorderCycles,
   };
 };

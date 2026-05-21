@@ -16,20 +16,30 @@ import { Cycle, Operation } from '../types';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 
+// Dnd-Kit (Drag and Drop)
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  TouchSensor,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+
 export default function DashboardApp() {
-  const { data, loading, getDayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
+  const { data, loading, getDayData, updateSettings, addCycle, updateOperation, deleteCycle, reorderCycles } = useOperationDays();
   const [settingsOpen, setSettingsOpen] = useState(false);
   
   // Controle de Data
   const [activeDate, setActiveDate] = useState(new Date());
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Controle de Scroll Horizontal com Mouse (Mobile)
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const isMouseDown = useRef(false);
-  const startX = useRef(0);
-  const scrollLeft = useRef(0);
   
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -37,6 +47,33 @@ export default function DashboardApp() {
 
   const activeDateId = format(activeDate, 'yyyy-MM-dd');
   const activeData = getDayData(activeDateId);
+
+  // Sensores de arrastar e soltar
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Evita iniciar o arraste por acidente ao clicar botões
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150, // Pressionar por 150ms no celular para arrastar
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = activeData.cycles.findIndex((c) => c.id === active.id);
+      const newIndex = activeData.cycles.findIndex((c) => c.id === over.id);
+      reorderCycles(activeDateId, oldIndex, newIndex);
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -110,20 +147,6 @@ export default function DashboardApp() {
   const weeklyWinDays = last7DaysData.filter(day => day.profit >= 0 && day.hasData).length;
   const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
 
-  const scrollToNewCycle = () => {
-    setTimeout(() => {
-      // O scroll só é necessário no mobile, no desktop usamos Grid
-      if (window.innerWidth < 1024 && carouselRef.current && carouselRef.current.children[1]) {
-        const container = carouselRef.current;
-        const target = container.children[1] as HTMLElement;
-        container.scrollTo({
-          left: target.offsetLeft - 16,
-          behavior: 'smooth'
-        });
-      }
-    }, 100);
-  };
-
   const handleQuickAddCycle = () => {
     let isoStr = new Date().toISOString();
     if (!isToday(activeDate)) {
@@ -139,8 +162,6 @@ export default function DashboardApp() {
       filhaDeposit: data.settings.defaultFilhaDeposit,
       filhaWithdraw: null
     }, isoStr);
-    
-    scrollToNewCycle();
   };
 
   const handleDuplicateCycle = (cycle: Cycle) => {
@@ -160,7 +181,6 @@ export default function DashboardApp() {
     }, isoStr);
     
     showSuccess('Ciclo duplicado com sucesso!');
-    scrollToNewCycle();
   };
 
   const handleUpdateOperation = (cycleId: string, operationId: string, updates: Partial<Operation>) => {
@@ -184,39 +204,6 @@ export default function DashboardApp() {
   const handleEditPastDay = (date: Date) => {
     setActiveDate(date);
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!carouselRef.current || window.innerWidth >= 1024) return;
-    isMouseDown.current = true;
-    startX.current = e.pageX - carouselRef.current.offsetLeft;
-    scrollLeft.current = carouselRef.current.scrollLeft;
-  };
-
-  const handleMouseLeave = () => {
-    isMouseDown.current = false;
-    setIsDragging(false);
-  };
-
-  const handleMouseUp = () => {
-    isMouseDown.current = false;
-    setTimeout(() => setIsDragging(false), 50);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isMouseDown.current || !carouselRef.current || window.innerWidth >= 1024) return;
-    
-    const x = e.pageX - carouselRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.5;
-    
-    if (Math.abs(walk) > 5 && !isDragging) {
-      setIsDragging(true);
-    }
-    
-    if (isDragging) {
-      e.preventDefault();
-      carouselRef.current.scrollLeft = scrollLeft.current - walk;
-    }
   };
 
   return (
@@ -326,49 +313,40 @@ export default function DashboardApp() {
                     </Button>
                   </div>
                 ) : (
-                  <div 
-                    ref={carouselRef}
-                    onMouseDown={handleMouseDown}
-                    onMouseLeave={handleMouseLeave}
-                    onMouseUp={handleMouseUp}
-                    onMouseMove={handleMouseMove}
-                    className={`
-                      relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory 
-                      lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:overflow-visible lg:mx-0 lg:px-0 lg:cursor-auto lg:snap-none 
-                      ${isDragging ? '[&_*]:pointer-events-none' : ''}
-                    `}
-                  >
-                    {/* Botão Novo Ciclo */}
-                    <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-auto flex items-stretch">
-                      <button 
-                        onClick={handleQuickAddCycle}
-                        className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
-                      >
-                        <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300">
-                          <Plus size={24} />
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={activeData.cycles.map(c => c.id)} strategy={rectSortingStrategy}>
+                      <div className="relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch snap-x snap-mandatory lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:overflow-visible lg:mx-0 lg:px-0 lg:snap-none">
+                        
+                        {/* Botão Novo Ciclo */}
+                        <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-auto flex items-stretch">
+                          <button 
+                            onClick={handleQuickAddCycle}
+                            className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
+                          >
+                            <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300">
+                              <Plus size={24} />
+                            </div>
+                            <span className="text-[14px] font-bold text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 tracking-tight">Adicionar Novo Ciclo</span>
+                            <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para adicionar rapidamente</span>
+                          </button>
                         </div>
-                        <span className="text-[14px] font-bold text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 tracking-tight">Adicionar Novo Ciclo</span>
-                        <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para adicionar rapidamente</span>
-                      </button>
-                    </div>
 
-                    <AnimatePresence mode="popLayout">
-                      {activeData.cycles.map((cycle, index) => (
-                        <CycleCard 
-                          key={cycle.id}
-                          className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-auto h-full" 
-                          index={activeData.cycles.length - index} 
-                          cycle={cycle}
-                          onUpdateOperation={handleUpdateOperation}
-                          onDeleteCycle={handleDeleteCycle}
-                          onDuplicateCycle={handleDuplicateCycle}
-                        />
-                      ))}
-                    </AnimatePresence>
-                    
-                    {/* Espaçador para manter a margem direita correta no scroll (apenas mobile) */}
-                    <div className="w-1 shrink-0 lg:hidden" />
-                  </div>
+                        {activeData.cycles.map((cycle, index) => (
+                          <CycleCard 
+                            key={cycle.id}
+                            className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-auto h-full" 
+                            index={activeData.cycles.length - index} 
+                            cycle={cycle}
+                            onUpdateOperation={handleUpdateOperation}
+                            onDeleteCycle={handleDeleteCycle}
+                            onDuplicateCycle={handleDuplicateCycle}
+                          />
+                        ))}
+                        
+                        <div className="w-1 shrink-0 lg:hidden" />
+                      </div>
+                    </SortableContext>
+                  </DndContext>
                 )}
               </motion.div>
             </div>
@@ -385,7 +363,6 @@ export default function DashboardApp() {
 
           </div>
 
-          {/* Spacer pro final da tela + Safe Area (Apenas no celular para descolar do fundo) */}
           <div className="w-full lg:hidden" style={{ height: 'calc(env(safe-area-inset-bottom) + 32px)' }}></div>
         </div>
       </div>
