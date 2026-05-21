@@ -80,7 +80,7 @@ export function Dashboard({
                 variant="ghost"
                 size="icon"
                 onClick={onOpenSettings}
-                className="text-zinc-400/80 hover:text-zinc-100 hover:bg-white/10 dark:hover:bg-white/5 rounded-full h-9 w-9 transition-colors -mr-2 -mt-2 shrink-0 border border-transparent hover:border-white/5"
+                className="text-zinc-400/80 hover:text-zinc-950 dark:hover:text-white hover:bg-white/10 dark:hover:bg-white/5 rounded-full h-9 w-9 transition-all duration-300 hover:rotate-45 hover:scale-110 active:scale-95 -mr-2 -mt-2 shrink-0 border border-transparent hover:border-white/5"
               >
                 <Settings size={18} strokeWidth={2.5} />
               </Button>
