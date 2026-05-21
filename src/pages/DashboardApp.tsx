@@ -48,7 +48,7 @@ export default function DashboardApp() {
   const scrollLeft = useRef(0);
   
   const { signOut } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const prevProfitRef = useRef<number | null>(null);
 
   const activeDateId = format(activeDate, 'yyyy-MM-dd');
@@ -203,7 +203,7 @@ export default function DashboardApp() {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   const handleEditPastDay = (date: Date) => {
@@ -270,7 +270,7 @@ export default function DashboardApp() {
             
             <div className="flex items-center gap-1.5 shrink-0">
               <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-white/10 rounded-full h-8 w-8 transition-colors">
-                {theme === 'dark' ? <Sun size={16} strokeWidth={2.5} /> : <Moon size={16} strokeWidth={2.5} />}
+                {resolvedTheme === 'dark' ? <Sun size={16} strokeWidth={2.5} /> : <Moon size={16} strokeWidth={2.5} />}
               </Button>
               <Button variant="ghost" size="icon" onClick={signOut} className="text-zinc-500 hover:text-rose-400 dark:text-zinc-400 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-full h-8 w-8 transition-colors">
                 <LogOut size={16} strokeWidth={2.5} />

@@ -9,11 +9,11 @@ import { Wallet } from 'lucide-react';
 
 export default function Login() {
   const { session } = useAuth();
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   if (session) return <Navigate to="/" replace />;
 
-  const isDark = theme === 'dark';
+  const isDark = resolvedTheme === 'dark';
 
   return (
     <div 
@@ -30,7 +30,7 @@ export default function Login() {
           <div className="w-12 h-12 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-md mb-4">
             <Wallet size={24} strokeWidth={2.5} className="text-white dark:text-zinc-900" />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100 flex items-center gap-1">
             <span>Trade</span><span className="text-zinc-500 dark:text-zinc-400">Tracker</span>
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 mt-1 text-sm">Entre para continuar</p>
@@ -54,10 +54,10 @@ export default function Login() {
               }
             },
             className: {
-              input: 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl h-12 text-base focus-visible:ring-1 focus-visible:ring-zinc-900 dark:focus-visible:ring-zinc-100 font-medium shadow-sm transition-all',
+              input: 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-950 dark:text-zinc-100 rounded-xl h-12 text-base focus-visible:ring-1 focus-visible:ring-zinc-900 dark:focus-visible:ring-zinc-100 font-medium shadow-sm transition-all',
               button: 'rounded-xl font-medium h-12 text-base bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 border-none mt-2 transition-all shadow-sm',
               label: 'text-zinc-500 dark:text-zinc-400 font-medium tracking-wide text-xs mb-1.5',
-              anchor: 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium text-[13px] sm:text-sm transition-colors',
+              anchor: 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 font-medium text-[13px] sm:text-sm transition-colors',
             }
           }}
           theme={isDark ? "dark" : "light"}
