@@ -112,8 +112,8 @@ export default function DashboardApp() {
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
-      // Avança a largura de aproximadamente 1 card + gap
-      const scrollAmount = window.innerWidth >= 1024 ? 370 : 320; 
+      // Ajusta dinamicamente a quantidade de scroll baseado no tamanho da tela
+      const scrollAmount = window.innerWidth >= 640 ? 370 : window.innerWidth * 0.85; 
       carouselRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -315,7 +315,7 @@ export default function DashboardApp() {
                 />
               </motion.div>
 
-              {/* 3. OPERAÇÕES DO DIA (Carrossel Horizontal com setas no Desktop) */}
+              {/* 3. OPERAÇÕES DO DIA (Carrossel Horizontal) */}
               <div className="mt-8 mb-3 flex items-center justify-between px-2 lg:px-0">
                 <div className="flex items-center gap-3">
                   <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
@@ -324,14 +324,14 @@ export default function DashboardApp() {
                   </span>
                 </div>
 
-                {/* BOTÕES DE NAVEGAÇÃO DESKTOP */}
+                {/* BOTÕES DE NAVEGAÇÃO (Agora visíveis em qualquer tela) */}
                 {activeData.cycles.length > 0 && (
-                  <div className="hidden lg:flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <Button 
                       variant="outline" 
                       size="icon" 
                       onClick={() => scrollCarousel('left')}
-                      className="h-8 w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
+                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
                     >
                       <ChevronLeft size={16} />
                     </Button>
@@ -339,7 +339,7 @@ export default function DashboardApp() {
                       variant="outline" 
                       size="icon" 
                       onClick={() => scrollCarousel('right')}
-                      className="h-8 w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
+                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
                     >
                       <ChevronRight size={16} />
                     </Button>
