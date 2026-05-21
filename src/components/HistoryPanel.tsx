@@ -8,7 +8,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { ChevronLeft, ChevronRight, X, Target } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Target, BarChart2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
@@ -75,6 +75,8 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
     return { chartData, totalProfit, winRate, totalDays };
   }, [historyDays, currentMonth]);
 
+  const hasMonthlyData = monthlyData.totalDays > 0;
+
   return (
     <div className="space-y-4">
       {/* Controle de Mês */}
@@ -92,82 +94,92 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
         </button>
       </div>
 
-      {/* Cartões de Resumo do Mês */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
-          <CardContent className="p-5 flex flex-col justify-center">
-            <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">Resultado do Mês</span>
-            <span className={`text-2xl font-bold tracking-tight ${monthlyData.totalProfit > 0 ? 'text-emerald-500' : monthlyData.totalProfit < 0 ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
-              {monthlyData.totalProfit > 0 ? '+' : ''}{formatBRL(monthlyData.totalProfit)}
-            </span>
-          </CardContent>
-        </Card>
-        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
-          <CardContent className="p-5 flex flex-col justify-center">
-            <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">Dias de Ganho</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                {monthlyData.winRate.toFixed(0)}%
-              </span>
-              <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
-                ({monthlyData.totalDays} dias)
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {!hasMonthlyData ? (
+        <div className="py-12 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800/50 text-zinc-400 dark:text-zinc-500 rounded-full flex items-center justify-center mb-4">
+            <BarChart2 size={24} strokeWidth={1.5} />
+          </div>
+          <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 mb-1">Mês sem operações</h3>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[250px]">Nenhum dado registrado para {format(currentMonth, 'MMMM', { locale: ptBR })}. Comece a operar para ver suas estatísticas aqui.</p>
+        </div>
+      ) : (
+        <>
+          {/* Cartões de Resumo do Mês */}
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
+              <CardContent className="p-5 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">Resultado do Mês</span>
+                <span className={`text-2xl font-bold tracking-tight ${monthlyData.totalProfit > 0 ? 'text-emerald-500' : monthlyData.totalProfit < 0 ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                  {monthlyData.totalProfit > 0 ? '+' : ''}{formatBRL(monthlyData.totalProfit)}
+                </span>
+              </CardContent>
+            </Card>
+            <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
+              <CardContent className="p-5 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">Dias de Ganho</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                    {monthlyData.winRate.toFixed(0)}%
+                  </span>
+                  <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                    ({monthlyData.totalDays} dias)
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Gráfico do Mês */}
-      {monthlyData.chartData.length > 0 && (
-        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
-          <CardContent className="p-4 pt-6 h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData.chartData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
-                <ReferenceLine y={0} stroke="#a1a1aa" strokeWidth={1} opacity={0.3} />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 10, fill: '#a1a1aa' }} 
-                  dy={10} 
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 10, fill: '#a1a1aa' }} 
-                  tickFormatter={(val) => `R$${val}`} 
-                />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(161, 161, 170, 0.1)' }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const val = payload[0].value as number;
-                      const isProfit = val >= 0;
-                      return (
-                        <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-3 rounded-2xl shadow-xl">
-                          <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
-                          <p className={`text-base font-bold ${isProfit ? 'text-emerald-500' : 'text-rose-500'}`}>
-                            {isProfit ? '+' : ''}{formatBRL(val)}
-                          </p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar dataKey="profit" radius={[4, 4, 4, 4]} maxBarSize={40}>
-                  {monthlyData.chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.profit >= 0 ? '#10b981' : '#f43f5e'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          {/* Gráfico do Mês */}
+          <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
+            <CardContent className="p-4 pt-6 h-52">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData.chartData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
+                  <ReferenceLine y={0} stroke="#a1a1aa" strokeWidth={1} opacity={0.3} />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: '#a1a1aa' }} 
+                    dy={10} 
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: '#a1a1aa' }} 
+                    tickFormatter={(val) => `R$${val}`} 
+                  />
+                  <Tooltip 
+                    cursor={{ fill: 'rgba(161, 161, 170, 0.1)' }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const val = payload[0].value as number;
+                        const isProfit = val >= 0;
+                        return (
+                          <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-3 rounded-2xl shadow-xl">
+                            <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
+                            <p className={`text-base font-bold ${isProfit ? 'text-emerald-500' : 'text-rose-500'}`}>
+                              {isProfit ? '+' : ''}{formatBRL(val)}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="profit" radius={[4, 4, 4, 4]} maxBarSize={40}>
+                    {monthlyData.chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.profit >= 0 ? '#10b981' : '#f43f5e'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {/* Calendário */}
-      <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
+      <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden mt-4">
         <CardContent className="p-6">
           <div className="w-full max-w-sm mx-auto select-none">
             <div className="grid grid-cols-7 mb-4">

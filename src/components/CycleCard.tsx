@@ -58,43 +58,59 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
           </div>
 
           <div className="p-2 space-y-1">
-            {cycle.operations.map((op) => (
-              <div key={op.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                
-                <div className="flex items-center gap-4 w-1/3">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">{op.type}</span>
-                    {op.type === 'MAE' && (
-                      <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
-                        <Checkbox
-                          id={`bau-${op.id}`}
-                          checked={op.bau ?? false}
-                          onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                          className="w-3.5 h-3.5 rounded-[4px]"
-                        />
-                        <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest select-none">
-                          BAÚ
-                        </span>
-                      </div>
+            {cycle.operations.map((op) => {
+              const isOpCompleted = op.withdraw !== null;
+              const opProfit = op.profit || 0;
+              const isOpWin = opProfit > 0;
+              const isOpLoss = opProfit < 0;
+
+              return (
+                <div key={op.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                  
+                  <div className="flex items-center gap-4 w-1/3">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">{op.type}</span>
+                      {op.type === 'MAE' && (
+                        <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
+                          <Checkbox
+                            id={`bau-${op.id}`}
+                            checked={op.bau ?? false}
+                            onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
+                            className="w-3.5 h-3.5 rounded-[4px]"
+                          />
+                          <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest select-none">
+                            BAÚ
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col w-1/3 px-2">
+                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium mb-1">Entrada</span>
+                    <span className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">{formatBRL(op.deposit)}</span>
+                  </div>
+                  
+                  <div className="flex flex-col w-1/3 relative">
+                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium mb-1 text-right">Saque</span>
+                    <CurrencyInput
+                      initialValue={op.withdraw}
+                      onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
+                    />
+                    {isOpCompleted && (
+                      <motion.span 
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`absolute -bottom-4 right-0 text-[9px] font-bold tracking-wider ${isOpWin ? 'text-emerald-500' : isOpLoss ? 'text-rose-500' : 'text-zinc-400 dark:text-zinc-500'}`}
+                      >
+                        {isOpWin ? '+' : ''}{formatBRL(opProfit)}
+                      </motion.span>
                     )}
                   </div>
-                </div>
-                
-                <div className="flex flex-col w-1/3 px-2">
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium mb-1">Entrada</span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">{formatBRL(op.deposit)}</span>
-                </div>
-                
-                <div className="flex flex-col w-1/3">
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium mb-1 text-right">Saque</span>
-                  <CurrencyInput
-                    initialValue={op.withdraw}
-                    onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
-                  />
-                </div>
 
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -109,6 +125,8 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
   useEffect(() => {
     if (initialValue !== null && inputValue !== formatIntegerBRL(initialValue)) {
       setInputValue(formatIntegerBRL(initialValue));
+    } else if (initialValue === null) {
+      setInputValue('');
     }
   }, [initialValue]);
 
