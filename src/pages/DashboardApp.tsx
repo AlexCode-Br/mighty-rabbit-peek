@@ -29,6 +29,7 @@ export default function DashboardApp() {
   // Controle de Scroll Horizontal com Mouse (Desktop)
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const isMouseDown = useRef(false); // Nova ref para saber se o mouse está pressionado
   const startX = useRef(0);
   const scrollLeft = useRef(0);
   
@@ -165,28 +166,41 @@ export default function DashboardApp() {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Funções de Drag-to-Scroll
+  // Funções de Drag-to-Scroll (Inteligentes para não bloquear cliques)
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!carouselRef.current) return;
-    setIsDragging(true);
+    isMouseDown.current = true;
     startX.current = e.pageX - carouselRef.current.offsetLeft;
     scrollLeft.current = carouselRef.current.scrollLeft;
   };
 
   const handleMouseLeave = () => {
+    isMouseDown.current = false;
     setIsDragging(false);
   };
 
   const handleMouseUp = () => {
-    setIsDragging(false);
+    isMouseDown.current = false;
+    // Delay de 50ms antes de tirar o isDragging permite que o clique "morra"
+    // se o usuário estava realmente arrastando, sem acionar os botões sem querer.
+    setTimeout(() => setIsDragging(false), 50);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !carouselRef.current) return;
-    e.preventDefault();
+    if (!isMouseDown.current || !carouselRef.current) return;
+    
     const x = e.pageX - carouselRef.current.offsetLeft;
     const walk = (x - startX.current) * 1.5; // Velocidade do arrasto
-    carouselRef.current.scrollLeft = scrollLeft.current - walk;
+    
+    // Se moveu mais de 5 pixels, é um arrasto de verdade (ativa o bloqueio de cliques)
+    if (Math.abs(walk) > 5 && !isDragging) {
+      setIsDragging(true);
+    }
+    
+    if (isDragging) {
+      e.preventDefault(); // Evita selecionar textos
+      carouselRef.current.scrollLeft = scrollLeft.current - walk;
+    }
   };
 
   return (
