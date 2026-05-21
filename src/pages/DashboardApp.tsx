@@ -6,7 +6,7 @@ import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
 import { ChatPanel } from '../components/ChatPanel';
 import { useAuth } from '../components/AuthProvider';
-import { LogOut, Activity, Sun, Moon, Plus, Wallet, ChevronLeft, ChevronRight, MessageSquare, LayoutDashboard } from 'lucide-react';
+import { LogOut, Activity, Sun, Moon, Plus, Wallet, ChevronLeft, ChevronRight, MessageSquare, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
@@ -32,7 +32,7 @@ export default function DashboardApp() {
   } = useOperationDays();
   
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'panel' | 'chat'>('panel');
+  const [isChatOpen, setIsChatOpen] = useState(false);
   
   // Controle de Data
   const [activeDate, setActiveDate] = useState(new Date());
@@ -206,7 +206,6 @@ export default function DashboardApp() {
 
   const handleEditPastDay = (date: Date) => {
     setActiveDate(date);
-    setActiveTab('panel'); // Volta para o painel ao editar um dia
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -263,32 +262,6 @@ export default function DashboardApp() {
                 <span>Trade</span><span className="text-zinc-500 dark:text-zinc-400">Tracker</span>
               </h1>
             </div>
-
-            {/* SELETOR DE ABAS MODERNO */}
-            <div className="bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-full flex items-center gap-1">
-              <button
-                onClick={() => setActiveTab('panel')}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${
-                  activeTab === 'panel'
-                    ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
-                }`}
-              >
-                <LayoutDashboard size={13} />
-                <span>Painel</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('chat')}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${
-                  activeTab === 'chat'
-                    ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
-                }`}
-              >
-                <MessageSquare size={13} />
-                <span>Chat</span>
-              </button>
-            </div>
             
             <div className="flex items-center gap-1 shrink-0">
               <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full h-8 w-8 transition-colors">
@@ -310,171 +283,145 @@ export default function DashboardApp() {
 
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 xl:gap-12 px-4 lg:px-8 xl:px-10 pb-12">
             
-            {/* LADO ESQUERDO: Dashboard e Operações OU Chat */}
+            {/* LADO ESQUERDO: Dashboard e Operações */}
             <div className="flex-1 min-w-0 flex flex-col">
               
-              <AnimatePresence mode="wait">
-                {activeTab === 'panel' ? (
-                  <motion.div
-                    key="panel-tab"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex flex-col"
-                  >
-                    {/* 1. NAVEGADOR DE DATAS */}
-                    <div className="flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-1.5 mb-5 shadow-sm">
-                      <button onClick={() => setActiveDate(subDays(activeDate, 1))} className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                        <ChevronLeft size={20} />
-                      </button>
-                      
-                      <div className="flex flex-col items-center justify-center cursor-pointer select-none px-4" onClick={() => setActiveDate(new Date())}>
-                        <span className={`text-[13px] font-bold tracking-tight ${isToday(activeDate) ? 'text-zinc-900 dark:text-zinc-100' : 'text-blue-500 dark:text-blue-400'}`}>
-                          {isToday(activeDate) ? 'HOJE' : format(activeDate, "dd 'de' MMM", { locale: ptBR }).toUpperCase()}
-                        </span>
-                        {!isToday(activeDate) && (
-                          <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mt-0.5">
-                            Voltar p/ Hoje
-                          </span>
-                        )}
-                      </div>
+              <div className="flex flex-col">
+                {/* 1. NAVEGADOR DE DATAS */}
+                <div className="flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-1.5 mb-5 shadow-sm">
+                  <button onClick={() => setActiveDate(subDays(activeDate, 1))} className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                    <ChevronLeft size={20} />
+                  </button>
+                  
+                  <div className="flex flex-col items-center justify-center cursor-pointer select-none px-4" onClick={() => setActiveDate(new Date())}>
+                    <span className={`text-[13px] font-bold tracking-tight ${isToday(activeDate) ? 'text-zinc-900 dark:text-zinc-100' : 'text-blue-500 dark:text-blue-400'}`}>
+                      {isToday(activeDate) ? 'HOJE' : format(activeDate, "dd 'de' MMM", { locale: ptBR }).toUpperCase()}
+                    </span>
+                    {!isToday(activeDate) && (
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mt-0.5">
+                        Voltar p/ Hoje
+                      </span>
+                    )}
+                  </div>
 
-                      <button 
-                        onClick={() => setActiveDate(addDays(activeDate, 1))} 
-                        disabled={isToday(activeDate)}
-                        className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  <button 
+                    onClick={() => setActiveDate(addDays(activeDate, 1))} 
+                    disabled={isToday(activeDate)}
+                    className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+
+                {/* 2. DASHBOARD */}
+                <div className="space-y-5">
+                  <Dashboard 
+                    dailyProfit={activeData.dailyProfit}
+                    dailyGoal={data.settings.dailyGoal}
+                    stopLoss={data.settings.stopLoss}
+                    cyclesCount={activeData.cycles.length}
+                    todayWins={todayWins}
+                    todayLosses={todayLosses}
+                    weeklyProfit={weeklyProfit}
+                    weeklyWinRate={weeklyWinRate}
+                    weeklyChartData={last7DaysData}
+                    onOpenSettings={() => setSettingsOpen(true)}
+                  />
+                </div>
+
+                {/* 3. OPERAÇÕES DO DIA */}
+                <div className="mt-8 mb-3 flex items-center justify-between px-2 lg:px-0">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1 rounded-md">
+                      {todayCompleted} / {activeData.cycles.length}
+                    </span>
+                  </div>
+
+                  {activeData.cycles.length > 0 && (
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={() => scrollCarousel('left')}
+                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
                       >
-                        <ChevronRight size={20} />
-                      </button>
+                        <ChevronLeft size={16} />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={() => scrollCarousel('right')}
+                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
+                      >
+                        <ChevronRight size={16} />
+                      </Button>
                     </div>
+                  )}
+                </div>
 
-                    {/* 2. DASHBOARD */}
-                    <div className="space-y-5">
-                      <Dashboard 
-                        dailyProfit={activeData.dailyProfit}
-                        dailyGoal={data.settings.dailyGoal}
-                        stopLoss={data.settings.stopLoss}
-                        cyclesCount={activeData.cycles.length}
-                        todayWins={todayWins}
-                        todayLosses={todayLosses}
-                        weeklyProfit={weeklyProfit}
-                        weeklyWinRate={weeklyWinRate}
-                        weeklyChartData={last7DaysData}
-                        onOpenSettings={() => setSettingsOpen(true)}
-                      />
+                <div>
+                  {activeData.cycles.length === 0 ? (
+                    <div className="bg-white dark:bg-zinc-900 border border-dashed border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-6 flex flex-col items-center justify-center text-center shadow-sm">
+                      <Activity size={20} className="text-zinc-300 dark:text-zinc-600 mb-2" />
+                      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-4">Nenhum ciclo registrado hoje.</p>
+                      <Button 
+                        onClick={handleQuickAddCycle} 
+                        className="rounded-xl h-10 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm flex items-center gap-2 px-4 text-xs"
+                      >
+                        <Plus size={14} /> Iniciar Ciclo
+                      </Button>
                     </div>
-
-                    {/* 3. OPERAÇÕES DO DIA */}
-                    <div className="mt-8 mb-3 flex items-center justify-between px-2 lg:px-0">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
-                        <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1 rounded-md">
-                          {todayCompleted} / {activeData.cycles.length}
-                        </span>
+                  ) : (
+                    <div 
+                      ref={carouselRef}
+                      onMouseDown={handleMouseDown}
+                      onMouseLeave={handleMouseLeave}
+                      onMouseUp={handleMouseUp}
+                      onMouseMove={handleMouseMove}
+                      onTouchStart={() => {
+                        isMouseDown.current = false;
+                        setIsDragging(false);
+                      }}
+                      className={`
+                        relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory touch-pan-x
+                        lg:mx-0 lg:px-0 lg:snap-none
+                        ${isDragging ? '[&_*]:pointer-events-none' : ''}
+                      `}
+                    >
+                      {/* Botão Novo Ciclo */}
+                      <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] flex items-stretch">
+                        <button 
+                          onClick={handleQuickAddCycle}
+                          className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
+                        >
+                          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300">
+                            <Plus size={24} />
+                          </div>
+                          <span className="text-[14px] font-bold text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 tracking-tight">Adicionar Novo Ciclo</span>
+                          <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para adicionar rapidamente</span>
+                        </button>
                       </div>
 
-                      {activeData.cycles.length > 0 && (
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            onClick={() => scrollCarousel('left')}
-                            className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
-                          >
-                            <ChevronLeft size={16} />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            onClick={() => scrollCarousel('right')}
-                            className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
-                          >
-                            <ChevronRight size={16} />
-                          </Button>
-                        </div>
-                      )}
+                      <AnimatePresence mode="popLayout">
+                        {activeData.cycles.map((cycle, index) => (
+                          <CycleCard 
+                            key={cycle.id}
+                            className="snap-center shrink-0 w-[92vw] sm:w-[360px] h-full" 
+                            index={activeData.cycles.length - index} 
+                            cycle={cycle}
+                            onUpdateOperation={handleUpdateOperation}
+                            onDeleteCycle={handleDeleteCycle}
+                            onDuplicateCycle={handleDuplicateCycle}
+                          />
+                        ))}
+                      </AnimatePresence>
+                      
+                      <div className="w-1 shrink-0 lg:hidden" />
                     </div>
-
-                    <div>
-                      {activeData.cycles.length === 0 ? (
-                        <div className="bg-white dark:bg-zinc-900 border border-dashed border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-6 flex flex-col items-center justify-center text-center shadow-sm">
-                          <Activity size={20} className="text-zinc-300 dark:text-zinc-600 mb-2" />
-                          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-4">Nenhum ciclo registrado hoje.</p>
-                          <Button 
-                            onClick={handleQuickAddCycle} 
-                            className="rounded-xl h-10 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm flex items-center gap-2 px-4 text-xs"
-                          >
-                            <Plus size={14} /> Iniciar Ciclo
-                          </Button>
-                        </div>
-                      ) : (
-                        <div 
-                          ref={carouselRef}
-                          onMouseDown={handleMouseDown}
-                          onMouseLeave={handleMouseLeave}
-                          onMouseUp={handleMouseUp}
-                          onMouseMove={handleMouseMove}
-                          onTouchStart={() => {
-                            isMouseDown.current = false;
-                            setIsDragging(false);
-                          }}
-                          className={`
-                            relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory touch-pan-x
-                            lg:mx-0 lg:px-0 lg:snap-none
-                            ${isDragging ? '[&_*]:pointer-events-none' : ''}
-                          `}
-                        >
-                          {/* Botão Novo Ciclo */}
-                          <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] flex items-stretch">
-                            <button 
-                              onClick={handleQuickAddCycle}
-                              className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
-                            >
-                              <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300">
-                                <Plus size={24} />
-                              </div>
-                              <span className="text-[14px] font-bold text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 tracking-tight">Adicionar Novo Ciclo</span>
-                              <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para adicionar rapidamente</span>
-                            </button>
-                          </div>
-
-                          <AnimatePresence mode="popLayout">
-                            {activeData.cycles.map((cycle, index) => (
-                              <CycleCard 
-                                key={cycle.id}
-                                className="snap-center shrink-0 w-[92vw] sm:w-[360px] h-full" 
-                                index={activeData.cycles.length - index} 
-                                cycle={cycle}
-                                onUpdateOperation={handleUpdateOperation}
-                                onDeleteCycle={handleDeleteCycle}
-                                onDuplicateCycle={handleDuplicateCycle}
-                              />
-                            ))}
-                          </AnimatePresence>
-                          
-                          <div className="w-1 shrink-0 lg:hidden" />
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="chat-tab"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <ChatPanel 
-                      messages={data.chatMessages || []}
-                      onSendMessage={addChatMessage}
-                      onUpdateMessage={updateChatMessage}
-                      onDeleteMessage={deleteChatMessage}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  )}
+                </div>
+              </div>
 
             </div>
 
@@ -494,6 +441,72 @@ export default function DashboardApp() {
           <div className="w-full lg:hidden" style={{ height: 'calc(env(safe-area-inset-bottom) + 32px)' }}></div>
         </div>
       </div>
+
+      {/* BOTÃO FLUTUANTE SUSPENSO DO CHAT */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <motion.button
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="w-14 h-14 rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.05)] border border-zinc-800 dark:border-zinc-200/20 transition-colors"
+        >
+          <AnimatePresence mode="wait">
+            {isChatOpen ? (
+              <motion.div
+                key="close-icon"
+                initial={{ rotate: -45, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 45, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <X size={22} strokeWidth={2.5} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="chat-icon"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <MessageSquare size={22} strokeWidth={2.5} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      </div>
+
+      {/* PAINEL DO CHAT SUSPENSO (SLIDE-OVER) */}
+      <AnimatePresence>
+        {isChatOpen && (
+          <>
+            {/* Backdrop escuro translúcido */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsChatOpen(false)}
+              className="fixed inset-0 bg-black z-45"
+            />
+
+            {/* Container do Chat */}
+            <motion.div
+              initial={{ opacity: 0, y: 100, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 100, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 280 }}
+              className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-6 w-auto sm:w-[400px] z-45"
+            >
+              <ChatPanel 
+                messages={data.chatMessages || []}
+                onSendMessage={addChatMessage}
+                onUpdateMessage={updateChatMessage}
+                onDeleteMessage={deleteChatMessage}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <GoalSettings 
         open={settingsOpen}
