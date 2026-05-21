@@ -350,7 +350,7 @@ export default function DashboardApp() {
                         setIsDragging(false);
                       }}
                       className={`
-                        relative flex overflow-x-auto gap-4.5 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory touch-pan-x
+                        relative flex overflow-x-auto gap-4.5 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory touch-pan-y
                         lg:mx-0 lg:px-0 lg:snap-none
                         ${isDragging ? '[&_*]:pointer-events-none' : ''}
                       `}
