@@ -25,6 +25,12 @@ export default function DashboardApp() {
   // Controle de Data
   const [activeDate, setActiveDate] = useState(new Date());
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Controle de Scroll Horizontal com Mouse (Desktop)
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
   
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -159,6 +165,30 @@ export default function DashboardApp() {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Funções de Drag-to-Scroll
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!carouselRef.current) return;
+    setIsDragging(true);
+    startX.current = e.pageX - carouselRef.current.offsetLeft;
+    scrollLeft.current = carouselRef.current.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !carouselRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - carouselRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5; // Velocidade do arrasto
+    carouselRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+
   return (
     <div className="h-[100dvh] w-full bg-[#FAFAFA] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-800 overflow-hidden flex flex-col items-center">
       <div className="w-full max-w-md h-full flex flex-col relative bg-[#FAFAFA] dark:bg-zinc-950 sm:border-x border-zinc-200/50 dark:border-zinc-800/50 shadow-2xl">
@@ -260,7 +290,14 @@ export default function DashboardApp() {
                 </Button>
               </div>
             ) : (
-              <div className="flex overflow-x-auto gap-3 snap-x snap-mandatory no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch">
+              <div 
+                ref={carouselRef}
+                onMouseDown={handleMouseDown}
+                onMouseLeave={handleMouseLeave}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+                className={`flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing ${isDragging ? '[&_*]:pointer-events-none' : 'snap-x snap-mandatory'}`}
+              >
                 <AnimatePresence mode="popLayout">
                   {activeData.cycles.map((cycle, index) => (
                     <CycleCard 
@@ -276,7 +313,7 @@ export default function DashboardApp() {
                 </AnimatePresence>
                 
                 {/* Botão de Adicionar ao final do carrossel */}
-                <div className="snap-center shrink-0 w-[20vw] sm:w-[100px] flex items-center justify-center">
+                <div className="snap-center shrink-0 w-[20vw] sm:w-[100px] flex items-center justify-center pr-2">
                   <button 
                     onClick={() => setNewCycleOpen(true)}
                     className="w-14 h-14 rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex items-center justify-center transition-all"
