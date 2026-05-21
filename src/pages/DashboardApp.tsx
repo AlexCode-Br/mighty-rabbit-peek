@@ -307,16 +307,17 @@ export default function DashboardApp() {
                 onMouseMove={handleMouseMove}
                 className={`flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing ${isDragging ? '[&_*]:pointer-events-none' : 'snap-x snap-mandatory'}`}
               >
-                {/* Botão Novo Ciclo mais esguio horizontalmente */}
-                <div className="snap-center shrink-0 w-[20vw] sm:w-[80px] flex items-stretch">
+                {/* Botão Novo Ciclo com as mesmas dimensões de um ciclo */}
+                <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] flex items-stretch">
                   <button 
                     onClick={() => setNewCycleOpen(true)}
-                    className="w-full rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
+                    className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
                   >
-                    <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-1 group-hover:rotate-90 transition-transform duration-300">
-                      <Plus size={16} />
+                    <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300">
+                      <Plus size={24} />
                     </div>
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300">Novo</span>
+                    <span className="text-[14px] font-bold text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 tracking-tight">Adicionar Novo Ciclo</span>
+                    <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para registrar entradas</span>
                   </button>
                 </div>
 
