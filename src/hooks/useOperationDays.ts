@@ -20,6 +20,7 @@ export function useOperationDays() {
     chatMessages: []
   });
 
+  // Carregar dados
   useEffect(() => {
     if (!user) return;
     const loadData = async () => {
@@ -31,6 +32,7 @@ export function useOperationDays() {
           .single();
 
         if (error && error.code !== 'PGRST116') throw error;
+        
         if (appData) {
           setData({
             settings: appData.settings || DEFAULT_SETTINGS,
@@ -47,15 +49,28 @@ export function useOperationDays() {
     loadData();
   }, [user]);
 
+  // Função robusta de persistência usando UPSERT
   const persistData = useCallback(async (updates: Partial<AppData>) => {
     if (!user) return;
-    const payload: any = {};
+    
+    // Preparamos o payload convertendo chatMessages para o nome da coluna no banco (chat_messages)
+    const payload: any = { user_id: user.id };
+    
+    // Importante: Para o upsert não apagar os outros campos, 
+    // precisamos mandar o que já temos no estado local + a atualização
+    // Mas o Supabase update/upsert parcial funciona melhor se mandarmos apenas o que mudou.
+    // Usaremos upsert com onConflict para garantir a criação se não existir.
+    
     if (updates.settings) payload.settings = updates.settings;
     if (updates.history) payload.history = updates.history;
-    if (updates.chatMessages) payload.chat_messages = updates.chatMessages;
+    if (updates.chatMessages !== undefined) payload.chat_messages = updates.chatMessages;
 
     try {
-      await supabase.from('app_data').update(payload).eq('user_id', user.id);
+      const { error } = await supabase
+        .from('app_data')
+        .upsert(payload, { onConflict: 'user_id' });
+        
+      if (error) throw error;
     } catch (err) {
       console.error("[useOperationDays] Persist Error:", err);
     }
@@ -139,25 +154,35 @@ export function useOperationDays() {
   const addChatMessage = (text: string, category: string) => {
     const msg: ChatMessage = { id: crypto.randomUUID(), text, category: category as any, createdAt: new Date().toISOString() };
     const chatMessages = [...(data.chatMessages || []), msg];
-    setData(prev => ({ ...prev, chatMessages }));
-    persistData({ chatMessages });
+    setData(prev => {
+      const updated = { ...prev, chatMessages };
+      persistData({ chatMessages });
+      return updated;
+    });
   };
 
   return {
     data, loading, getDayData, updateSettings, addCycle, updateOperation, deleteCycle,
-    addChatMessage, updateChatMessage: (id: string, text: string) => {
+    addChatMessage, 
+    updateChatMessage: (id: string, text: string) => {
       const chatMessages = (data.chatMessages || []).map(m => m.id === id ? { ...m, text } : m);
-      setData(prev => ({ ...prev, chatMessages }));
-      persistData({ chatMessages });
+      setData(prev => {
+        persistData({ chatMessages });
+        return { ...prev, chatMessages };
+      });
     },
     deleteChatMessage: (id: string) => {
       const chatMessages = (data.chatMessages || []).filter(m => m.id !== id);
-      setData(prev => ({ ...prev, chatMessages }));
-      persistData({ chatMessages });
+      setData(prev => {
+        persistData({ chatMessages });
+        return { ...prev, chatMessages };
+      });
     },
     clearChatMessages: () => {
-      setData(prev => ({ ...prev, chatMessages: [] }));
-      persistData({ chatMessages: [] });
+      setData(prev => {
+        persistData({ chatMessages: [] });
+        return { ...prev, chatMessages: [] };
+      });
     }
   };
 }
