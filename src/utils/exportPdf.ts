@@ -33,10 +33,9 @@ export const exportToPDF = (data: AppData) => {
   };
 
   // --- FILTRAGEM DE DADOS VALIDOS ---
-  // CORREÇÃO: Pega apenas dias que realmente tiveram ciclos registrados
   const validDays = Object.values(data.history)
     .filter(day => day.cycles && day.cycles.length > 0)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Crescente (mais antigo pro mais novo)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   // --- 1. CABEÇALHO EXECUTIVO ---
   cursorY = 20;
@@ -60,7 +59,6 @@ export const exportToPDF = (data: AppData) => {
 
   cursorY += 12;
 
-  // Linha separadora do cabeçalho
   applyColor('draw', colors.border);
   doc.setLineWidth(0.5);
   doc.line(15, cursorY, pageWidth - 15, cursorY);
@@ -88,18 +86,15 @@ export const exportToPDF = (data: AppData) => {
   const drawKpiCard = (x: number, y: number, w: number, title: string, value: string, isCurrency = false, profitStatus?: 'win' | 'loss' | 'neutral') => {
     const h = 26;
     
-    // Fundo do card
     applyColor('fill', colors.bgLight);
     applyColor('draw', colors.border);
     doc.roundedRect(x, y, w, h, 3, 3, 'FD');
 
-    // Título
     applyColor('text', colors.textMuted);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.text(title.toUpperCase(), x + 6, y + 8);
 
-    // Valor
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     
@@ -112,7 +107,7 @@ export const exportToPDF = (data: AppData) => {
     if (isCurrency && profitStatus) {
       doc.setFontSize(10);
       const sign = profitStatus === 'win' ? '+' : '';
-      doc.text(sign, x + 4, y + 19); // Ajuste fino para o sinal
+      doc.text(sign, x + 4, y + 19);
     }
   };
 
@@ -128,7 +123,7 @@ export const exportToPDF = (data: AppData) => {
   cursorY += 40;
 
   // --- 4. GRÁFICO DE BARRAS INTELIGENTE (Últimos 7 dias válidos) ---
-  const chartDays = validDays.slice(-7); // Pega os últimos 7 COM operações
+  const chartDays = validDays.slice(-7);
 
   applyColor('text', colors.textMain);
   doc.setFontSize(11);
@@ -140,41 +135,34 @@ export const exportToPDF = (data: AppData) => {
   const chartHeight = 45;
   const chartWidth = pageWidth - 30;
   
-  // Caixa do gráfico
   applyColor('fill', colors.bgLight);
   applyColor('draw', colors.border);
   doc.roundedRect(15, cursorY, chartWidth, chartHeight, 3, 3, 'FD');
 
   if (chartDays.length > 0) {
-    // Encontrar o maior valor absoluto para simetria do eixo Y
     const maxAbsVal = Math.max(...chartDays.map(d => Math.abs(d.dailyProfit)), 10);
-    
-    // O eixo zero fica exatamente no meio
     const zeroY = cursorY + (chartHeight / 2);
     
-    // Grid line do Zero
     applyColor('draw', colors.textLight);
     doc.setLineWidth(0.5);
     doc.line(15, zeroY, 15 + chartWidth, zeroY);
 
-    // Linhas guias superior e inferior tracejadas (sugestão visual)
-    doc.setDrawDashPattern([1, 2], 0);
+    // Usa setLineDashPattern ao invés de setDrawDashPattern
+    doc.setLineDashPattern([1, 2], 0);
     applyColor('draw', colors.border);
     doc.setLineWidth(0.3);
-    doc.line(15, cursorY + 10, 15 + chartWidth, cursorY + 10); // Linha +Max
-    doc.line(15, cursorY + chartHeight - 10, 15 + chartWidth, cursorY + chartHeight - 10); // Linha -Max
-    doc.setDrawDashPattern([], 0); // Reseta
+    doc.line(15, cursorY + 10, 15 + chartWidth, cursorY + 10);
+    doc.line(15, cursorY + chartHeight - 10, 15 + chartWidth, cursorY + chartHeight - 10);
+    doc.setLineDashPattern([], 0); // Reseta para linha sólida
 
     const barSpacing = chartWidth / Math.max(chartDays.length, 7);
-    const maxBarHeight = (chartHeight / 2) - 8; // Margem para os textos
+    const maxBarHeight = (chartHeight / 2) - 8;
     const barWidth = 8;
 
     chartDays.forEach((day, index) => {
       const isProfit = day.dailyProfit >= 0;
-      // Proporção baseada no valor máximo absoluto
       const barH = (Math.abs(day.dailyProfit) / maxAbsVal) * maxBarHeight;
       
-      // Centraliza as barras dinamicamente dependendo da quantidade de dias
       const startX = 15 + ((chartWidth - (chartDays.length * barSpacing)) / 2);
       const barX = startX + (index * barSpacing) + (barSpacing / 2) - (barWidth / 2);
       
@@ -184,18 +172,15 @@ export const exportToPDF = (data: AppData) => {
         if (isProfit) applyColor('fill', colors.profit);
         else applyColor('fill', colors.loss);
         
-        // Desenha a barra
         doc.rect(barX, barY, barWidth, Math.max(barH, 1), 'F');
       }
 
-      // Rótulo da Data (Sempre em baixo do gráfico para ficar alinhado)
       applyColor('text', colors.textMuted);
       doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
       const dayLabel = format(parseISO(day.date), 'dd/MM');
       doc.text(dayLabel, barX + (barWidth / 2), cursorY + chartHeight - 2, { align: 'center' });
       
-      // Rótulo do Valor
       if (day.dailyProfit !== 0) {
         if (isProfit) applyColor('text', colors.profit);
         else applyColor('text', colors.loss);
@@ -216,7 +201,6 @@ export const exportToPDF = (data: AppData) => {
 
   cursorY += chartHeight + 15;
 
-  // --- FUNÇÃO AUXILIAR PARA TABELAS MODERNAS ---
   const defaultTableStyles = {
     theme: 'plain' as const,
     styles: { 
@@ -249,7 +233,6 @@ export const exportToPDF = (data: AppData) => {
   const dailyTableData: any[][] = [];
   const dailyGoal = data.settings.dailyGoal;
 
-  // Inverte os dias válidos para mostrar o mais recente no topo da tabela
   const tableDays = [...validDays].reverse();
 
   tableDays.forEach((day) => {
@@ -303,7 +286,6 @@ export const exportToPDF = (data: AppData) => {
 
   cursorY = (doc as any).lastAutoTable.finalY + 15;
 
-  // Verifica se precisa de nova página
   if (cursorY > pageHeight - 40) {
     doc.addPage();
     cursorY = 20;
@@ -368,7 +350,6 @@ export const exportToPDF = (data: AppData) => {
     }
   });
 
-  // Salvar PDF de forma direta
   const fileName = `TradeTracker_Relatorio_${format(new Date(), 'ddMMyyyy_HHmm')}.pdf`;
   doc.save(fileName);
 };
