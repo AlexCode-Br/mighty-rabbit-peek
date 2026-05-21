@@ -24,7 +24,7 @@ export default function DashboardApp() {
   const [activeDate, setActiveDate] = useState(new Date());
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Controle de Scroll Horizontal com Mouse (Desktop)
+  // Controle de Scroll Horizontal com Mouse (Mobile)
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const isMouseDown = useRef(false);
@@ -110,22 +110,20 @@ export default function DashboardApp() {
   const weeklyWinDays = last7DaysData.filter(day => day.profit >= 0 && day.hasData).length;
   const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
 
-  // Função utilitária para rolar até o novo ciclo criado
   const scrollToNewCycle = () => {
     setTimeout(() => {
-      if (carouselRef.current && carouselRef.current.children[1]) {
+      // O scroll só é necessário no mobile, no desktop usamos Grid
+      if (window.innerWidth < 1024 && carouselRef.current && carouselRef.current.children[1]) {
         const container = carouselRef.current;
-        // O índice 1 será sempre o ciclo recém-adicionado (índice 0 é o botão "Novo Ciclo")
         const target = container.children[1] as HTMLElement;
         container.scrollTo({
-          left: target.offsetLeft - 16, // -16px compensa o padding lateral (px-4) do contêiner
+          left: target.offsetLeft - 16,
           behavior: 'smooth'
         });
       }
-    }, 100); // Tempo pequeno pro React renderizar o novo elemento no DOM
+    }, 100);
   };
 
-  // CRIAÇÃO INSTANTÂNEA DE CICLO (1-Click)
   const handleQuickAddCycle = () => {
     let isoStr = new Date().toISOString();
     if (!isToday(activeDate)) {
@@ -189,7 +187,7 @@ export default function DashboardApp() {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!carouselRef.current) return;
+    if (!carouselRef.current || window.innerWidth >= 1024) return;
     isMouseDown.current = true;
     startX.current = e.pageX - carouselRef.current.offsetLeft;
     scrollLeft.current = carouselRef.current.scrollLeft;
@@ -206,7 +204,7 @@ export default function DashboardApp() {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isMouseDown.current || !carouselRef.current) return;
+    if (!isMouseDown.current || !carouselRef.current || window.innerWidth >= 1024) return;
     
     const x = e.pageX - carouselRef.current.offsetLeft;
     const walk = (x - startX.current) * 1.5;
@@ -223,14 +221,16 @@ export default function DashboardApp() {
 
   return (
     <div className="h-[100dvh] w-full bg-[#FAFAFA] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-800 overflow-hidden flex flex-col items-center">
-      <div className="w-full max-w-md h-full flex flex-col relative bg-[#FAFAFA] dark:bg-zinc-950 sm:border-x border-zinc-200/50 dark:border-zinc-800/50 shadow-2xl">
+      
+      {/* WRAPPER PRINCIPAL (Expandido no Desktop) */}
+      <div className="w-full max-w-7xl h-full flex flex-col relative bg-[#FAFAFA] dark:bg-zinc-950 sm:border-x border-zinc-200/50 dark:border-zinc-800/50 shadow-2xl transition-all duration-300">
         
-        {/* TOPO FIXO com Safe Area do iOS */}
+        {/* TOPO FIXO */}
         <div 
-          className="px-4 shrink-0 z-20 sticky top-0 bg-[#FAFAFA] dark:bg-zinc-950"
+          className="px-4 lg:px-8 shrink-0 z-20 sticky top-0 bg-[#FAFAFA] dark:bg-zinc-950 w-full"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: '12px' }}
         >
-          <header className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-200/60 dark:border-zinc-800/60 rounded-full px-4 py-2.5 flex items-center justify-between">
+          <header className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-200/60 dark:border-zinc-800/60 rounded-full px-4 lg:px-6 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-sm shrink-0">
                 <Wallet size={15} strokeWidth={2.5} className="text-white dark:text-zinc-900" />
@@ -251,129 +251,142 @@ export default function DashboardApp() {
           </header>
         </div>
 
-        {/* FEED CONTÍNUO */}
-        <div className="flex-1 px-4 overflow-y-auto no-scrollbar relative z-0 pt-2" ref={scrollRef}>
+        {/* FEED COM LAYOUT DE COLUNAS NO DESKTOP */}
+        <div className="flex-1 overflow-y-auto no-scrollbar relative z-0 pt-2" ref={scrollRef}>
           <style dangerouslySetInnerHTML={{__html: `
             .no-scrollbar::-webkit-scrollbar { display: none; }
             .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           `}} />
 
-          {/* 1. NAVEGADOR DE DATAS */}
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-1.5 mb-5 shadow-sm">
-            <button onClick={() => setActiveDate(subDays(activeDate, 1))} className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-              <ChevronLeft size={20} />
-            </button>
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 px-4 lg:px-8 pb-12">
             
-            <div className="flex flex-col items-center justify-center cursor-pointer select-none px-4" onClick={() => setActiveDate(new Date())}>
-              <span className={`text-[13px] font-bold tracking-tight ${isToday(activeDate) ? 'text-zinc-900 dark:text-zinc-100' : 'text-blue-500 dark:text-blue-400'}`}>
-                {isToday(activeDate) ? 'HOJE' : format(activeDate, "dd 'de' MMM", { locale: ptBR }).toUpperCase()}
-              </span>
-              {!isToday(activeDate) && (
-                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mt-0.5">
-                  Voltar p/ Hoje
-                </span>
-              )}
-            </div>
-
-            <button 
-              onClick={() => setActiveDate(addDays(activeDate, 1))} 
-              disabled={isToday(activeDate)}
-              className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </motion.div>
-
-          {/* 2. DASHBOARD */}
-          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} className="space-y-5">
-            <Dashboard 
-              dailyProfit={activeData.dailyProfit}
-              dailyGoal={data.settings.dailyGoal}
-              stopLoss={data.settings.stopLoss}
-              cyclesCount={activeData.cycles.length}
-              todayWins={todayWins}
-              todayLosses={todayLosses}
-              weeklyProfit={weeklyProfit}
-              weeklyWinRate={weeklyWinRate}
-              weeklyChartData={last7DaysData}
-              onOpenSettings={() => setSettingsOpen(true)}
-            />
-          </motion.div>
-
-          {/* 3. OPERAÇÕES DO DIA (Ciclos Horizontais) */}
-          <div className="mt-8 mb-2 flex items-center justify-between px-2">
-            <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
-            <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1 rounded-md">
-              {todayCompleted} / {activeData.cycles.length}
-            </span>
-          </div>
-
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-            {activeData.cycles.length === 0 ? (
-              <div className="bg-white dark:bg-zinc-900 border border-dashed border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-6 flex flex-col items-center justify-center text-center shadow-sm">
-                <Activity size={20} className="text-zinc-300 dark:text-zinc-600 mb-2" />
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-4">Nenhum ciclo registrado hoje.</p>
-                <Button 
-                  onClick={handleQuickAddCycle} 
-                  className="rounded-xl h-10 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm flex items-center gap-2 px-4 text-xs"
-                >
-                  <Plus size={14} /> Iniciar Ciclo
-                </Button>
-              </div>
-            ) : (
-              <div 
-                ref={carouselRef}
-                onMouseDown={handleMouseDown}
-                onMouseLeave={handleMouseLeave}
-                onMouseUp={handleMouseUp}
-                onMouseMove={handleMouseMove}
-                className={`relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing ${isDragging ? '[&_*]:pointer-events-none' : 'snap-x snap-mandatory'}`}
-              >
-                {/* Botão Novo Ciclo com as mesmas dimensões de um ciclo */}
-                <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] flex items-stretch">
-                  <button 
-                    onClick={handleQuickAddCycle}
-                    className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300">
-                      <Plus size={24} />
-                    </div>
-                    <span className="text-[14px] font-bold text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 tracking-tight">Adicionar Novo Ciclo</span>
-                    <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para adicionar rapidamente</span>
-                  </button>
+            {/* LADO ESQUERDO: Dashboard e Operações (Ocupa o maior espaço) */}
+            <div className="flex-1 min-w-0 flex flex-col">
+              
+              {/* 1. NAVEGADOR DE DATAS */}
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-1.5 mb-5 shadow-sm">
+                <button onClick={() => setActiveDate(subDays(activeDate, 1))} className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                  <ChevronLeft size={20} />
+                </button>
+                
+                <div className="flex flex-col items-center justify-center cursor-pointer select-none px-4" onClick={() => setActiveDate(new Date())}>
+                  <span className={`text-[13px] font-bold tracking-tight ${isToday(activeDate) ? 'text-zinc-900 dark:text-zinc-100' : 'text-blue-500 dark:text-blue-400'}`}>
+                    {isToday(activeDate) ? 'HOJE' : format(activeDate, "dd 'de' MMM", { locale: ptBR }).toUpperCase()}
+                  </span>
+                  {!isToday(activeDate) && (
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mt-0.5">
+                      Voltar p/ Hoje
+                    </span>
+                  )}
                 </div>
 
-                <AnimatePresence mode="popLayout">
-                  {activeData.cycles.map((cycle, index) => (
-                    <CycleCard 
-                      key={cycle.id}
-                      className="snap-center shrink-0 w-[92vw] sm:w-[360px]" 
-                      index={activeData.cycles.length - index} 
-                      cycle={cycle}
-                      onUpdateOperation={handleUpdateOperation}
-                      onDeleteCycle={handleDeleteCycle}
-                      onDuplicateCycle={handleDuplicateCycle}
-                    />
-                  ))}
-                </AnimatePresence>
-                
-                {/* Espaçador para manter a margem direita correta no scroll */}
-                <div className="w-1 shrink-0" />
+                <button 
+                  onClick={() => setActiveDate(addDays(activeDate, 1))} 
+                  disabled={isToday(activeDate)}
+                  className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </motion.div>
+
+              {/* 2. DASHBOARD */}
+              <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} className="space-y-5">
+                <Dashboard 
+                  dailyProfit={activeData.dailyProfit}
+                  dailyGoal={data.settings.dailyGoal}
+                  stopLoss={data.settings.stopLoss}
+                  cyclesCount={activeData.cycles.length}
+                  todayWins={todayWins}
+                  todayLosses={todayLosses}
+                  weeklyProfit={weeklyProfit}
+                  weeklyWinRate={weeklyWinRate}
+                  weeklyChartData={last7DaysData}
+                  onOpenSettings={() => setSettingsOpen(true)}
+                />
+              </motion.div>
+
+              {/* 3. OPERAÇÕES DO DIA (Carrossel no Mobile, Grid no Desktop) */}
+              <div className="mt-8 mb-2 flex items-center justify-between px-2 lg:px-0">
+                <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
+                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1 rounded-md">
+                  {todayCompleted} / {activeData.cycles.length}
+                </span>
               </div>
-            )}
-          </motion.div>
 
-          {/* 4. HISTÓRICO MENSAL */}
-          <div className="mt-4 mb-4 px-2">
-            <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Visão Mensal</h3>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+                {activeData.cycles.length === 0 ? (
+                  <div className="bg-white dark:bg-zinc-900 border border-dashed border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-6 flex flex-col items-center justify-center text-center shadow-sm">
+                    <Activity size={20} className="text-zinc-300 dark:text-zinc-600 mb-2" />
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-4">Nenhum ciclo registrado hoje.</p>
+                    <Button 
+                      onClick={handleQuickAddCycle} 
+                      className="rounded-xl h-10 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm flex items-center gap-2 px-4 text-xs"
+                    >
+                      <Plus size={14} /> Iniciar Ciclo
+                    </Button>
+                  </div>
+                ) : (
+                  <div 
+                    ref={carouselRef}
+                    onMouseDown={handleMouseDown}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseUp={handleMouseUp}
+                    onMouseMove={handleMouseMove}
+                    className={`
+                      relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory 
+                      lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:overflow-visible lg:mx-0 lg:px-0 lg:cursor-auto lg:snap-none 
+                      ${isDragging ? '[&_*]:pointer-events-none' : ''}
+                    `}
+                  >
+                    {/* Botão Novo Ciclo */}
+                    <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-auto flex items-stretch">
+                      <button 
+                        onClick={handleQuickAddCycle}
+                        className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300">
+                          <Plus size={24} />
+                        </div>
+                        <span className="text-[14px] font-bold text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 tracking-tight">Adicionar Novo Ciclo</span>
+                        <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para adicionar rapidamente</span>
+                      </button>
+                    </div>
+
+                    <AnimatePresence mode="popLayout">
+                      {activeData.cycles.map((cycle, index) => (
+                        <CycleCard 
+                          key={cycle.id}
+                          className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-auto h-full" 
+                          index={activeData.cycles.length - index} 
+                          cycle={cycle}
+                          onUpdateOperation={handleUpdateOperation}
+                          onDeleteCycle={handleDeleteCycle}
+                          onDuplicateCycle={handleDuplicateCycle}
+                        />
+                      ))}
+                    </AnimatePresence>
+                    
+                    {/* Espaçador para manter a margem direita correta no scroll (apenas mobile) */}
+                    <div className="w-1 shrink-0 lg:hidden" />
+                  </div>
+                )}
+              </motion.div>
+            </div>
+
+            {/* LADO DIREITO: Histórico (Sidebar no Desktop) */}
+            <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 mt-8 lg:mt-0">
+              <div className="mb-4 px-2 lg:px-0">
+                <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Visão Mensal</h3>
+              </div>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+                <HistoryPanel data={data} onEditDay={handleEditPastDay} />
+              </motion.div>
+            </div>
+
           </div>
-          
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-            <HistoryPanel data={data} onEditDay={handleEditPastDay} />
-          </motion.div>
 
-          {/* Spacer pro final da tela + Safe Area */}
-          <div className="w-full" style={{ height: 'calc(env(safe-area-inset-bottom) + 32px)' }}></div>
+          {/* Spacer pro final da tela + Safe Area (Apenas no celular para descolar do fundo) */}
+          <div className="w-full lg:hidden" style={{ height: 'calc(env(safe-area-inset-bottom) + 32px)' }}></div>
         </div>
       </div>
 
