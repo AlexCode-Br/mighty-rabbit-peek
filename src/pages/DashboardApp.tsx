@@ -110,10 +110,20 @@ export default function DashboardApp() {
   const weeklyWinDays = last7DaysData.filter(day => day.profit >= 0 && day.hasData).length;
   const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
 
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    if (carouselRef.current) {
+      // Avança a largura de aproximadamente 1 card + gap
+      const scrollAmount = window.innerWidth >= 1024 ? 370 : 320; 
+      carouselRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const scrollToNewCycle = () => {
     setTimeout(() => {
-      // O scroll só é necessário no mobile, no desktop usamos Grid
-      if (window.innerWidth < 1024 && carouselRef.current && carouselRef.current.children[1]) {
+      if (carouselRef.current && carouselRef.current.children[1]) {
         const container = carouselRef.current;
         const target = container.children[1] as HTMLElement;
         container.scrollTo({
@@ -187,7 +197,7 @@ export default function DashboardApp() {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!carouselRef.current || window.innerWidth >= 1024) return;
+    if (!carouselRef.current) return;
     isMouseDown.current = true;
     startX.current = e.pageX - carouselRef.current.offsetLeft;
     scrollLeft.current = carouselRef.current.scrollLeft;
@@ -204,7 +214,7 @@ export default function DashboardApp() {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isMouseDown.current || !carouselRef.current || window.innerWidth >= 1024) return;
+    if (!isMouseDown.current || !carouselRef.current) return;
     
     const x = e.pageX - carouselRef.current.offsetLeft;
     const walk = (x - startX.current) * 1.5;
@@ -260,7 +270,7 @@ export default function DashboardApp() {
 
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 px-4 lg:px-8 pb-12">
             
-            {/* LADO ESQUERDO: Dashboard e Operações (Ocupa o maior espaço) */}
+            {/* LADO ESQUERDO: Dashboard e Operações */}
             <div className="flex-1 min-w-0 flex flex-col">
               
               {/* 1. NAVEGADOR DE DATAS */}
@@ -305,12 +315,36 @@ export default function DashboardApp() {
                 />
               </motion.div>
 
-              {/* 3. OPERAÇÕES DO DIA (Carrossel no Mobile, Grid no Desktop) */}
-              <div className="mt-8 mb-2 flex items-center justify-between px-2 lg:px-0">
-                <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
-                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1 rounded-md">
-                  {todayCompleted} / {activeData.cycles.length}
-                </span>
+              {/* 3. OPERAÇÕES DO DIA (Carrossel Horizontal com setas no Desktop) */}
+              <div className="mt-8 mb-3 flex items-center justify-between px-2 lg:px-0">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1 rounded-md">
+                    {todayCompleted} / {activeData.cycles.length}
+                  </span>
+                </div>
+
+                {/* BOTÕES DE NAVEGAÇÃO DESKTOP */}
+                {activeData.cycles.length > 0 && (
+                  <div className="hidden lg:flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => scrollCarousel('left')}
+                      className="h-8 w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
+                    >
+                      <ChevronLeft size={16} />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => scrollCarousel('right')}
+                      className="h-8 w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
+                    >
+                      <ChevronRight size={16} />
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
@@ -334,12 +368,12 @@ export default function DashboardApp() {
                     onMouseMove={handleMouseMove}
                     className={`
                       relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory 
-                      lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:overflow-visible lg:mx-0 lg:px-0 lg:cursor-auto lg:snap-none 
+                      lg:mx-0 lg:px-0 lg:snap-none
                       ${isDragging ? '[&_*]:pointer-events-none' : ''}
                     `}
                   >
                     {/* Botão Novo Ciclo */}
-                    <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-auto flex items-stretch">
+                    <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-[360px] flex items-stretch">
                       <button 
                         onClick={handleQuickAddCycle}
                         className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
@@ -356,7 +390,7 @@ export default function DashboardApp() {
                       {activeData.cycles.map((cycle, index) => (
                         <CycleCard 
                           key={cycle.id}
-                          className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-auto h-full" 
+                          className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-[360px] h-full" 
                           index={activeData.cycles.length - index} 
                           cycle={cycle}
                           onUpdateOperation={handleUpdateOperation}
