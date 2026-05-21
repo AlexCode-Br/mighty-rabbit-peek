@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Settings, Plus, TrendingUp } from 'lucide-react';
+import { Settings, Plus, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { formatBRL } from '../utils/currency';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -41,13 +41,16 @@ export function Dashboard({
   
   let progress = 0;
   let progressColorClass = 'bg-zinc-900 dark:bg-zinc-100';
+  let progressGlow = 'none';
   
   if (isProfit && dailyGoal > 0) {
     progress = Math.min((dailyProfit / dailyGoal) * 100, 100);
     progressColorClass = 'bg-emerald-500';
+    progressGlow = '0 0 10px rgba(16, 185, 129, 0.4)';
   } else if (!isProfit && stopLoss > 0) {
     progress = Math.min((Math.abs(dailyProfit) / stopLoss) * 100, 100);
     progressColorClass = 'bg-rose-500';
+    progressGlow = '0 0 10px rgba(244, 63, 94, 0.4)';
   }
 
   const isWeeklyProfit = weeklyProfit > 0;
@@ -112,12 +115,13 @@ export function Dashboard({
                 </span>
               </div>
               
-              <div className="relative h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div className="relative h-2 w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full overflow-hidden border border-zinc-200/50 dark:border-zinc-700/50">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 1, ease: [0.23, 1, 0.32, 1] }}
                   className={`absolute top-0 left-0 h-full ${progressColorClass} rounded-full`}
+                  style={{ boxShadow: progressGlow }}
                 />
               </div>
               
@@ -137,17 +141,20 @@ export function Dashboard({
         transition={{ duration: 0.5, delay: 0.1 }}
         className="grid grid-cols-3 gap-2"
       >
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-3 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100 leading-none mb-1">{cyclesCount}</span>
-          <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest text-center">Operações</span>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-3 flex flex-col items-center justify-center shadow-sm relative overflow-hidden group">
+          <Activity className="absolute -right-2 -bottom-2 text-zinc-100 dark:text-zinc-800/50 transition-transform group-hover:scale-110 group-hover:-rotate-6" size={46} strokeWidth={2} />
+          <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100 leading-none mb-1 z-10">{cyclesCount}</span>
+          <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest text-center z-10">Operações</span>
         </div>
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-3 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-lg font-bold text-emerald-500 leading-none mb-1">{todayWins}</span>
-          <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest text-center">Vitórias</span>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-3 flex flex-col items-center justify-center shadow-sm relative overflow-hidden group">
+          <TrendingUp className="absolute -right-2 -bottom-2 text-emerald-50 dark:text-emerald-500/10 transition-transform group-hover:scale-110 group-hover:-rotate-6" size={46} strokeWidth={2} />
+          <span className="text-xl font-bold text-emerald-500 leading-none mb-1 z-10">{todayWins}</span>
+          <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest text-center z-10">Vitórias</span>
         </div>
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-3 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-lg font-bold text-rose-500 leading-none mb-1">{todayLosses}</span>
-          <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest text-center">Derrotas</span>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-3 flex flex-col items-center justify-center shadow-sm relative overflow-hidden group">
+          <TrendingDown className="absolute -right-2 -bottom-2 text-rose-50 dark:text-rose-500/10 transition-transform group-hover:scale-110 group-hover:rotate-6" size={46} strokeWidth={2} />
+          <span className="text-xl font-bold text-rose-500 leading-none mb-1 z-10">{todayLosses}</span>
+          <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest text-center z-10">Derrotas</span>
         </div>
       </motion.div>
 
@@ -159,9 +166,12 @@ export function Dashboard({
       >
         <Button
           onClick={onNewCycle}
-          className="w-full h-14 rounded-[20px] bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] dark:shadow-[0_4px_14px_0_rgb(255,255,255,0.05)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 font-medium border-none text-base"
+          className="w-full h-14 rounded-[20px] bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] dark:shadow-[0_4px_14px_0_rgb(255,255,255,0.05)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 font-medium border-none text-base group"
         >
-          <Plus size={20} /> Novo Ciclo de Operação
+          <div className="w-6 h-6 rounded-full bg-white/20 dark:bg-zinc-900/20 flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+            <Plus size={16} strokeWidth={3} />
+          </div>
+          Novo Ciclo de Operação
         </Button>
       </motion.div>
       
@@ -218,7 +228,6 @@ export function Dashboard({
                   />
                   <Bar dataKey="profit" radius={[4, 4, 4, 4]} minPointSize={4}>
                     {weeklyChartData.map((entry, index) => {
-                      // Usa cores vibrantes para dias com dados, e cinza neutro e transparente para os vazios
                       let color = '#f43f5e'; // rose-500
                       if (entry.hasData) {
                         if (entry.profit >= 0) color = '#10b981'; // emerald-500
