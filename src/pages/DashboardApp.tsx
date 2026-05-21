@@ -29,7 +29,7 @@ export default function DashboardApp() {
   // Controle de Scroll Horizontal com Mouse (Desktop)
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const isMouseDown = useRef(false); // Nova ref para saber se o mouse está pressionado
+  const isMouseDown = useRef(false);
   const startX = useRef(0);
   const scrollLeft = useRef(0);
   
@@ -166,7 +166,6 @@ export default function DashboardApp() {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Funções de Drag-to-Scroll (Inteligentes para não bloquear cliques)
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!carouselRef.current) return;
     isMouseDown.current = true;
@@ -181,8 +180,6 @@ export default function DashboardApp() {
 
   const handleMouseUp = () => {
     isMouseDown.current = false;
-    // Delay de 50ms antes de tirar o isDragging permite que o clique "morra"
-    // se o usuário estava realmente arrastando, sem acionar os botões sem querer.
     setTimeout(() => setIsDragging(false), 50);
   };
 
@@ -190,15 +187,14 @@ export default function DashboardApp() {
     if (!isMouseDown.current || !carouselRef.current) return;
     
     const x = e.pageX - carouselRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.5; // Velocidade do arrasto
+    const walk = (x - startX.current) * 1.5;
     
-    // Se moveu mais de 5 pixels, é um arrasto de verdade (ativa o bloqueio de cliques)
     if (Math.abs(walk) > 5 && !isDragging) {
       setIsDragging(true);
     }
     
     if (isDragging) {
-      e.preventDefault(); // Evita selecionar textos
+      e.preventDefault();
       carouselRef.current.scrollLeft = scrollLeft.current - walk;
     }
   };
@@ -311,6 +307,19 @@ export default function DashboardApp() {
                 onMouseMove={handleMouseMove}
                 className={`flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing ${isDragging ? '[&_*]:pointer-events-none' : 'snap-x snap-mandatory'}`}
               >
+                {/* Botão Novo Ciclo como o PRIMEIRO item (à esquerda) */}
+                <div className="snap-center shrink-0 w-[24vw] sm:w-[100px] flex items-stretch">
+                  <button 
+                    onClick={() => setNewCycleOpen(true)}
+                    className="w-full rounded-[24px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-2 group-hover:rotate-90 transition-transform duration-300">
+                      <Plus size={20} />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300">Novo</span>
+                  </button>
+                </div>
+
                 <AnimatePresence mode="popLayout">
                   {activeData.cycles.map((cycle, index) => (
                     <CycleCard 
@@ -324,19 +333,6 @@ export default function DashboardApp() {
                     />
                   ))}
                 </AnimatePresence>
-                
-                {/* Cartão de Adicionar ao final do carrossel */}
-                <div className="snap-center shrink-0 w-[70vw] sm:w-[260px] flex items-stretch">
-                  <button 
-                    onClick={() => setNewCycleOpen(true)}
-                    className="w-full rounded-[32px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
-                  >
-                    <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-2 group-hover:rotate-90 transition-transform duration-300">
-                      <Plus size={24} />
-                    </div>
-                    <span className="text-sm font-semibold">Novo Ciclo</span>
-                  </button>
-                </div>
               </div>
             )}
           </motion.div>
