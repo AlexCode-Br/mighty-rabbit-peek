@@ -85,60 +85,89 @@ export function ExportDialog({ open, onOpenChange, data, currentMonth }: ExportD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[95vw] rounded-[32px] liquid-glass-panel border-black/5 dark:border-white/20 shadow-2xl p-5 sm:p-6 [&>button]:hidden outline-none bg-white/90 dark:bg-zinc-950/80 backdrop-blur-2xl">
-        <DialogHeader className="mb-6 relative text-left">
-          <button onClick={() => onOpenChange(false)} className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
-            <X size={16} strokeWidth={2.5} />
+      <DialogContent className="sm:max-w-md w-[95vw] rounded-[32px] overflow-hidden p-0 border-none bg-transparent shadow-none outline-none ring-0">
+        <div className="relative w-full h-full p-6 sm:p-8 liquid-glass-panel border-white/40 dark:border-white/10 shadow-2xl bg-white/70 dark:bg-zinc-900/40 backdrop-blur-3xl">
+          
+          <button 
+            onClick={() => onOpenChange(false)} 
+            className="absolute right-5 top-5 h-9 w-9 flex items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all active:scale-90 z-20"
+          >
+            <X size={18} strokeWidth={2.5} />
           </button>
-          <div className="flex items-center gap-3 pr-10">
-            <div className="w-12 h-12 rounded-[18px] bg-blue-500/10 text-blue-500 flex items-center justify-center border border-blue-500/20">
-              <FileText size={22} />
+
+          <DialogHeader className="mb-8 text-left">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-[20px] bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20 shadow-sm">
+                <FileText size={26} />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black text-zinc-950 dark:text-zinc-50 tracking-tighter">Exportar</DialogTitle>
+                <p className="text-[11px] font-bold text-zinc-500/80 dark:text-zinc-400 uppercase tracking-widest mt-0.5">Gere seus relatórios premium</p>
+              </div>
             </div>
-            <div>
-              <DialogTitle className="text-xl font-black text-zinc-900 dark:text-zinc-100 tracking-tighter">Exportar</DialogTitle>
-              <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Gere seus relatórios</p>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] ml-1">Período Selecionado</label>
+              <Select value={exportMode} onValueChange={(val: any) => setExportMode(val)}>
+                <SelectTrigger className="w-full bg-white/50 dark:bg-black/20 border-zinc-200 dark:border-white/10 h-14 rounded-2xl font-bold text-zinc-900 dark:text-white shadow-sm focus:ring-2 focus:ring-indigo-500/20">
+                  <SelectValue placeholder="Selecione o período" />
+                </SelectTrigger>
+                <SelectContent className="liquid-glass-panel border-white/20 rounded-2xl overflow-hidden">
+                  <SelectItem value="month" className="font-bold py-3">Apenas {monthName}</SelectItem>
+                  <SelectItem value="custom" className="font-bold py-3">Personalizado</SelectItem>
+                  <SelectItem value="all" className="font-bold py-3">Todo o histórico</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <AnimatePresence>
+                {exportMode === 'custom' && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -10 }} 
+                    className="grid grid-cols-2 gap-3 mt-3"
+                  >
+                    <div className="space-y-1.5">
+                      <span className="text-[9px] font-black text-zinc-500 uppercase ml-1">Data Inicial</span>
+                      <input 
+                        type="date" 
+                        value={startDate} 
+                        onChange={(e) => setStartDate(e.target.value)} 
+                        className="w-full bg-white/50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 h-12 rounded-xl px-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-indigo-500/40 dark:[color-scheme:dark] transition-colors" 
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <span className="text-[9px] font-black text-zinc-500 uppercase ml-1">Data Final</span>
+                      <input 
+                        type="date" 
+                        value={endDate} 
+                        onChange={(e) => setEndDate(e.target.value)} 
+                        className="w-full bg-white/50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 h-12 rounded-xl px-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-indigo-500/40 dark:[color-scheme:dark] transition-colors" 
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 pt-2">
+              <Button 
+                onClick={handleExportPDF} 
+                className="w-full h-15 rounded-2xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-black text-base shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-transform"
+              >
+                <FileText size={20} className="mr-2" /> Gerar Relatório PDF
+              </Button>
+              <Button 
+                onClick={handleExportCSV} 
+                variant="outline" 
+                className="w-full h-15 rounded-2xl border-zinc-200 dark:border-white/10 bg-white/40 dark:bg-white/5 hover:bg-zinc-50 dark:hover:bg-white/10 font-bold text-base text-zinc-900 dark:text-white transition-all active:scale-[0.98]"
+              >
+                <FileSpreadsheet size={20} className="mr-2 text-emerald-600 dark:text-emerald-400" /> Exportar Planilha
+              </Button>
             </div>
           </div>
-        </DialogHeader>
-        
-        <div className="mb-6 space-y-4">
-          <div className="bg-black/[0.03] dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-2xl p-4">
-            <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] block mb-2">Período</label>
-            <Select value={exportMode} onValueChange={(val: any) => setExportMode(val)}>
-              <SelectTrigger className="w-full bg-white/50 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-xl font-bold text-zinc-900 dark:text-white">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent className="liquid-glass-panel border-black/10 dark:border-white/20 rounded-2xl">
-                <SelectItem value="month">Apenas {monthName}</SelectItem>
-                <SelectItem value="custom">Personalizado</SelectItem>
-                <SelectItem value="all">Todo o histórico</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <AnimatePresence>
-              {exportMode === 'custom' && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="grid grid-cols-2 gap-3 mt-4">
-                  <div>
-                    <label className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1 block">Início</label>
-                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-white/50 dark:bg-white/5 border border-black/10 dark:border-white/10 h-11 rounded-xl px-3 text-sm font-bold text-zinc-900 dark:text-white outline-none dark:[color-scheme:dark]" />
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1 block">Fim</label>
-                    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-white/50 dark:bg-white/5 border border-black/10 dark:border-white/10 h-11 rounded-xl px-3 text-sm font-bold text-zinc-900 dark:text-white outline-none dark:[color-scheme:dark]" />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Button onClick={handleExportPDF} className="w-full h-14 rounded-2xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-black text-base shadow-xl border-white/10">
-            <FileText size={18} className="mr-2" /> Gerar PDF
-          </Button>
-          <Button onClick={handleExportCSV} variant="outline" className="w-full h-14 rounded-2xl border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 font-black text-base text-zinc-900 dark:text-white transition-colors">
-            <FileSpreadsheet size={18} className="mr-2" /> Planilha
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
