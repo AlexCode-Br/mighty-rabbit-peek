@@ -445,8 +445,9 @@ export default function DashboardApp() {
       {/* BOTÃO FLUTUANTE SUSPENSO DO CHAT */}
       <AnimatePresence>
         {!isChatOpen && (
-          <div className="fixed bottom-6 right-6 z-40">
+          <div className="fixed bottom-6 right-6 z-30">
             <motion.button
+              key="chat-toggle-btn"
               onClick={() => setIsChatOpen(true)}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -467,20 +468,22 @@ export default function DashboardApp() {
           <>
             {/* Backdrop escuro translúcido */}
             <motion.div
+              key="chat-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.4 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsChatOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-45"
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[40]"
             />
 
             {/* Container do Chat */}
             <motion.div
+              key="chat-panel-container"
               initial={{ opacity: 0, y: "100%" }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 sm:left-auto sm:right-6 sm:bottom-6 w-full sm:w-[400px] z-45"
+              className="fixed bottom-0 left-0 right-0 sm:left-auto sm:right-6 sm:bottom-6 w-full sm:w-[400px] z-[50]"
             >
               <ChatPanel 
                 messages={data.chatMessages || []}
