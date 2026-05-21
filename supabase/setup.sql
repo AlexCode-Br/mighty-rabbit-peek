@@ -1,7 +1,7 @@
--- Adicionar coluna de chat à tabela app_data para persistência
+-- COMANDO PARA CRIAR A COLUNA DE CHAT NO BANCO DE DADOS
 ALTER TABLE public.app_data 
 ADD COLUMN IF NOT EXISTS chat_messages JSONB DEFAULT '[]'::jsonb;
 
--- Re-garantir permissões
+-- GARANTIR QUE O APP POSSA LER E ESCREVER NESTA COLUNA
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.app_data TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.app_data TO service_role;
