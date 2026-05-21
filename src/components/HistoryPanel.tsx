@@ -221,14 +221,14 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Relatórios (Aparece apenas se houver dados no mês atual) */}
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Exportar Dados</h3>
+            <ImportExportPanel data={data} currentMonth={currentMonth} />
+          </div>
         </>
       )}
-
-      {/* Relatórios (Sempre Visíveis) */}
-      <div className="mt-6">
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Exportar Dados</h3>
-        <ImportExportPanel data={data} />
-      </div>
 
       {/* Modal de Detalhes do Dia */}
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
