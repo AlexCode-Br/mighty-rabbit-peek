@@ -6,7 +6,7 @@ import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
 import { NewCycleDialog } from '../components/NewCycleDialog';
 import { useAuth } from '../components/AuthProvider';
-import { LogOut, Activity, Sun, Moon, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LogOut, Activity, Sun, Moon, Plus, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
@@ -156,7 +156,6 @@ export default function DashboardApp() {
 
   const handleEditPastDay = (date: Date) => {
     setActiveDate(date);
-    // Rola de volta para o topo da página suavemente
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -240,8 +239,8 @@ export default function DashboardApp() {
             />
           </motion.div>
 
-          {/* 3. OPERAÇÕES DO DIA (Ciclos) */}
-          <div className="mt-8 mb-4 flex items-center justify-between px-2">
+          {/* 3. OPERAÇÕES DO DIA (Ciclos Horizontais) */}
+          <div className="mt-8 mb-2 flex items-center justify-between px-2">
             <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
             <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1 rounded-md">
               {todayCompleted} / {activeData.cycles.length}
@@ -252,14 +251,21 @@ export default function DashboardApp() {
             {activeData.cycles.length === 0 ? (
               <div className="bg-white dark:bg-zinc-900 border border-dashed border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-6 flex flex-col items-center justify-center text-center shadow-sm">
                 <Activity size={20} className="text-zinc-300 dark:text-zinc-600 mb-2" />
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Nenhum ciclo registrado.</p>
+                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-4">Nenhum ciclo registrado hoje.</p>
+                <Button 
+                  onClick={() => setNewCycleOpen(true)} 
+                  className="rounded-xl h-10 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm flex items-center gap-2 px-4 text-xs"
+                >
+                  <Plus size={14} /> Adicionar Ciclo
+                </Button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="flex overflow-x-auto gap-3 snap-x snap-mandatory no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch">
                 <AnimatePresence mode="popLayout">
                   {activeData.cycles.map((cycle, index) => (
                     <CycleCard 
                       key={cycle.id}
+                      className="snap-center shrink-0 w-[88vw] sm:w-[340px]"
                       index={activeData.cycles.length - index} 
                       cycle={cycle}
                       onUpdateOperation={handleUpdateOperation}
@@ -268,12 +274,22 @@ export default function DashboardApp() {
                     />
                   ))}
                 </AnimatePresence>
+                
+                {/* Botão de Adicionar ao final do carrossel */}
+                <div className="snap-center shrink-0 w-[20vw] sm:w-[100px] flex items-center justify-center">
+                  <button 
+                    onClick={() => setNewCycleOpen(true)}
+                    className="w-14 h-14 rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex items-center justify-center transition-all"
+                  >
+                    <Plus size={24} />
+                  </button>
+                </div>
               </div>
             )}
           </motion.div>
 
           {/* 4. HISTÓRICO MENSAL */}
-          <div className="mt-10 mb-4 px-2">
+          <div className="mt-4 mb-4 px-2">
             <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Visão Mensal</h3>
           </div>
           
@@ -281,7 +297,7 @@ export default function DashboardApp() {
             <HistoryPanel data={data} onEditDay={handleEditPastDay} />
           </motion.div>
 
-          {/* Spacer pro final da tela + Safe Area (Garante que o último conteúdo não fique grudado no fundo ou debaixo da barra do iPhone) */}
+          {/* Spacer pro final da tela + Safe Area */}
           <div className="w-full" style={{ height: 'calc(env(safe-area-inset-bottom) + 32px)' }}></div>
         </div>
       </div>

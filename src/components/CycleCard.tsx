@@ -15,9 +15,10 @@ interface CycleCardProps {
   onUpdateOperation: (cycleId: string, operationId: string, updates: Partial<Operation>) => void;
   onDeleteCycle: (cycleId: string) => void;
   onDuplicateCycle: (cycle: Cycle) => void;
+  className?: string;
 }
 
-export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDuplicateCycle }: CycleCardProps) {
+export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDuplicateCycle, className }: CycleCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isProfit = cycle.totalProfit > 0;
   const isLoss = cycle.totalProfit < 0;
@@ -33,11 +34,12 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
         layout
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)", transition: { duration: 0.2 } }}
+        exit={{ opacity: 0, scale: 0.9, filter: "blur(4px)", transition: { duration: 0.2 } }}
         transition={{ type: "spring", stiffness: 500, damping: 40 }}
+        className={className}
       >
-        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-[20px] mb-3 overflow-hidden group relative">
-          <CardContent className="p-0">
+        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-[20px] overflow-hidden group relative h-full flex flex-col">
+          <CardContent className="p-0 flex-1 flex flex-col">
             <div className="flex justify-between items-center px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800/50">
               <div className="flex items-center gap-2 min-w-0 pr-2">
                 <div className={`w-2 h-2 rounded-full shrink-0 ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-zinc-900 dark:bg-zinc-100 animate-pulse'}`} />
@@ -76,7 +78,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
               </div>
             </div>
 
-            <div className="p-1.5 space-y-0.5">
+            <div className="p-1.5 space-y-0.5 flex-1 flex flex-col justify-center">
               {cycle.operations.map((op) => {
                 const isOpCompleted = op.withdraw !== null;
                 const opProfit = op.profit || 0;
