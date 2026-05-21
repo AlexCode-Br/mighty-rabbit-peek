@@ -1,5 +1,5 @@
 import { AppData } from '../types';
-import { format, parseISO, isSameDay } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -72,7 +72,7 @@ export const exportToPDF = (data: AppData) => {
   };
 
   const cardW = (pageWidth - 40) / 3;
-  drawCard(15, cursorY, cardW, 25, 'LUCRO LÍQUIDO', `R$ ${totalProfit.toFixed(2)}`, totalProfit === 0 ? undefined : totalProfit > 0);
+  drawCard(15, cursorY, cardW, 25, 'LUCRO LÍQUIDO', `R$ ${totalProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, totalProfit === 0 ? undefined : totalProfit > 0);
   drawCard(15 + cardW + 5, cursorY, cardW, 25, 'TAXA DE ACERTO', `${winRate}%`);
   drawCard(15 + (cardW * 2) + 10, cursorY, cardW, 25, 'CICLOS TOTAIS', `${totalCycles}`);
 
@@ -102,7 +102,7 @@ export const exportToPDF = (data: AppData) => {
     .reverse();
 
   if (sortedDays.length > 0) {
-    const maxVal = Math.max(...sortedDays.map(d => Math.abs(d.dailyProfit)), 10);
+    const maxVal = Math.max(...sortedDays.map(d => Math.abs(d.dailyProfit)), 10); // Evita divisão por zero
     const barSpacing = (pageWidth - 40) / 7;
     
     sortedDays.forEach((day, index) => {
@@ -123,8 +123,15 @@ export const exportToPDF = (data: AppData) => {
       
       if (day.dailyProfit !== 0) {
         doc.setTextColor(isProfit ? 16 : 244, isProfit ? 185 : 63, isProfit ? 129 : 94);
-        const valLabel = `${isProfit ? '+' : ''}${day.dailyProfit.toFixed(0)}`;
-        doc.text(valLabel, barX + 5, isProfit ? barY - 2 : barY + barH + 4, { align: 'center' });
+        
+        // Exibição mais compacta do valor (ex: +1.2k ou +1500)
+        let valLabel = day.dailyProfit.toFixed(0);
+        if (Math.abs(day.dailyProfit) >= 1000) {
+          valLabel = (day.dailyProfit / 1000).toFixed(1).replace('.0', '') + 'k';
+        }
+        
+        const finalLabel = `${isProfit ? '+' : ''}${valLabel}`;
+        doc.text(finalLabel, barX + 5, isProfit ? barY - 2 : barY + barH + 4, { align: 'center' });
       }
     });
   } else {
@@ -153,11 +160,14 @@ export const exportToPDF = (data: AppData) => {
 
     const dateStr = format(parseISO(day.date), 'dd/MM/yyyy');
     const profit = day.dailyProfit;
-    const formatCurr = (val: number) => `R$ ${val.toFixed(2)}`;
+    const formatCurr = (val: number) => `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    
+    // Evita infinity/NaN se a meta for 0
     const percent = dailyGoal > 0 ? (profit / dailyGoal) * 100 : 0;
+    const percentStr = dailyGoal > 0 ? `${percent.toFixed(0)}%` : '-';
     
     let status = 'Empate';
-    if (profit >= dailyGoal) status = 'Meta Batida';
+    if (profit > 0 && dailyGoal > 0 && profit >= dailyGoal) status = 'Meta Batida';
     else if (profit > 0) status = 'Lucro';
     else if (profit < 0) status = 'Loss';
 
@@ -165,7 +175,7 @@ export const exportToPDF = (data: AppData) => {
       dateStr,
       day.cycles.length.toString(),
       formatCurr(profit),
-      `${percent.toFixed(0)}%`,
+      percentStr,
       status
     ]);
   });
@@ -195,18 +205,19 @@ export const exportToPDF = (data: AppData) => {
       lineColor: [228, 228, 231],
       lineWidth: 0.1,
     },
-    willDrawCell: (data) => {
+    // Método CORRETO para customizar cores de células específicas (não afeta global)
+    didParseCell: (data) => {
       if (data.section === 'body') {
         const statusVal = data.row.raw[4];
         if (statusVal === 'Meta Batida' || statusVal === 'Lucro') {
-          if (data.column.index === 2 || data.column.index === 3 || data.column.index === 4) {
-            doc.setTextColor(16, 185, 129); // emerald
-            doc.setFont('helvetica', 'bold');
+          if ([2, 3, 4].includes(data.column.index)) {
+            data.cell.styles.textColor = [16, 185, 129]; // emerald
+            data.cell.styles.fontStyle = 'bold';
           }
         } else if (statusVal === 'Loss') {
-          if (data.column.index === 2 || data.column.index === 3 || data.column.index === 4) {
-            doc.setTextColor(244, 63, 94); // rose
-            doc.setFont('helvetica', 'bold');
+          if ([2, 3, 4].includes(data.column.index)) {
+            data.cell.styles.textColor = [244, 63, 94]; // rose
+            data.cell.styles.fontStyle = 'bold';
           }
         }
       }
@@ -235,7 +246,7 @@ export const exportToPDF = (data: AppData) => {
       const dateStr = cycle.createdAt ? format(parseISO(cycle.createdAt), 'dd/MM/yy') : format(parseISO(day.date), 'dd/MM/yy');
       const timeStr = cycle.createdAt ? format(parseISO(cycle.createdAt), 'HH:mm') : '--:--';
       
-      const formatCurr = (val: number | null) => val !== null ? `R$ ${val.toFixed(2)}` : '-';
+      const formatCurr = (val: number | null) => val !== null ? `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
       
       tableData.push([
         `${dateStr}\n${timeStr}`,
@@ -272,29 +283,27 @@ export const exportToPDF = (data: AppData) => {
       lineColor: [228, 228, 231],
       lineWidth: 0.1,
     },
-    willDrawCell: (data) => {
+    didParseCell: (data) => {
       if (data.section === 'body') {
         const statusVal = data.row.raw[4];
         if (statusVal === 'Lucro') {
           if (data.column.index === 3 || data.column.index === 4) {
-            doc.setTextColor(16, 185, 129); // emerald
-            doc.setFont('helvetica', 'bold');
+            data.cell.styles.textColor = [16, 185, 129]; // emerald
+            data.cell.styles.fontStyle = 'bold';
           }
         } else if (statusVal === 'Loss') {
           if (data.column.index === 3 || data.column.index === 4) {
-            doc.setTextColor(244, 63, 94); // rose
-            doc.setFont('helvetica', 'bold');
+            data.cell.styles.textColor = [244, 63, 94]; // rose
+            data.cell.styles.fontStyle = 'bold';
           }
         }
       }
     }
   });
 
-  // Salvar PDF e Abrir Automaticamente
+  // Salvar PDF
   const fileName = `TradeTracker_Relatorio_${format(new Date(), 'ddMMyyyy_HHmm')}.pdf`;
-  doc.save(fileName); // Baixa o arquivo localmente
-
-  // Gera a URL do blob interno e abre uma nova aba no navegador (isso aciona a visualização de PDF do Chrome/Safari/Edge)
-  const pdfBlobUrl = URL.createObjectURL(doc.output('blob'));
-  window.open(pdfBlobUrl, '_blank');
+  
+  // Agora apenas fazemos o download direto do arquivo. Evita bugs no celular e bloqueadores de pop-up no Desktop.
+  doc.save(fileName);
 };
