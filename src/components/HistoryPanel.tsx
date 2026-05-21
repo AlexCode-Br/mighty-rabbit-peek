@@ -8,7 +8,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { ChevronLeft, ChevronRight, X, Target, BarChart2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
@@ -74,6 +74,11 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
   }, [historyDays, currentMonth]);
 
   const hasMonthlyData = monthlyData.totalDays > 0;
+
+  // --- Estatísticas do Dia Selecionado ---
+  const selectedDayCompletedCycles = selectedDay?.cycles.filter(c => c.completed).length || 0;
+  const selectedDayWins = selectedDay?.cycles.filter(c => c.completed && c.totalProfit > 0).length || 0;
+  const selectedDayWinRate = selectedDayCompletedCycles > 0 ? (selectedDayWins / selectedDayCompletedCycles) * 100 : 0;
 
   return (
     <div className="space-y-4 pb-4">
@@ -232,7 +237,7 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
 
       {/* Modal de Detalhes do Dia */}
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
-        <DialogContent className="sm:max-w-md rounded-[32px] h-[80vh] flex flex-col p-0 bg-[#FAFAFA] dark:bg-zinc-950 border-none shadow-2xl [&>button]:hidden outline-none">
+        <DialogContent className="sm:max-w-md rounded-[32px] h-[85vh] flex flex-col p-0 bg-[#FAFAFA] dark:bg-zinc-950 border-none shadow-2xl [&>button]:hidden outline-none">
           <DialogHeader className="p-8 pb-6 shrink-0 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white dark:bg-zinc-900 rounded-t-[32px] relative text-left">
             <button 
               onClick={() => setSelectedDay(null)}
@@ -244,16 +249,23 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
               {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM", { locale: ptBR })}
             </DialogTitle>
             
-            <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-sm mt-3 flex justify-between items-center pr-8">
-              <span className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-lg text-xs font-medium">
-                <Target size={12} className={selectedDay && selectedDay.dailyProfit >= data.settings.dailyGoal ? "text-emerald-500" : "text-zinc-400"} />
-                {selectedDay ? Math.min((selectedDay.dailyProfit / data.settings.dailyGoal) * 100, 100).toFixed(0) : 0}% da meta
-              </span>
+            <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-sm mt-3 flex justify-between items-end pr-6">
+              <div className="flex flex-col gap-2">
+                <span className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg text-xs font-medium w-fit">
+                  <Target size={12} className={selectedDay && selectedDay.dailyProfit >= data.settings.dailyGoal ? "text-emerald-500" : "text-zinc-400"} />
+                  {selectedDay ? Math.min((selectedDay.dailyProfit / data.settings.dailyGoal) * 100, 100).toFixed(0) : 0}% da meta
+                </span>
+                <span className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg text-xs font-medium w-fit">
+                  <Percent size={12} className={selectedDayWinRate >= 50 ? "text-emerald-500" : "text-rose-500"} />
+                  {selectedDayWinRate.toFixed(0)}% de acerto
+                </span>
+              </div>
+
               <div className="flex flex-col items-end">
-                <span className={`font-bold text-lg leading-none ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                <span className={`font-bold text-2xl tracking-tight leading-none ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}
                 </span>
-                <span className="text-[10px] uppercase tracking-wider font-semibold mt-1">
+                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-bold mt-1.5">
                   {selectedDay?.cycles.length} ciclos
                 </span>
               </div>
@@ -261,34 +273,66 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
           </DialogHeader>
           
           <ScrollArea className="flex-1 px-4 sm:px-6 pb-6">
-            <div className="space-y-4 pt-6">
+            <div className="space-y-3 pt-6">
               {selectedDay?.cycles.map((cycle, i) => {
                 const isCycleProfit = cycle.totalProfit > 0;
+                const isCycleLoss = cycle.totalProfit < 0;
                 const cycleNumber = selectedDay.cycles.length - i;
 
                 return (
-                  <div key={cycle.id} className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm">
-                    <div className="flex justify-between items-center mb-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                      <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        Ciclo {cycleNumber}
-                        {cycle.createdAt && (
-                          <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
-                            • {format(parseISO(cycle.createdAt), 'HH:mm')}
-                          </span>
-                        )}
-                      </h4>
-                      <span className={`text-sm font-semibold ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : cycle.totalProfit < 0 ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100') : 'text-zinc-400 dark:text-zinc-500'}`}>
+                  <div key={cycle.id} className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm rounded-[20px] overflow-hidden">
+                    <div className="flex justify-between items-center px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full shrink-0 ${cycle.completed ? (isCycleProfit ? 'bg-emerald-500' : isCycleLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-zinc-900 dark:bg-zinc-100 animate-pulse'}`} />
+                        <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                          Ciclo {cycleNumber}
+                          {cycle.createdAt && (
+                            <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+                              • {format(parseISO(cycle.createdAt), 'HH:mm')}
+                            </span>
+                          )}
+                        </h4>
+                      </div>
+                      <span className={`text-sm font-semibold tracking-tight ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : isCycleLoss ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100') : 'text-zinc-400 dark:text-zinc-500'}`}>
                         {cycle.completed ? (isCycleProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
                       </span>
                     </div>
 
-                    <div className="space-y-3">
-                      {cycle.operations.map((op) => (
-                        <div key={op.id} className="flex justify-between items-center text-xs">
-                          <span className="font-semibold text-zinc-400 dark:text-zinc-500 w-12">{op.type}</span>
-                          <span className="text-zinc-900 dark:text-zinc-100 font-medium">{formatBRL(op.deposit)} <span className="text-zinc-300 dark:text-zinc-600 mx-2">→</span> {op.withdraw !== null ? formatBRL(op.withdraw) : '-'}</span>
-                        </div>
-                      ))}
+                    <div className="p-1.5 space-y-0.5">
+                      {cycle.operations.map((op) => {
+                        const opProfit = op.profit || 0;
+                        const isOpWin = opProfit > 0;
+                        const isOpLoss = opProfit < 0;
+
+                        return (
+                          <div key={op.id} className="flex items-center justify-between px-3 py-2 rounded-[14px] bg-zinc-50/50 dark:bg-zinc-800/20">
+                            <span className="text-[10px] font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider w-[20%]">
+                              {op.type}
+                            </span>
+                            
+                            <div className="flex flex-col items-center w-[30%]">
+                              <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Entrada</span>
+                              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                                {formatBRL(op.deposit)}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-col items-center w-[30%]">
+                              <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Saque</span>
+                              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                                {op.withdraw !== null ? formatBRL(op.withdraw) : '-'}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-col items-end w-[20%]">
+                              <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Lucro</span>
+                              <span className={`text-xs font-bold ${op.withdraw !== null ? (isOpWin ? 'text-emerald-500' : isOpLoss ? 'text-rose-500' : 'text-zinc-400') : 'text-zinc-300 dark:text-zinc-700'}`}>
+                                {op.withdraw !== null ? (isOpWin ? '+' : '') + formatBRL(opProfit) : '-'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
