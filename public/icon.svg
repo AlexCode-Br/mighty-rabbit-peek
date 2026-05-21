@@ -1,11 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Fundo 100% quadrado e sem transparência -->
-  <rect width="512" height="512" fill="#18181b" />
-  
-  <!-- Ícone Wallet centralizado -->
-  <svg x="128" y="128" width="256" height="256" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
-  </svg>
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+ "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="512.000000pt" height="512.000000pt" viewBox="0 0 512.000000 512.000000"
+ preserveAspectRatio="xMidYMid meet">
+
+<g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
+fill="#000000" stroke="none">
+<path d="M0 2560 l0 -2560 2560 0 2560 0 0 2560 0 2560 -2560 0 -2560 0 0
+-2560z m3352 1026 c31 -23 38 -66 38 -242 l0 -174 84 0 c79 0 86 -2 105 -26
+20 -25 21 -39 21 -265 l0 -239 28 0 c36 0 69 -31 77 -72 3 -18 5 -130 3 -249
+-3 -242 -6 -252 -74 -265 l-34 -6 0 -240 0 -239 -25 -24 -24 -25 -894 0
+c-1024 0 -952 -6 -1048 89 -94 95 -89 37 -89 946 0 888 -2 855 71 939 41 46
+75 69 134 93 46 18 1603 17 1627 -1z"/>
+<path d="M1765 3430 c-11 -4 -33 -22 -49 -38 -60 -64 -38 -163 44 -205 33 -16
+86 -17 750 -15 l715 3 3 133 3 132 -723 -1 c-398 0 -732 -4 -743 -9z"/>
+<path d="M1682 2400 l3 -640 38 -37 37 -38 840 -3 840 -2 0 184 0 184 -152 4
+c-171 5 -222 19 -286 81 -61 58 -85 111 -90 197 -4 68 -1 85 21 133 33 72 94
+131 163 157 46 17 78 20 199 20 l145 0 0 185 0 185 -818 0 c-695 0 -826 2
+-875 15 -32 8 -60 15 -63 15 -2 0 -3 -288 -2 -640z"/>
+<path d="M3143 2465 c-67 -29 -93 -125 -53 -189 34 -57 53 -61 264 -61 l191 0
+3 133 3 132 -188 0 c-139 -1 -196 -4 -220 -15z"/>
+</g>
 </svg>
