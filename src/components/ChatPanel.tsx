@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
 import { Button } from './ui/button';
@@ -61,7 +63,7 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)] lg:h-[calc(100vh-140px)] bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[28px] overflow-hidden shadow-sm">
+    <div className="flex flex-col h-[60dvh] sm:h-[500px] bg-white dark:bg-zinc-900 border-t sm:border border-zinc-200/60 dark:border-zinc-800/60 rounded-t-[32px] sm:rounded-[28px] overflow-hidden shadow-2xl">
       
       {/* Header do Chat */}
       <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/60 bg-zinc-50/30 dark:bg-zinc-800/10 flex items-center justify-between shrink-0">
@@ -128,14 +130,17 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
       </div>
 
       {/* Barra de Digitação */}
-      <div className="p-3 border-t border-zinc-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 shrink-0">
+      <div 
+        className="p-3 border-t border-zinc-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 shrink-0"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
+      >
         <form onSubmit={handleSend} className="flex gap-2">
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Digite sua anotação..."
-            className="flex-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-400 dark:focus:border-zinc-700 transition-colors"
+            className="flex-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-400 dark:focus:text-zinc-700 transition-colors"
           />
           <Button
             type="submit"
@@ -178,7 +183,7 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl p-3 text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-400 dark:focus:border-zinc-700 resize-none h-24"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl p-3 text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-400 dark:focus:text-zinc-700 resize-none h-24"
                 />
                 <Button 
                   onClick={handleSaveEdit}
