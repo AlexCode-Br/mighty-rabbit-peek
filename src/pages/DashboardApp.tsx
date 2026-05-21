@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useOperationDays, AddCycleData } from '../hooks/useOperationDays';
 import { Dashboard } from '../components/Dashboard';
 import { GoalSettings } from '../components/GoalSettings';
@@ -10,11 +10,13 @@ import { LogOut, Activity, CalendarDays, Home, Sun, Moon, Plus } from 'lucide-re
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
-import { showSuccess } from '../utils/toast';
+import { showSuccess, showError } from '../utils/toast';
 import { subDays, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Cycle } from '../types';
 import { formatBRL } from '../utils/currency';
+import confetti from 'canvas-confetti';
+import { toast } from 'sonner';
 
 export default function DashboardApp() {
   const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
@@ -23,6 +25,46 @@ export default function DashboardApp() {
   const [activeTab, setActiveTab] = useState<'ciclos' | 'home' | 'historico'>('home');
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+
+  // Referência para controlar o estado anterior do lucro (para disparar o confete só 1 vez)
+  const prevProfitRef = useRef<number | null>(null);
+
+  // Monitora mudanças no lucro diário para disparar notificações
+  useEffect(() => {
+    if (loading) return;
+
+    const prevProfit = prevProfitRef.current;
+    const currentProfit = todayData.dailyProfit;
+    const goal = data.settings.dailyGoal;
+    const stop = data.settings.stopLoss;
+
+    if (prevProfit !== null) {
+      // Bateu a Meta (cruzou o limite para cima)
+      if (goal > 0 && currentProfit >= goal && prevProfit < goal) {
+        confetti({
+          particleCount: 150,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#10b981', '#34d399', '#059669', '#f4f4f5'],
+          zIndex: 9999,
+        });
+        toast.success('Meta Diária Batida! 🎉', {
+          description: 'Excelente trabalho! Você alcançou seu objetivo do dia.',
+          duration: 6000,
+        });
+      }
+
+      // Bateu o Stop Loss (cruzou o limite para baixo)
+      if (stop > 0 && currentProfit <= -stop && prevProfit > -stop) {
+        toast.error('Stop Loss Atingido ⚠️', {
+          description: 'Limite diário alcançado. É hora de parar e proteger o capital.',
+          duration: 6000,
+        });
+      }
+    }
+
+    prevProfitRef.current = currentProfit;
+  }, [todayData.dailyProfit, data.settings.dailyGoal, data.settings.stopLoss, loading]);
 
   if (loading) {
     return (
@@ -48,7 +90,7 @@ export default function DashboardApp() {
     const dayId = format(d, 'yyyy-MM-dd');
     const dayData = data.history[dayId];
     return {
-      name: format(d, 'EE', { locale: ptBR }).substring(0, 3), // Seg, Ter, etc
+      name: format(d, 'EE', { locale: ptBR }).substring(0, 3),
       profit: dayData ? dayData.dailyProfit : 0,
       hasData: !!dayData && dayData.cycles.length > 0
     };
