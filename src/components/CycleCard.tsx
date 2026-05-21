@@ -38,47 +38,50 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
         transition={{ type: "spring", stiffness: 500, damping: 40 }}
         className={className}
       >
-        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-[20px] overflow-hidden group relative h-full flex flex-col">
+        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-md bg-white dark:bg-zinc-900 rounded-[24px] overflow-hidden group relative h-full flex flex-col">
           <CardContent className="p-0 flex-1 flex flex-col">
-            <div className="flex justify-between items-center px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800/50">
-              <div className="flex items-center gap-2 min-w-0 pr-2">
-                <div className={`w-2 h-2 rounded-full shrink-0 ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-zinc-900 dark:bg-zinc-100 animate-pulse'}`} />
-                <h3 className="font-semibold text-[13px] sm:text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 truncate">
+            
+            {/* Header do Ciclo */}
+            <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/30 dark:bg-zinc-800/10">
+              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                <div className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-blue-500 animate-pulse'}`} />
+                <h3 className="font-bold text-[14px] text-zinc-900 dark:text-zinc-100 flex items-center gap-2 truncate">
                   Ciclo {index}
                   {cycle.createdAt && (
-                    <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 shrink-0 hidden xs:inline">
-                      • {format(parseISO(cycle.createdAt), 'HH:mm')}
+                    <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 shrink-0 hidden xs:inline bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md">
+                      {format(parseISO(cycle.createdAt), 'HH:mm')}
                     </span>
                   )}
                 </h3>
               </div>
               
               <div className="flex items-center shrink-0 gap-1">
-                <span className={`text-[13px] sm:text-sm font-semibold tracking-tight mr-1 ${cycle.completed ? (isProfit ? 'text-emerald-500' : isLoss ? 'text-rose-500' : 'text-zinc-400 dark:text-zinc-500') : 'text-zinc-400 dark:text-zinc-500'}`}>
-                  {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
+                <span className={`text-[13px] sm:text-sm font-bold tracking-tight mr-2 px-2 py-0.5 rounded-md ${cycle.completed ? (isProfit ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10' : isLoss ? 'text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/10' : 'text-zinc-500 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800') : 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10'}`}>
+                  {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Em Andamento'}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => onDuplicateCycle(cycle)}
-                  className="text-zinc-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 h-7 w-7 rounded-full transition-colors shrink-0"
+                  className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-500/10 h-7 w-7 rounded-full transition-colors shrink-0"
                   title="Duplicar Entradas"
                 >
-                  <CopyPlus size={14} />
+                  <CopyPlus size={14} strokeWidth={2.5} />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 h-7 w-7 rounded-full transition-colors shrink-0 -mr-1.5"
+                  className="text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:text-rose-400 dark:hover:bg-rose-500/10 h-7 w-7 rounded-full transition-colors shrink-0 -mr-1.5"
                   title="Excluir Ciclo"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={14} strokeWidth={2.5} />
                 </Button>
               </div>
             </div>
 
-            <div className="p-1.5 space-y-0.5 flex-1 flex flex-col justify-center">
+            {/* Operações (Mãe e Filha) */}
+            <div className="p-3 flex-1 flex flex-col justify-center gap-3">
               {cycle.operations.map((op) => {
                 const isOpCompleted = op.withdraw !== null;
                 const opProfit = op.profit || 0;
@@ -86,73 +89,77 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                 const isOpLoss = opProfit < 0;
 
                 return (
-                  <div key={op.id} className="flex items-start justify-between px-2 sm:px-3 py-2.5 rounded-[14px] hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors w-full gap-2">
+                  <div key={op.id} className="p-3 bg-zinc-50/80 dark:bg-zinc-800/20 border border-zinc-200/50 dark:border-zinc-800/60 rounded-[18px] transition-colors w-full">
                     
-                    {/* Coluna 1: Tipo */}
-                    <div className="flex items-center shrink-0 w-[22%] sm:w-[25%] pt-0.5">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] sm:text-[11px] font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">{op.type}</span>
+                    {/* Linha 1: Título da Operação e Status */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[11px] font-extrabold text-zinc-700 dark:text-zinc-300 bg-zinc-200/60 dark:bg-zinc-700/60 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                          {op.type}
+                        </span>
                         {op.type === 'MAE' && (
-                          <div className="flex items-center gap-1 cursor-pointer" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
+                          <div className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => onUpdateOperation(cycle.id, op.id, { bau: !(op.bau ?? false) })}>
                             <Checkbox
                               id={`bau-${op.id}`}
                               checked={op.bau ?? false}
                               onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                              className="w-3 h-3 rounded-[3px] shrink-0"
+                              className="w-3.5 h-3.5 rounded-[4px] shrink-0 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
                             />
-                            <span className="text-[8px] sm:text-[9px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest select-none">
+                            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest select-none">
                               BAÚ
                             </span>
                           </div>
                         )}
                       </div>
-                    </div>
-                    
-                    {/* Coluna 2: Entrada */}
-                    <div className="flex flex-col w-[36%] sm:w-[35%] min-w-0">
-                      <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-medium mb-0.5 text-right truncate">Entrada</span>
-                      <CurrencyInput
-                        initialValue={op.deposit}
-                        onChange={(val) => onUpdateOperation(cycle.id, op.id, { deposit: val || 0 })}
-                      />
-                    </div>
-                    
-                    {/* Coluna 3: Saque */}
-                    <div className="flex flex-col w-[42%] sm:w-[40%] relative min-w-0">
-                      <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-medium mb-0.5 text-right truncate">Saque</span>
-                      <CurrencyInput
-                        initialValue={op.withdraw}
-                        onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
-                      />
-                      
-                      {!isOpCompleted ? (
-                        <div className="flex items-center justify-end gap-1 mt-1.5">
-                          <button 
-                            onClick={() => onUpdateOperation(cycle.id, op.id, { withdraw: 0 })}
-                            className="text-[9px] font-bold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 px-1.5 py-1 rounded border border-rose-100 dark:border-rose-500/20 active:scale-95 transition-all shadow-sm leading-none shrink-0"
-                            title="Loss (R$ 0)"
-                          >
-                            R$ 0
-                          </button>
-                          <button 
-                            onClick={() => onUpdateOperation(cycle.id, op.id, { withdraw: op.deposit })}
-                            className="text-[9px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-1.5 py-1 rounded border border-zinc-200 dark:border-zinc-700 active:scale-95 transition-all shadow-sm leading-none shrink-0"
-                            title="Empate (Retorno da Entrada)"
-                          >
-                            = Ent
-                          </button>
-                        </div>
-                      ) : (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -2 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className={`text-right mt-1.5 text-[10px] font-bold tracking-wider truncate ${isOpWin ? 'text-emerald-500' : isOpLoss ? 'text-rose-500' : 'text-zinc-400 dark:text-zinc-500'}`}
-                        >
+
+                      {/* Lucro individual da operação (mostra apenas se finalizada) */}
+                      {isOpCompleted && (
+                        <span className={`text-[11px] font-bold tracking-tight px-2 py-0.5 rounded-md ${isOpWin ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10' : isOpLoss ? 'text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/10' : 'text-zinc-500 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800'}`}>
                           {isOpWin ? '+' : ''}{formatBRL(opProfit)}
-                        </motion.div>
+                        </span>
                       )}
                     </div>
+                    
+                    {/* Linha 2: Caixas de Entrada e Saque */}
+                    <div className="flex gap-2.5">
+                      
+                      {/* Caixa de Entrada */}
+                      <div className="flex-1 bg-white dark:bg-zinc-900 rounded-xl p-2.5 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm flex flex-col justify-center">
+                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider mb-1">Entrada</span>
+                        <CurrencyInput
+                          initialValue={op.deposit}
+                          onChange={(val) => onUpdateOperation(cycle.id, op.id, { deposit: val || 0 })}
+                        />
+                      </div>
+                      
+                      {/* Caixa de Saque */}
+                      <div className="flex-1 bg-white dark:bg-zinc-900 rounded-xl p-2.5 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm flex flex-col justify-center relative">
+                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider mb-1">Saque</span>
+                        <CurrencyInput
+                          initialValue={op.withdraw}
+                          onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
+                        />
+                        
+                        {/* Botões de Atalho (Aparecem apenas se não finalizado) */}
+                        {!isOpCompleted && (
+                          <div className="flex items-center gap-1.5 mt-2.5">
+                            <button 
+                              onClick={() => onUpdateOperation(cycle.id, op.id, { withdraw: 0 })}
+                              className="flex-1 text-[10px] font-bold bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 py-1.5 rounded-lg border border-rose-100 dark:border-rose-500/20 active:scale-95 transition-all shadow-sm"
+                            >
+                              Loss
+                            </button>
+                            <button 
+                              onClick={() => onUpdateOperation(cycle.id, op.id, { withdraw: op.deposit })}
+                              className="flex-1 text-[10px] font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 active:scale-95 transition-all shadow-sm"
+                            >
+                              = Ent
+                            </button>
+                          </div>
+                        )}
+                      </div>
 
+                    </div>
                   </div>
                 );
               })}
@@ -227,7 +234,7 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
       placeholder="R$ 0"
       value={inputValue}
       onChange={handleChange}
-      className="w-full text-right text-[13px] sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100 bg-transparent outline-none border-b border-transparent focus:border-zinc-300 dark:focus:border-zinc-600 transition-colors placeholder:text-zinc-300 dark:placeholder:text-zinc-600 py-0.5 min-w-0"
+      className="w-full text-left text-[15px] font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate transition-colors focus:text-blue-600 dark:focus:text-blue-400"
     />
   );
 }
