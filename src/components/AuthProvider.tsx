@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../integrations/supabase/client';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Wallet } from 'lucide-react';
+import { LiquidGlassBackground } from './LiquidGlassBackground';
 
 interface AuthContextType {
   session: Session | null;
@@ -19,7 +22,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      // Pequeno delay para garantir que a animação de saída seja vista
+      setTimeout(() => setLoading(false), 800);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -34,18 +38,76 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut();
   };
 
-  if (loading) return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-zinc-950 flex flex-col gap-4 items-center justify-center">
-      <div className="w-10 h-10 border-[3px] border-zinc-200 dark:border-zinc-800 border-t-zinc-900 dark:border-t-zinc-100 rounded-full animate-spin" />
-      <span className="text-xs font-semibold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 animate-pulse">
-        Carregando...
-      </span>
-    </div>
-  );
-
   return (
     <AuthContext.Provider value={{ session, user, signOut }}>
-      {children}
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div 
+            key="loading-screen"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, filter: "blur(10px)" }}
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#f4f4f7] dark:bg-[#020204] overflow-hidden"
+          >
+            <LiquidGlassBackground />
+            
+            <div className="relative z-10 flex flex-col items-center">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                className="w-20 h-20 rounded-[28px] liquid-glass-panel flex items-center justify-center shadow-2xl mb-6 border-white/20"
+              >
+                <Wallet size={32} strokeWidth={2.5} className="text-zinc-900 dark:text-white" />
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-center"
+              >
+                <h2 className="text-xl font-black tracking-tighter text-zinc-900 dark:text-white flex items-center gap-0.5">
+                  <span>Trade</span><span className="text-zinc-500/80 dark:text-zinc-400">Tracker</span>
+                </h2>
+                <div className="mt-4 flex items-center gap-1.5 justify-center">
+                  <motion.div 
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                    className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-white" 
+                  />
+                  <motion.div 
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", delay: 0.2 }}
+                    className="w-1.5 h-1.5 rounded-full bg-zinc-500" 
+                  />
+                  <motion.div 
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", delay: 0.4 }}
+                    className="w-1.5 h-1.5 rounded-full bg-zinc-400" 
+                  />
+                </div>
+              </motion.div>
+            </div>
+            
+            {/* Indicador de rodapé mobile */}
+            <div className="absolute bottom-10 left-0 right-0 text-center">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] opacity-50">
+                Sincronizando dados...
+              </span>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="min-h-screen"
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AuthContext.Provider>
   );
 };

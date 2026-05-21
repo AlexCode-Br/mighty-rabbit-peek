@@ -6,6 +6,7 @@ import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { Wallet } from 'lucide-react';
+import { LiquidGlassBackground } from '../components/LiquidGlassBackground';
 
 export default function Login() {
   const { session } = useAuth();
@@ -16,24 +17,23 @@ export default function Login() {
   const isDark = resolvedTheme === 'dark';
 
   return (
-    <div 
-      className="min-h-[100dvh] bg-[#FAFAFA] dark:bg-zinc-950 flex items-center justify-center p-4 sm:p-8 transition-colors"
-      style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
-    >
+    <div className="min-h-[100dvh] relative flex items-center justify-center p-4 sm:p-8 overflow-hidden bg-[#f4f4f7] dark:bg-[#020204]">
+      <LiquidGlassBackground />
+      
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-        className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-[32px] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-zinc-200/60 dark:border-zinc-800/60"
+        className="relative z-10 w-full max-w-md liquid-glass-panel rounded-[32px] p-8 sm:p-10 shadow-2xl border-white/20"
       >
-        <div className="text-center mb-8 flex flex-col items-center">
-          <div className="w-12 h-12 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-md mb-4">
-            <Wallet size={24} strokeWidth={2.5} className="text-white dark:text-zinc-900" />
+        <div className="text-center mb-10 flex flex-col items-center">
+          <div className="w-16 h-16 rounded-[22px] bg-gradient-to-tr from-[#1d1d36] to-[#0a0a14] dark:from-white dark:to-zinc-100 flex items-center justify-center shadow-xl mb-6 border border-white/10">
+            <Wallet size={32} strokeWidth={2.5} className="text-white dark:text-zinc-950" />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100 flex items-center gap-1">
-            <span>Trade</span><span className="text-zinc-500 dark:text-zinc-400">Tracker</span>
+          <h1 className="text-2xl font-black tracking-tighter text-zinc-950 dark:text-white flex items-center gap-0.5">
+            <span>Trade</span><span className="text-zinc-500/80 dark:text-zinc-400">Tracker</span>
           </h1>
-          <p className="text-zinc-500 dark:text-zinc-400 mt-1 text-sm">Entre para continuar</p>
+          <p className="text-zinc-500 font-bold uppercase tracking-[0.2em] mt-2 text-[10px]">Portal de Performance</p>
         </div>
 
         <Auth
@@ -44,20 +44,20 @@ export default function Login() {
             variables: {
               default: {
                 colors: {
-                  brand: isDark ? '#f4f4f5' : '#18181b', // zinc-100 / zinc-900
-                  brandAccent: isDark ? '#e4e4e7' : '#27272a', // zinc-200 / zinc-800
-                  inputText: isDark ? '#f4f4f5' : '#18181b',
-                  inputBackground: isDark ? '#18181b' : '#fff',
-                  inputBorder: isDark ? '#27272a' : '#e4e4e7',
+                  brand: isDark ? '#fff' : '#000',
+                  brandAccent: isDark ? '#f4f4f5' : '#18181b',
+                  inputText: isDark ? '#fff' : '#000',
+                  inputBackground: 'rgba(255, 255, 255, 0.05)',
+                  inputBorder: 'rgba(255, 255, 255, 0.1)',
                   messageText: isDark ? '#a1a1aa' : '#71717a',
                 }
               }
             },
             className: {
-              input: 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-950 dark:text-zinc-100 rounded-xl h-12 text-base focus-visible:ring-1 focus-visible:ring-zinc-900 dark:focus-visible:ring-zinc-100 font-medium shadow-sm transition-all',
-              button: 'rounded-xl font-medium h-12 text-base bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 border-none mt-2 transition-all shadow-sm',
-              label: 'text-zinc-500 dark:text-zinc-400 font-medium tracking-wide text-xs mb-1.5',
-              anchor: 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 font-medium text-[13px] sm:text-sm transition-colors',
+              input: 'bg-white/5 border-white/10 text-zinc-950 dark:text-white rounded-xl h-12 text-base font-bold shadow-inner focus:border-white/20 transition-all',
+              button: 'rounded-xl font-black h-14 text-base bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 border-none mt-2 transition-all shadow-xl hover:scale-[1.02] active:scale-[0.98]',
+              label: 'text-zinc-500 font-bold uppercase tracking-widest text-[9px] mb-2',
+              anchor: 'text-zinc-500 hover:text-zinc-950 dark:hover:text-white font-bold text-[11px] uppercase tracking-widest transition-colors mt-4 block text-center',
             }
           }}
           theme={isDark ? "dark" : "light"}

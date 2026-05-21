@@ -71,12 +71,12 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
   };
 
   return (
-    <div className="flex flex-col h-[60dvh] sm:h-[500px] bg-white dark:bg-[#0c0c14]/95 border-t sm:border border-zinc-200/60 dark:border-white/10 rounded-t-[32px] sm:rounded-[28px] overflow-hidden shadow-2xl backdrop-blur-xl">
+    <div className="flex flex-col h-[60dvh] sm:h-[500px] liquid-glass-panel rounded-t-[32px] sm:rounded-[28px] overflow-hidden shadow-2xl border-white/20">
       
       {/* Header do Chat */}
-      <div className="px-5 py-4 border-b border-zinc-100 dark:border-white/5 bg-zinc-50/30 dark:bg-black/20 flex items-center justify-between shrink-0">
+      <div className="px-5 py-4 border-b border-white/10 bg-white/5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-zinc-600 dark:text-zinc-300 border border-transparent dark:border-white/5">
+          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-zinc-900 dark:text-zinc-100 border border-white/10">
             <MessageSquare size={16} />
           </div>
           <div>
@@ -88,8 +88,7 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
           {messages.length > 0 && (
             <button 
               onClick={() => setShowClearConfirm(true)}
-              className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-500 transition-colors"
-              title="Apagar tudo"
+              className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-rose-500/10 hover:text-rose-500 transition-colors"
             >
               <Trash2 size={16} />
             </button>
@@ -97,7 +96,7 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
           {onClose && (
             <button 
               onClick={onClose}
-              className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-white/10 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
               <X size={18} strokeWidth={2.5} />
             </button>
@@ -106,14 +105,13 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
       </div>
 
       {/* Área de Mensagens */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-50/30 dark:bg-black/10 no-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6">
-            <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center text-zinc-400 dark:text-zinc-500 mb-3 border border-transparent dark:border-white/5">
+            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 dark:text-zinc-500 mb-3 border border-white/5">
               <MessageSquare size={20} />
             </div>
             <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Nenhuma anotação ainda.</p>
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 max-w-[200px] mt-1">Digite suas anotações ou estratégias para guardá-las com segurança.</p>
           </div>
         ) : (
           <AnimatePresence initial={false}>
@@ -125,18 +123,16 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="flex flex-col items-end"
               >
-                {/* Balão de Mensagem */}
                 <button
                   onClick={() => setActiveMessage(msg)}
-                  className="max-w-[85%] text-left bg-white dark:bg-white/5 border border-zinc-200/50 dark:border-white/10 rounded-[20px] rounded-tr-sm p-3.5 shadow-sm active:scale-[0.98] transition-transform focus:outline-none"
+                  className="max-w-[85%] text-left liquid-glass-card border-white/10 rounded-[20px] rounded-tr-sm p-3.5 shadow-sm active:scale-[0.98] transition-transform focus:outline-none"
                 >
                   <p className="text-xs sm:text-[13px] font-medium text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-words leading-relaxed">
                     {msg.text}
                   </p>
                   <div className="flex justify-end mt-1.5">
-                    <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500">
+                    <span className="text-[8px] font-bold text-zinc-400/70 uppercase">
                       {format(parseISO(msg.createdAt), 'HH:mm')}
-                      {msg.updatedAt && ' (editado)'}
                     </span>
                   </div>
                 </button>
@@ -149,7 +145,7 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
 
       {/* Barra de Digitação */}
       <div 
-        className="p-3 border-t border-zinc-100 dark:border-white/5 bg-white dark:bg-black/20 shrink-0"
+        className="p-3 border-t border-white/10 bg-white/5 shrink-0"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
       >
         <form onSubmit={handleSend} className="flex gap-2">
@@ -158,138 +154,55 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Digite sua anotação..."
-            className="flex-1 bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-400 dark:focus:border-white/20 transition-colors"
+            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-white/20 transition-colors"
           />
           <Button
             type="submit"
             size="icon"
-            className="h-10 w-10 rounded-xl bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shrink-0 shadow-sm"
+            className="h-10 w-10 rounded-xl bg-zinc-950 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 shrink-0 shadow-lg border-white/10"
           >
             <Send size={14} />
           </Button>
         </form>
       </div>
 
-      {/* DIALOG DE AÇÕES DA MENSAGEM */}
       <Dialog open={!!activeMessage} onOpenChange={(open) => {
         if (!open) {
           setActiveMessage(null);
           setIsEditing(false);
         }
       }}>
-        <DialogContent className="sm:max-w-xs w-[90vw] rounded-[24px] p-5 bg-white dark:bg-[#0c0c14] border-none dark:border dark:border-white/10 shadow-2xl [&>button]:hidden outline-none">
+        <DialogContent className="sm:max-w-xs w-[90vw] rounded-[24px] p-5 liquid-glass-panel border-white/20 shadow-2xl [&>button]:hidden outline-none">
           <DialogTitle className="sr-only">Opções da Mensagem</DialogTitle>
-          
           <AnimatePresence mode="wait">
             {isEditing ? (
-              <motion.div
-                key="edit-mode"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-4"
-              >
+              <motion.div key="edit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Editar Anotação</h4>
-                  <button 
-                    onClick={() => setIsEditing(false)}
-                    className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                  >
-                    <X size={16} />
-                  </button>
+                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">Editar</h4>
+                  <button onClick={() => setIsEditing(false)} className="text-zinc-400 hover:text-zinc-600"><X size={16} /></button>
                 </div>
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-black/40 border border-zinc-200/60 dark:border-white/10 rounded-xl p-3 text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-400 dark:focus:border-white/20 resize-none h-24"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-zinc-900 dark:text-zinc-100 outline-none resize-none h-24"
                 />
-                <Button 
-                  onClick={handleSaveEdit}
-                  className="w-full h-11 rounded-xl bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-semibold flex items-center justify-center gap-2"
-                >
-                  <Check size={16} /> Salvar Alterações
-                </Button>
+                <Button onClick={handleSaveEdit} className="w-full h-11 rounded-xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-bold">Salvar</Button>
               </motion.div>
             ) : (
-              <motion.div
-                key="menu-mode"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-1.5"
-              >
+              <motion.div key="menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1.5">
                 <div className="flex justify-between items-center mb-3 px-1">
-                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Opções</span>
-                  <button 
-                    onClick={() => setActiveMessage(null)}
-                    className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                  >
-                    <X size={16} />
-                  </button>
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Ações</span>
+                  <button onClick={() => setActiveMessage(null)} className="text-zinc-400"><X size={16} /></button>
                 </div>
-
-                <button
-                  onClick={() => activeMessage && handleCopy(activeMessage.text)}
-                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5 text-xs sm:text-sm font-semibold transition-colors text-left"
-                >
-                  <Copy size={16} className="text-zinc-400" />
-                  Copiar Texto
-                </button>
-
-                <button
-                  onClick={() => activeMessage && handleStartEdit(activeMessage)}
-                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5 text-xs sm:text-sm font-semibold transition-colors text-left"
-                >
-                  <Edit2 size={16} className="text-zinc-400" />
-                  Editar Mensagem
-                </button>
-
-                <div className="h-[1px] bg-zinc-100 dark:bg-white/5 my-1" />
-
-                <button
-                  onClick={() => activeMessage && handleDelete(activeMessage.id)}
-                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-xs sm:text-sm font-semibold transition-colors text-left"
-                >
-                  <Trash2 size={16} />
-                  Excluir Mensagem
-                </button>
+                <button onClick={() => activeMessage && handleCopy(activeMessage.text)} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100"><Copy size={16} /> Copiar Texto</button>
+                <button onClick={() => activeMessage && handleStartEdit(activeMessage)} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100"><Edit2 size={16} /> Editar</button>
+                <div className="h-[1px] bg-white/5 my-1" />
+                <button onClick={() => activeMessage && handleDelete(activeMessage.id)} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-rose-500/10 text-rose-500 text-xs sm:text-sm font-bold"><Trash2 size={16} /> Excluir</button>
               </motion.div>
             )}
           </AnimatePresence>
-
         </DialogContent>
       </Dialog>
-
-      {/* DIALOG DE CONFIRMAÇÃO PARA APAGAR TUDO */}
-      <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
-        <DialogContent className="sm:max-w-xs w-[90vw] rounded-[24px] p-6 bg-white dark:bg-[#0c0c14] border-none dark:border dark:border-white/10 shadow-2xl [&>button]:hidden outline-none text-center">
-          <div className="mx-auto w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center mb-4">
-            <AlertTriangle className="text-rose-500" size={24} strokeWidth={2} />
-          </div>
-          <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mb-2">
-            Apagar tudo?
-          </DialogTitle>
-          <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
-            Você tem certeza que deseja apagar <strong>todas as anotações</strong>? Esta ação é permanente e não pode ser desfeita.
-          </DialogDescription>
-          <div className="flex gap-3">
-            <Button 
-              onClick={() => setShowClearConfirm(false)} 
-              variant="outline" 
-              className="flex-1 rounded-[14px] h-11 border-zinc-200 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-white/5 font-medium"
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleConfirmClear} 
-              className="flex-1 rounded-[14px] h-11 bg-rose-500 hover:bg-rose-600 text-white border-none font-medium shadow-[0_4px_14px_0_rgb(244,63,94,0.3)]"
-            >
-              Apagar Tudo
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
     </div>
   );
 }
