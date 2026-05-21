@@ -93,16 +93,13 @@ export const useOperationDays = () => {
     saveToDatabase(newData);
   };
 
-  const getTodayId = () => format(new Date(), 'yyyy-MM-dd');
-
-  const getTodayData = (): OperationDay => {
-    const todayId = getTodayId();
-    if (data.history[todayId]) {
-      return data.history[todayId];
+  const getDayData = (dateId: string): OperationDay => {
+    if (data.history[dateId]) {
+      return data.history[dateId];
     }
     return {
-      id: todayId,
-      date: new Date().toISOString(),
+      id: dateId,
+      date: new Date(`${dateId}T12:00:00`).toISOString(),
       cycles: [],
       dailyProfit: 0,
       goalReached: false,
@@ -114,13 +111,12 @@ export const useOperationDays = () => {
     updateData((prev) => ({ ...prev, settings: newSettings }));
   };
 
-  const addCycle = (customData?: AddCycleData) => {
-    const todayId = getTodayId();
-    const todayData = getTodayData();
+  const addCycle = (dateId: string, customData?: AddCycleData, creationDateIso?: string) => {
+    const dayData = getDayData(dateId);
     
     const newCycle: Cycle = {
       id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
+      createdAt: creationDateIso || new Date().toISOString(),
       operations: [
         { 
           id: crypto.randomUUID(), 
@@ -149,7 +145,7 @@ export const useOperationDays = () => {
       newCycle.completed = newCycle.operations[0].withdraw !== null && newCycle.operations[1].withdraw !== null;
     }
 
-    const newCycles = [newCycle, ...todayData.cycles];
+    const newCycles = [newCycle, ...dayData.cycles];
     const newDailyProfit = calculateDailyProfit(newCycles);
     const { goalReached, stopLossReached } = checkDailyStatus(newDailyProfit, data.settings.dailyGoal, data.settings.stopLoss);
 
@@ -157,8 +153,8 @@ export const useOperationDays = () => {
       ...prev,
       history: {
         ...prev.history,
-        [todayId]: {
-          ...todayData,
+        [dateId]: {
+          ...dayData,
           cycles: newCycles,
           dailyProfit: newDailyProfit,
           goalReached,
@@ -168,11 +164,10 @@ export const useOperationDays = () => {
     }));
   };
 
-  const updateOperation = (cycleId: string, operationId: string, updates: Partial<Operation>) => {
-    const todayId = getTodayId();
-    const todayData = getTodayData();
+  const updateOperation = (dateId: string, cycleId: string, operationId: string, updates: Partial<Operation>) => {
+    const dayData = getDayData(dateId);
 
-    const newCycles = todayData.cycles.map(cycle => {
+    const newCycles = dayData.cycles.map(cycle => {
       if (cycle.id !== cycleId) return cycle;
 
       const newOperations = cycle.operations.map(op => {
@@ -195,8 +190,8 @@ export const useOperationDays = () => {
       ...prev,
       history: {
         ...prev.history,
-        [todayId]: {
-          ...todayData,
+        [dateId]: {
+          ...dayData,
           cycles: newCycles,
           dailyProfit: newDailyProfit,
           goalReached,
@@ -206,11 +201,10 @@ export const useOperationDays = () => {
     }));
   };
 
-  const deleteCycle = (cycleId: string) => {
-    const todayId = getTodayId();
-    const todayData = getTodayData();
+  const deleteCycle = (dateId: string, cycleId: string) => {
+    const dayData = getDayData(dateId);
     
-    const newCycles = todayData.cycles.filter(c => c.id !== cycleId);
+    const newCycles = dayData.cycles.filter(c => c.id !== cycleId);
     const newDailyProfit = calculateDailyProfit(newCycles);
     const { goalReached, stopLossReached } = checkDailyStatus(newDailyProfit, data.settings.dailyGoal, data.settings.stopLoss);
 
@@ -218,8 +212,8 @@ export const useOperationDays = () => {
       ...prev,
       history: {
         ...prev.history,
-        [todayId]: {
-          ...todayData,
+        [dateId]: {
+          ...dayData,
           cycles: newCycles,
           dailyProfit: newDailyProfit,
           goalReached,
@@ -232,7 +226,7 @@ export const useOperationDays = () => {
   return {
     data,
     loading,
-    todayData: getTodayData(),
+    getDayData,
     updateSettings,
     addCycle,
     updateOperation,

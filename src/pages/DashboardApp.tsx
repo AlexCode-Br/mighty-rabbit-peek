@@ -6,12 +6,12 @@ import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
 import { NewCycleDialog } from '../components/NewCycleDialog';
 import { useAuth } from '../components/AuthProvider';
-import { LogOut, Activity, CalendarDays, Home, Sun, Moon, Plus, Wallet } from 'lucide-react';
+import { LogOut, Activity, CalendarDays, Home, Sun, Moon, Plus, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { showSuccess, showError } from '../utils/toast';
-import { subDays, format } from 'date-fns';
+import { subDays, addDays, format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Cycle } from '../types';
 import { formatBRL } from '../utils/currency';
@@ -19,19 +19,32 @@ import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 
 export default function DashboardApp() {
-  const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
+  const { data, loading, getDayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newCycleOpen, setNewCycleOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'ciclos' | 'home' | 'historico'>('home');
+  
+  // Estado que controla a data atual sendo visualizada/editada
+  const [activeDate, setActiveDate] = useState(new Date());
+  
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const prevProfitRef = useRef<number | null>(null);
 
+  const activeDateId = format(activeDate, 'yyyy-MM-dd');
+  const activeData = getDayData(activeDateId);
+
   useEffect(() => {
     if (loading) return;
 
+    // Só exibe Confetti e Notificações de Meta/Stop se estiver visualizando HOJE
+    if (!isToday(activeDate)) {
+      prevProfitRef.current = activeData.dailyProfit;
+      return;
+    }
+
     const prevProfit = prevProfitRef.current;
-    const currentProfit = todayData.dailyProfit;
+    const currentProfit = activeData.dailyProfit;
     const goal = data.settings.dailyGoal;
     const stop = data.settings.stopLoss;
 
@@ -59,7 +72,7 @@ export default function DashboardApp() {
     }
 
     prevProfitRef.current = currentProfit;
-  }, [todayData.dailyProfit, data.settings.dailyGoal, data.settings.stopLoss, loading]);
+  }, [activeData.dailyProfit, data.settings.dailyGoal, data.settings.stopLoss, loading, activeDate]);
 
   if (loading) {
     return (
@@ -73,9 +86,9 @@ export default function DashboardApp() {
     );
   }
 
-  const todayWins = todayData.cycles.filter(c => c.completed && c.totalProfit > 0).length;
-  const todayLosses = todayData.cycles.filter(c => c.completed && c.totalProfit < 0).length;
-  const todayCompleted = todayData.cycles.filter(c => c.completed).length;
+  const todayWins = activeData.cycles.filter(c => c.completed && c.totalProfit > 0).length;
+  const todayLosses = activeData.cycles.filter(c => c.completed && c.totalProfit < 0).length;
+  const todayCompleted = activeData.cycles.filter(c => c.completed).length;
 
   const now = new Date();
   const last7DaysData = Array.from({ length: 7 }).map((_, i) => {
@@ -95,20 +108,43 @@ export default function DashboardApp() {
   const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
 
   const handleSaveNewCycle = (cycleData: AddCycleData) => {
-    addCycle(cycleData);
+    let isoStr = new Date().toISOString();
+    if (!isToday(activeDate)) {
+      const pastDate = new Date(activeDate);
+      pastDate.setHours(12, 0, 0, 0);
+      isoStr = pastDate.toISOString();
+    }
+
+    addCycle(activeDateId, cycleData, isoStr);
     setNewCycleOpen(false);
-    showSuccess('Ciclo adicionado com sucesso!');
+    showSuccess(isToday(activeDate) ? 'Ciclo adicionado com sucesso!' : 'Ciclo adicionado ao dia anterior!');
   };
 
   const handleDuplicateCycle = (cycle: Cycle) => {
-    addCycle({
+    let isoStr = new Date().toISOString();
+    if (!isToday(activeDate)) {
+      const pastDate = new Date(activeDate);
+      pastDate.setHours(12, 0, 0, 0);
+      isoStr = pastDate.toISOString();
+    }
+
+    addCycle(activeDateId, {
       maeDeposit: cycle.operations[0].deposit,
       maeWithdraw: null,
       maeBau: cycle.operations[0].bau ?? false,
       filhaDeposit: cycle.operations[1].deposit,
       filhaWithdraw: null
-    });
+    }, isoStr);
     showSuccess('Ciclo duplicado com sucesso!');
+  };
+
+  const handleUpdateOperation = (cycleId: string, operationId: string, updates: Partial<Operation>) => {
+    updateOperation(activeDateId, cycleId, operationId, updates);
+  };
+
+  const handleDeleteCycle = (cycleId: string) => {
+    deleteCycle(activeDateId, cycleId);
+    showSuccess('Ciclo removido.');
   };
 
   const handleUpdateSettings = (newSettings: any) => {
@@ -116,13 +152,13 @@ export default function DashboardApp() {
     showSuccess('Configurações salvas!');
   };
 
-  const handleDeleteCycle = (cycleId: string) => {
-    deleteCycle(cycleId);
-    showSuccess('Ciclo removido.');
-  };
-
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const handleEditPastDay = (date: Date) => {
+    setActiveDate(date);
+    setActiveTab('home');
   };
 
   return (
@@ -162,13 +198,41 @@ export default function DashboardApp() {
             .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           `}} />
 
+          {/* NAVEGADOR DE DATAS (Apenas nas abas Home e Ciclos) */}
+          {(activeTab === 'home' || activeTab === 'ciclos') && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-1.5 mb-5 shadow-sm mt-1">
+              <button onClick={() => setActiveDate(subDays(activeDate, 1))} className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                <ChevronLeft size={20} />
+              </button>
+              
+              <div className="flex flex-col items-center justify-center cursor-pointer select-none px-4" onClick={() => setActiveDate(new Date())}>
+                <span className={`text-[13px] font-bold tracking-tight ${isToday(activeDate) ? 'text-zinc-900 dark:text-zinc-100' : 'text-blue-500 dark:text-blue-400'}`}>
+                  {isToday(activeDate) ? 'HOJE' : format(activeDate, "dd 'de' MMM", { locale: ptBR }).toUpperCase()}
+                </span>
+                {!isToday(activeDate) && (
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mt-0.5">
+                    Voltar p/ Hoje
+                  </span>
+                )}
+              </div>
+
+              <button 
+                onClick={() => setActiveDate(addDays(activeDate, 1))} 
+                disabled={isToday(activeDate)}
+                className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </motion.div>
+          )}
+
           {activeTab === 'home' && (
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} className="space-y-5">
               <Dashboard 
-                dailyProfit={todayData.dailyProfit}
+                dailyProfit={activeData.dailyProfit}
                 dailyGoal={data.settings.dailyGoal}
                 stopLoss={data.settings.stopLoss}
-                cyclesCount={todayData.cycles.length}
+                cyclesCount={activeData.cycles.length}
                 todayWins={todayWins}
                 todayLosses={todayLosses}
                 weeklyProfit={weeklyProfit}
@@ -182,34 +246,36 @@ export default function DashboardApp() {
 
           {activeTab === 'ciclos' && (
             <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
-              {todayData.cycles.length === 0 ? (
-                <div className="text-center py-20 flex flex-col items-center justify-center h-full">
+              {activeData.cycles.length === 0 ? (
+                <div className="text-center py-16 flex flex-col items-center justify-center h-full">
                   <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 rounded-full flex items-center justify-center mb-4">
                     <Activity size={24} strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 mb-1">Nenhum ciclo hoje</h3>
-                  <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[250px] mx-auto">Nenhuma operação registrada ainda. Que tal começar agora?</p>
+                  <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 mb-1">Nenhum ciclo {isToday(activeDate) ? 'hoje' : 'neste dia'}</h3>
+                  <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[250px] mx-auto">
+                    Nenhuma operação registrada em {format(activeDate, "dd/MM/yyyy")}.
+                  </p>
                   <Button 
                     onClick={() => setNewCycleOpen(true)} 
                     className="mt-6 rounded-2xl h-12 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] flex items-center gap-2 px-6"
                   >
-                    <Plus size={18} /> Adicionar Primeiro Ciclo
+                    <Plus size={18} /> Adicionar Ciclo
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-4 flex items-center justify-between shadow-sm">
                     <div className="min-w-0">
-                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5 truncate">Lucro Atual</span>
-                      <span className={`text-xl font-bold tracking-tight truncate block ${todayData.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                        {todayData.dailyProfit >= 0 ? '+' : ''}{formatBRL(todayData.dailyProfit)}
+                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5 truncate">Lucro do Dia</span>
+                      <span className={`text-xl font-bold tracking-tight truncate block ${activeData.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        {activeData.dailyProfit >= 0 ? '+' : ''}{formatBRL(activeData.dailyProfit)}
                       </span>
                     </div>
                     <div className="h-8 w-[1px] bg-zinc-100 dark:bg-zinc-800 shrink-0 mx-2" />
                     <div className="text-right min-w-0">
                       <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5 truncate">Concluídos</span>
                       <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 truncate block">
-                        {todayCompleted} <span className="text-sm text-zinc-400 dark:text-zinc-500">/ {todayData.cycles.length}</span>
+                        {todayCompleted} <span className="text-sm text-zinc-400 dark:text-zinc-500">/ {activeData.cycles.length}</span>
                       </span>
                     </div>
                   </div>
@@ -223,12 +289,12 @@ export default function DashboardApp() {
                   </Button>
                   
                   <AnimatePresence mode="popLayout">
-                    {todayData.cycles.map((cycle, index) => (
+                    {activeData.cycles.map((cycle, index) => (
                       <CycleCard 
                         key={cycle.id}
-                        index={todayData.cycles.length - index} 
+                        index={activeData.cycles.length - index} 
                         cycle={cycle}
-                        onUpdateOperation={updateOperation}
+                        onUpdateOperation={handleUpdateOperation}
                         onDeleteCycle={handleDeleteCycle}
                         onDuplicateCycle={handleDuplicateCycle}
                       />
@@ -241,7 +307,7 @@ export default function DashboardApp() {
 
           {activeTab === 'historico' && (
             <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
-              <HistoryPanel data={data} />
+              <HistoryPanel data={data} onEditDay={handleEditPastDay} />
             </motion.div>
           )}
         </div>

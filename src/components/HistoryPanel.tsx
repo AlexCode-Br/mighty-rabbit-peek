@@ -8,7 +8,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent, Download, Edit2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
@@ -17,9 +17,10 @@ import { ExportDialog } from './ExportDialog';
 
 interface HistoryPanelProps {
   data: AppData;
+  onEditDay: (date: Date) => void;
 }
 
-export function HistoryPanel({ data }: HistoryPanelProps) {
+export function HistoryPanel({ data, onEditDay }: HistoryPanelProps) {
   const [selectedDay, setSelectedDay] = useState<OperationDay | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [exportOpen, setExportOpen] = useState(false);
@@ -278,9 +279,19 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
                 <span className={`font-bold text-lg sm:text-xl tracking-tight leading-none ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}
                 </span>
-                <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-bold mt-1.5">
-                  {selectedDay?.cycles.length} ciclos
-                </span>
+                
+                <button 
+                  onClick={() => {
+                    if (selectedDay) {
+                      onEditDay(parseISO(selectedDay.date));
+                      setSelectedDay(null);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 mt-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 px-3 py-1.5 rounded-xl transition-colors text-[10px] font-bold uppercase tracking-widest"
+                >
+                  <Edit2 size={12} />
+                  Editar
+                </button>
               </div>
             </div>
           </DialogHeader>
