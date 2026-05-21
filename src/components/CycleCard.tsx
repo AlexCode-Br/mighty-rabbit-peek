@@ -41,14 +41,14 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
         <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-md bg-white dark:bg-zinc-900 rounded-[20px] overflow-hidden group relative h-full flex flex-col">
           <CardContent className="p-0 flex-1 flex flex-col">
             
-            {/* Header do Ciclo (Mais Fino) */}
+            {/* Header do Ciclo */}
             <div className="flex justify-between items-center px-3.5 py-2 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/30 dark:bg-zinc-800/10">
               <div className="flex items-center gap-2 min-w-0 pr-2">
                 <div className={`w-2 h-2 rounded-full shrink-0 shadow-sm ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-blue-500 animate-pulse'}`} />
                 <h3 className="font-bold text-[13px] text-zinc-900 dark:text-zinc-100 flex items-center gap-2 truncate">
                   Ciclo {index}
                   {cycle.createdAt && (
-                    <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 shrink-0 hidden xs:inline bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 shrink-0 bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded-md">
                       {format(parseISO(cycle.createdAt), 'HH:mm')}
                     </span>
                   )}
@@ -80,7 +80,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
               </div>
             </div>
 
-            {/* Operações (Mãe e Filha) - Espaçamentos Reduzidos */}
+            {/* Operações (Mãe e Filha) */}
             <div className="p-2 flex-1 flex flex-col justify-center gap-2">
               {cycle.operations.map((op) => {
                 const isOpCompleted = op.withdraw !== null;
@@ -120,7 +120,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                       )}
                     </div>
                     
-                    {/* Linha 2: Caixas de Entrada e Saque (Mais achatadas) */}
+                    {/* Linha 2: Caixas de Entrada e Saque */}
                     <div className="flex gap-1.5">
                       
                       {/* Caixa de Entrada */}
