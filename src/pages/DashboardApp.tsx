@@ -11,7 +11,8 @@ import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { showSuccess } from '../utils/toast';
-import { parseISO, startOfWeek, endOfWeek } from 'date-fns';
+import { subDays, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function DashboardApp() {
   const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
@@ -37,19 +38,23 @@ export default function DashboardApp() {
   const todayWins = todayData.cycles.filter(c => c.completed && c.totalProfit > 0).length;
   const todayLosses = todayData.cycles.filter(c => c.completed && c.totalProfit < 0).length;
 
-  // --- Cálculos da Semana ---
+  // --- Cálculos dos Últimos 7 Dias ---
   const now = new Date();
-  const startOfCurrentWeek = startOfWeek(now, { weekStartsOn: 0 }); // Semana começa no Domingo
-  const endOfCurrentWeek = endOfWeek(now, { weekStartsOn: 0 });
-
-  const weeklyDays = Object.values(data.history).filter(day => {
-    const dayDate = parseISO(day.date);
-    return dayDate >= startOfCurrentWeek && dayDate <= endOfCurrentWeek;
+  const last7DaysData = Array.from({ length: 7 }).map((_, i) => {
+    // 6 - i garante a ordem cronológica (do mais antigo para o dia de hoje)
+    const d = subDays(now, 6 - i);
+    const dayId = format(d, 'yyyy-MM-dd');
+    const dayData = data.history[dayId];
+    return {
+      name: format(d, 'EE', { locale: ptBR }).substring(0, 3), // Seg, Ter, etc
+      profit: dayData ? dayData.dailyProfit : 0,
+      hasData: !!dayData && dayData.cycles.length > 0
+    };
   });
 
-  const weeklyProfit = weeklyDays.reduce((acc, day) => acc + day.dailyProfit, 0);
-  const weeklyActiveDays = weeklyDays.filter(day => day.cycles.length > 0).length;
-  const weeklyWinDays = weeklyDays.filter(day => day.dailyProfit >= 0 && day.cycles.length > 0).length;
+  const weeklyProfit = last7DaysData.reduce((acc, day) => acc + day.profit, 0);
+  const weeklyActiveDays = last7DaysData.filter(day => day.hasData).length;
+  const weeklyWinDays = last7DaysData.filter(day => day.profit >= 0 && day.hasData).length;
   const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
   // --------------------------
 
@@ -118,6 +123,7 @@ export default function DashboardApp() {
                 todayLosses={todayLosses}
                 weeklyProfit={weeklyProfit}
                 weeklyWinRate={weeklyWinRate}
+                weeklyChartData={last7DaysData}
                 onNewCycle={() => setNewCycleOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
               />

@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Settings, Plus, TrendingUp } from 'lucide-react';
 import { formatBRL } from '../utils/currency';
 import { motion } from 'framer-motion';
+import { BarChart, Bar, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface DashboardProps {
   dailyProfit: number;
@@ -14,6 +15,7 @@ interface DashboardProps {
   todayLosses: number;
   weeklyProfit: number;
   weeklyWinRate: number;
+  weeklyChartData: { name: string; profit: number; hasData: boolean }[];
   onNewCycle: () => void;
   onOpenSettings: () => void;
 }
@@ -26,7 +28,8 @@ export function Dashboard({
   todayWins,
   todayLosses,
   weeklyProfit, 
-  weeklyWinRate, 
+  weeklyWinRate,
+  weeklyChartData,
   onNewCycle, 
   onOpenSettings 
 }: DashboardProps) {
@@ -162,34 +165,81 @@ export function Dashboard({
         </Button>
       </motion.div>
       
-      {/* BALANÇO SEMANAL */}
+      {/* BALANÇO ÚLTIMOS 7 DIAS COM GRÁFICO */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className="pt-2"
       >
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Balanço Semanal</h3>
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Últimos 7 Dias</h3>
         <Card className="border border-zinc-200/60 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-sm">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className={`w-11 h-11 rounded-full flex items-center justify-center ${weeklyIconBg}`}>
-                <TrendingUp size={22} strokeWidth={2.5} className={isWeeklyLoss ? "rotate-180" : ""} />
+          <CardContent className="p-5 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center ${weeklyIconBg}`}>
+                  <TrendingUp size={22} strokeWidth={2.5} className={isWeeklyLoss ? "rotate-180" : ""} />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Balanço</span>
+                  <span className={`text-xl font-bold tracking-tight ${weeklyTextClass}`}>
+                    {isWeeklyProfit ? '+' : ''}{formatBRL(weeklyProfit)}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Nesta Semana</span>
-                <span className={`text-xl font-bold tracking-tight ${weeklyTextClass}`}>
-                  {isWeeklyProfit ? '+' : ''}{formatBRL(weeklyProfit)}
+
+              <div className="text-right border-l border-zinc-100 dark:border-zinc-800 pl-4 py-1">
+                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Acerto</span>
+                <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                  {weeklyWinRate.toFixed(0)}%
                 </span>
               </div>
             </div>
 
-            <div className="text-right border-l border-zinc-100 dark:border-zinc-800 pl-4 py-1">
-              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Acerto</span>
-              <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                {weeklyWinRate.toFixed(0)}%
-              </span>
+            {/* Mini Gráfico Sparkline */}
+            <div className="h-16 w-full mt-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyChartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                  <Tooltip 
+                    cursor={{ fill: 'transparent' }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        if (!data.hasData) return null;
+                        const isWin = data.profit >= 0;
+                        return (
+                          <div className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-2.5 py-1.5 rounded-lg shadow-xl text-xs font-bold tracking-wide">
+                            {isWin ? '+' : ''}{formatBRL(data.profit)}
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="profit" radius={[4, 4, 4, 4]} minPointSize={4}>
+                    {weeklyChartData.map((entry, index) => {
+                      // Usa cores vibrantes para dias com dados, e cinza neutro e transparente para os vazios
+                      let color = '#f43f5e'; // rose-500
+                      if (entry.hasData) {
+                        if (entry.profit >= 0) color = '#10b981'; // emerald-500
+                      } else {
+                        color = 'rgba(161, 161, 170, 0.2)'; // zinco translúcido
+                      }
+                      return <Cell key={`cell-${index}`} fill={color} />;
+                    })}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
+            
+            <div className="flex justify-between w-full mt-2 px-1">
+              {weeklyChartData.map((day, i) => (
+                <span key={i} className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">
+                  {day.name}
+                </span>
+              ))}
+            </div>
+
           </CardContent>
         </Card>
       </motion.div>
