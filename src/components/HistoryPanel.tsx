@@ -10,7 +10,6 @@ import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
 import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent, Download, Edit2, Activity } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerTitle } from './ui/drawer';
-import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { Button } from './ui/button';
 import { ExportDialog } from './ExportDialog';
@@ -300,13 +299,17 @@ export function HistoryPanel({ data, onEditDay }: HistoryPanelProps) {
             </div>
           </div>
           
-          {/* LISTA DE CICLOS ESTILO FEED */}
-          <ScrollArea className="flex-1 p-4 sm:p-5 bg-zinc-50/50 dark:bg-zinc-950">
-            <div className="space-y-4 pb-6">
+          {/* LISTA DE CICLOS ESTILO FEED (Com rolagem nativa) */}
+          <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5 bg-zinc-50/50 dark:bg-zinc-950">
+            <div className="space-y-4 pb-12">
               {selectedDay?.cycles.map((cycle, i) => {
                 const isCycleProfit = cycle.totalProfit > 0;
                 const isCycleLoss = cycle.totalProfit < 0;
                 const cycleNumber = selectedDay.cycles.length - i;
+                
+                // Busca a hora da criação
+                const timeStr = (cycle as any).createdAt || (cycle as any).timestamp;
+                const timeDisplay = timeStr ? format(new Date(timeStr), 'HH:mm') : null;
 
                 return (
                   <div key={cycle.id} className="bg-white dark:bg-zinc-900 rounded-[24px] p-4 sm:p-5 shadow-sm border border-zinc-200/60 dark:border-zinc-800/60">
@@ -316,9 +319,16 @@ export function HistoryPanel({ data, onEditDay }: HistoryPanelProps) {
                         <div className={`flex items-center justify-center w-7 h-7 rounded-full ${cycle.completed ? (isCycleProfit ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : isCycleLoss ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400' : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400') : 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 animate-pulse'}`}>
                           <Activity size={14} strokeWidth={2.5} />
                         </div>
-                        <h4 className="font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100">
-                          Ciclo {cycleNumber}
-                        </h4>
+                        <div className="flex flex-col">
+                          <h4 className="font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                            Ciclo {cycleNumber}
+                            {timeDisplay && (
+                              <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md">
+                                {timeDisplay}
+                              </span>
+                            )}
+                          </h4>
+                        </div>
                       </div>
                       <div className="flex flex-col items-end">
                         <span className={`text-base sm:text-lg font-extrabold tracking-tight ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : isCycleLoss ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100') : 'text-zinc-400 dark:text-zinc-500'}`}>
@@ -363,7 +373,7 @@ export function HistoryPanel({ data, onEditDay }: HistoryPanelProps) {
                 );
               })}
             </div>
-          </ScrollArea>
+          </div>
         </DrawerContent>
       </Drawer>
     </div>
