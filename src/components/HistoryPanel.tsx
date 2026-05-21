@@ -238,38 +238,45 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
       {/* Modal de Detalhes do Dia */}
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
         <DialogContent className="sm:max-w-md rounded-[32px] h-[85vh] flex flex-col p-0 bg-[#FAFAFA] dark:bg-zinc-950 border-none shadow-2xl [&>button]:hidden outline-none">
-          <DialogHeader className="p-8 pb-6 shrink-0 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white dark:bg-zinc-900 rounded-t-[32px] relative text-left">
+          
+          {/* Cabeçalho Compacto */}
+          <DialogHeader className="p-5 pb-4 shrink-0 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white dark:bg-zinc-900 rounded-t-[32px] relative text-left">
             <button 
               onClick={() => setSelectedDay(null)}
-              className="absolute right-6 top-6 h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              className="absolute right-4 top-4 h-7 w-7 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
-              <X size={16} strokeWidth={2.5} />
+              <X size={14} strokeWidth={2.5} />
             </button>
-            <DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight pr-10">
-              {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM", { locale: ptBR })}
-            </DialogTitle>
             
-            <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-sm mt-3 flex justify-between items-end pr-6">
-              <div className="flex flex-col gap-2">
-                <span className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg text-xs font-medium w-fit">
-                  <Target size={12} className={selectedDay && selectedDay.dailyProfit >= data.settings.dailyGoal ? "text-emerald-500" : "text-zinc-400"} />
-                  {selectedDay ? Math.min((selectedDay.dailyProfit / data.settings.dailyGoal) * 100, 100).toFixed(0) : 0}% da meta
-                </span>
-                <span className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg text-xs font-medium w-fit">
-                  <Percent size={12} className={selectedDayWinRate >= 50 ? "text-emerald-500" : "text-rose-500"} />
-                  {selectedDayWinRate.toFixed(0)}% de acerto
-                </span>
+            <div className="flex justify-between items-start pr-8">
+              <div className="flex flex-col">
+                <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mb-2">
+                  {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM", { locale: ptBR })}
+                </DialogTitle>
+                
+                <DialogDescription asChild>
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-[6px] text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
+                      <Target size={12} className={selectedDay && selectedDay.dailyProfit >= data.settings.dailyGoal ? "text-emerald-500" : "text-zinc-400"} />
+                      {selectedDay ? Math.min((selectedDay.dailyProfit / data.settings.dailyGoal) * 100, 100).toFixed(0) : 0}% meta
+                    </span>
+                    <span className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-[6px] text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
+                      <Percent size={12} className={selectedDayWinRate >= 50 ? "text-emerald-500" : "text-rose-500"} />
+                      {selectedDayWinRate.toFixed(0)}% win
+                    </span>
+                  </div>
+                </DialogDescription>
               </div>
 
-              <div className="flex flex-col items-end">
-                <span className={`font-bold text-2xl tracking-tight leading-none ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              <div className="flex flex-col items-end justify-center mt-0.5">
+                <span className={`font-bold text-xl tracking-tight leading-none ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}
                 </span>
-                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-bold mt-1.5">
+                <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-bold mt-1">
                   {selectedDay?.cycles.length} ciclos
                 </span>
               </div>
-            </DialogDescription>
+            </div>
           </DialogHeader>
           
           <ScrollArea className="flex-1 px-4 sm:px-6 pb-6">
