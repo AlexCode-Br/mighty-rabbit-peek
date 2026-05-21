@@ -443,38 +443,23 @@ export default function DashboardApp() {
       </div>
 
       {/* BOTÃO FLUTUANTE SUSPENSO DO CHAT */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <motion.button
-          onClick={() => setIsChatOpen(!isChatOpen)}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="w-14 h-14 rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.05)] border border-zinc-800 dark:border-zinc-200/20 transition-colors"
-        >
-          <AnimatePresence mode="wait">
-            {isChatOpen ? (
-              <motion.div
-                key="close-icon"
-                initial={{ rotate: -45, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 45, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <X size={22} strokeWidth={2.5} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="chat-icon"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <MessageSquare size={22} strokeWidth={2.5} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.button>
-      </div>
+      <AnimatePresence>
+        {!isChatOpen && (
+          <div className="fixed bottom-6 right-6 z-40">
+            <motion.button
+              onClick={() => setIsChatOpen(true)}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-14 h-14 rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.05)] border border-zinc-800 dark:border-zinc-200/20 transition-colors"
+            >
+              <MessageSquare size={22} strokeWidth={2.5} />
+            </motion.button>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* PAINEL DO CHAT SUSPENSO (SLIDE-OVER) */}
       <AnimatePresence>
