@@ -30,7 +30,7 @@ export default function App() {
           <InstallPrompt />
         </Router>
       </AuthProvider>
-      <Toaster theme="system" position="top-center" />
+      <Toaster theme="system" position="bottom-center" />
     </ThemeProvider>
   );
 }
