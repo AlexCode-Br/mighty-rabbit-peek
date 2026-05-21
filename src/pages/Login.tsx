@@ -5,6 +5,7 @@ import { useAuth } from '../components/AuthProvider';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from 'next-themes';
+import { Wallet } from 'lucide-react';
 
 export default function Login() {
   const { session } = useAuth();
@@ -24,10 +25,10 @@ export default function Login() {
       >
         <div className="text-center mb-8 flex flex-col items-center">
           <div className="w-12 h-12 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-md mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-white dark:text-zinc-900" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            <Wallet size={24} strokeWidth={2.5} className="text-white dark:text-zinc-900" />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            TradeTracker
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
+            <span>Trade</span><span className="text-zinc-500 dark:text-zinc-400">Tracker</span>
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 mt-1 text-sm">Entre para continuar</p>
         </div>

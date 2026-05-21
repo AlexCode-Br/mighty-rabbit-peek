@@ -6,7 +6,7 @@ import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
 import { NewCycleDialog } from '../components/NewCycleDialog';
 import { useAuth } from '../components/AuthProvider';
-import { LogOut, Activity, CalendarDays, Home, Sun, Moon, Plus } from 'lucide-react';
+import { LogOut, Activity, CalendarDays, Home, Sun, Moon, Plus, Wallet } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
@@ -141,11 +141,11 @@ export default function DashboardApp() {
         <div className="px-4 pt-4 pb-4 shrink-0">
           <header className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-200/60 dark:border-zinc-800/60 rounded-full px-5 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white dark:text-zinc-900"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+              <div className="w-7 h-7 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-sm">
+                <Wallet size={15} strokeWidth={2.5} className="text-white dark:text-zinc-900" />
               </div>
-              <h1 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-                Trade<span className="text-zinc-500 dark:text-zinc-400">Tracker</span>
+              <h1 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-[2px]">
+                <span>Trade</span><span className="text-zinc-500 dark:text-zinc-400">Tracker</span>
               </h1>
             </div>
             

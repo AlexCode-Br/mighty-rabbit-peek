@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.example.mightyrabbitpeek',
-  appName: 'mighty-rabbit-peek',
+  appId: 'com.example.tradetracker',
+  appName: 'TradeTracker',
   webDir: 'dist'
 };
 

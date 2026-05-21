@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share, PlusSquare, X, Download } from 'lucide-react';
+import { Share, PlusSquare, X, Download, Wallet } from 'lucide-react';
 
 export function InstallPrompt() {
   const [show, setShow] = useState(false);
@@ -53,7 +53,7 @@ export function InstallPrompt() {
             
             <div className="flex items-start gap-3">
               <div className="w-12 h-12 bg-zinc-900 dark:bg-zinc-100 rounded-2xl flex items-center justify-center shrink-0 shadow-sm mt-1">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white dark:text-zinc-900"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                <Wallet size={24} strokeWidth={2.5} className="text-white dark:text-zinc-900" />
               </div>
               
               <div className="flex-1 pr-4">
