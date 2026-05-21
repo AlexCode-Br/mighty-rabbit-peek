@@ -24,7 +24,7 @@ export default function DashboardApp() {
   const [activeDate, setActiveDate] = useState(new Date());
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Controle de Scroll Horizontal com Mouse (Mobile)
+  // Controle de Scroll Horizontal com Mouse (Desktop)
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const isMouseDown = useRef(false);
@@ -112,7 +112,6 @@ export default function DashboardApp() {
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
-      // Ajusta dinamicamente a quantidade de scroll baseado no tamanho da tela
       const scrollAmount = window.innerWidth >= 640 ? 370 : window.innerWidth * 0.85; 
       carouselRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
@@ -232,7 +231,7 @@ export default function DashboardApp() {
   return (
     <div className="h-[100dvh] w-full bg-[#FAFAFA] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-800 overflow-hidden flex flex-col items-center">
       
-      {/* WRAPPER PRINCIPAL (Expandido no Desktop) */}
+      {/* WRAPPER PRINCIPAL */}
       <div className="w-full max-w-7xl h-full flex flex-col relative bg-[#FAFAFA] dark:bg-zinc-950 sm:border-x border-zinc-200/50 dark:border-zinc-800/50 shadow-2xl transition-all duration-300">
         
         {/* TOPO FIXO */}
@@ -315,7 +314,7 @@ export default function DashboardApp() {
                 />
               </motion.div>
 
-              {/* 3. OPERAÇÕES DO DIA (Carrossel Horizontal) */}
+              {/* 3. OPERAÇÕES DO DIA */}
               <div className="mt-8 mb-3 flex items-center justify-between px-2 lg:px-0">
                 <div className="flex items-center gap-3">
                   <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
@@ -324,7 +323,7 @@ export default function DashboardApp() {
                   </span>
                 </div>
 
-                {/* BOTÕES DE NAVEGAÇÃO (Agora visíveis em qualquer tela) */}
+                {/* BOTÕES DE NAVEGAÇÃO DESKTOP / MOBILE */}
                 {activeData.cycles.length > 0 && (
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <Button 
@@ -366,8 +365,13 @@ export default function DashboardApp() {
                     onMouseLeave={handleMouseLeave}
                     onMouseUp={handleMouseUp}
                     onMouseMove={handleMouseMove}
+                    onTouchStart={() => {
+                      // Garante que o toque nativo do celular funcione 100% sem interferência
+                      isMouseDown.current = false;
+                      setIsDragging(false);
+                    }}
                     className={`
-                      relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory 
+                      relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory touch-pan-x
                       lg:mx-0 lg:px-0 lg:snap-none
                       ${isDragging ? '[&_*]:pointer-events-none' : ''}
                     `}
