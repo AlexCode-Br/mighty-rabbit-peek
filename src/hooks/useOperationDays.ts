@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../components/AuthProvider';
-import { AppData, OperationDay, Cycle, Operation, ChatMessage } from '../types';
+import { AppData, OperationDay, Cycle, Operation, ChatMessage, AppSettings } from '../types';
 import { calculateOperationProfit, calculateCycleProfit } from '../utils/calculations';
 
-const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS: AppSettings = {
   dailyGoal: 0,
   stopLoss: 0,
   defaultMaeDeposit: 0,
@@ -20,7 +20,6 @@ export function useOperationDays() {
     chatMessages: []
   });
 
-  // Carregar dados iniciais
   useEffect(() => {
     if (!user) return;
     
@@ -51,7 +50,6 @@ export function useOperationDays() {
     loadData();
   }, [user]);
 
-  // Função de persistência aprimorada (evita sobrescrever dados com nulo)
   const persistData = useCallback(async (updates: Partial<AppData>) => {
     if (!user) return;
     
@@ -61,13 +59,11 @@ export function useOperationDays() {
     if (updates.chatMessages !== undefined) payload.chat_messages = updates.chatMessages;
 
     try {
-      // Tenta primeiro o update (mais seguro para updates parciais)
       const { error: updateError } = await supabase
         .from('app_data')
         .update(payload)
         .eq('user_id', user.id);
         
-      // Se não existir o registro (usuário novo), faz o insert/upsert
       if (updateError) {
         await supabase.from('app_data').upsert({
           user_id: user.id,
@@ -92,7 +88,7 @@ export function useOperationDays() {
     };
   }, [data.history]);
 
-  const updateSettings = (settings: any) => {
+  const updateSettings = (settings: AppSettings) => {
     setData(prev => ({ ...prev, settings }));
     persistData({ settings });
   };
@@ -156,8 +152,6 @@ export function useOperationDays() {
     persistData({ history: newHistory });
   };
 
-  // --- FUNÇÕES DE CHAT COM PERSISTÊNCIA CORRIGIDA ---
-
   const addChatMessage = (text: string, category: string) => {
     const msg: ChatMessage = { 
       id: crypto.randomUUID(), 
@@ -168,7 +162,6 @@ export function useOperationDays() {
     
     setData(prev => {
       const newList = [...(prev.chatMessages || []), msg];
-      // Side effect fora do setter para garantir consistência
       persistData({ chatMessages: newList });
       return { ...prev, chatMessages: newList };
     });
