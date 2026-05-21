@@ -14,7 +14,7 @@ import { useTheme } from 'next-themes';
 import { showSuccess } from '../utils/toast';
 
 export default function DashboardApp() {
-  const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle, importData } = useOperationDays();
+  const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newCycleOpen, setNewCycleOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'ciclos' | 'home' | 'historico'>('home');
@@ -37,7 +37,6 @@ export default function DashboardApp() {
     addCycle(cycleData);
     setNewCycleOpen(false);
     showSuccess('Ciclo adicionado com sucesso!');
-    // Removido o redirecionamento automático para 'ciclos'
   };
 
   const toggleTheme = () => {
@@ -90,8 +89,8 @@ export default function DashboardApp() {
               />
 
               <div>
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Gerenciamento de Dados</h3>
-                <ImportExportPanel data={data} onImport={importData} />
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Relatórios</h3>
+                <ImportExportPanel data={data} />
               </div>
             </motion.div>
           )}

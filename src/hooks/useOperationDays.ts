@@ -229,10 +229,6 @@ export const useOperationDays = () => {
     }));
   }
 
-  const importData = (importedData: AppData) => {
-    updateData(() => importedData);
-  }
-
   return {
     data,
     loading,
@@ -241,6 +237,5 @@ export const useOperationDays = () => {
     addCycle,
     updateOperation,
     deleteCycle,
-    importData,
   };
 };
