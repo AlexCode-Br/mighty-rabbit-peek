@@ -81,7 +81,6 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
           </div>
           <div>
             <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 tracking-tight">Anotações</h3>
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">Toque em uma mensagem para ver as opções</p>
           </div>
         </div>
         
