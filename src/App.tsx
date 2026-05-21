@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './components/AuthProvider';
 import { ThemeProvider } from './components/ThemeProvider';
 import Login from './pages/Login';
 import DashboardApp from './pages/DashboardApp';
+import { InstallPrompt } from './components/InstallPrompt';
 import { Toaster } from 'sonner';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -25,6 +26,8 @@ export default function App() {
               </ProtectedRoute>
             } />
           </Routes>
+          {/* Aparece globalmente se o usuário estiver no celular pelo navegador */}
+          <InstallPrompt />
         </Router>
       </AuthProvider>
       <Toaster theme="system" position="top-center" />
