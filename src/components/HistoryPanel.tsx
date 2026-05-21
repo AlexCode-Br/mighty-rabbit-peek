@@ -175,56 +175,56 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+
+          {/* Calendário */}
+          <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden mt-4">
+            <CardContent className="p-6">
+              <div className="w-full max-w-sm mx-auto select-none">
+                <div className="grid grid-cols-7 mb-4">
+                  {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
+                    <div key={i} className="text-center text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-y-2">
+                  {days.map((day, idx) => {
+                    const isCurrentMonth = isSameMonth(day, currentMonth);
+                    const isDayToday = isToday(day);
+                    const dayHasData = hasData(day);
+                    const dayIsProfit = isProfit(day);
+                    const dayIsLoss = isLoss(day);
+                    
+                    let textClass = "text-zinc-900 dark:text-zinc-100";
+                    if (!isCurrentMonth) textClass = "text-zinc-300 dark:text-zinc-700";
+                    else if (isDayToday) textClass = "text-zinc-900 dark:text-white font-bold";
+
+                    return (
+                      <div key={idx} className="flex flex-col items-center justify-center h-12 relative group">
+                        <button 
+                          onClick={() => handleSelectDate(day)}
+                          disabled={!isCurrentMonth || !dayHasData}
+                          className={`h-9 w-9 flex items-center justify-center text-sm rounded-full transition-all duration-200 
+                            ${dayHasData ? 'hover:bg-zinc-100 dark:hover:bg-zinc-800' : 'cursor-default'} 
+                            ${isDayToday && !dayHasData ? 'bg-zinc-50 dark:bg-zinc-800/50' : ''}
+                          `}
+                        >
+                          <span className={textClass}>{format(day, 'd')}</span>
+                        </button>
+                        
+                        {dayHasData && isCurrentMonth && (
+                          <div className={`absolute bottom-0 w-1 h-1 rounded-full ${dayIsProfit ? 'bg-emerald-500' : dayIsLoss ? 'bg-rose-500' : 'bg-zinc-400 dark:bg-zinc-600'}`} />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </>
       )}
-
-      {/* Calendário */}
-      <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden mt-4">
-        <CardContent className="p-6">
-          <div className="w-full max-w-sm mx-auto select-none">
-            <div className="grid grid-cols-7 mb-4">
-              {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
-                <div key={i} className="text-center text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-7 gap-y-2">
-              {days.map((day, idx) => {
-                const isCurrentMonth = isSameMonth(day, currentMonth);
-                const isDayToday = isToday(day);
-                const dayHasData = hasData(day);
-                const dayIsProfit = isProfit(day);
-                const dayIsLoss = isLoss(day);
-                
-                let textClass = "text-zinc-900 dark:text-zinc-100";
-                if (!isCurrentMonth) textClass = "text-zinc-300 dark:text-zinc-700";
-                else if (isDayToday) textClass = "text-zinc-900 dark:text-white font-bold";
-
-                return (
-                  <div key={idx} className="flex flex-col items-center justify-center h-12 relative group">
-                    <button 
-                      onClick={() => handleSelectDate(day)}
-                      disabled={!isCurrentMonth || !dayHasData}
-                      className={`h-9 w-9 flex items-center justify-center text-sm rounded-full transition-all duration-200 
-                        ${dayHasData ? 'hover:bg-zinc-100 dark:hover:bg-zinc-800' : 'cursor-default'} 
-                        ${isDayToday && !dayHasData ? 'bg-zinc-50 dark:bg-zinc-800/50' : ''}
-                      `}
-                    >
-                      <span className={textClass}>{format(day, 'd')}</span>
-                    </button>
-                    
-                    {dayHasData && isCurrentMonth && (
-                      <div className={`absolute bottom-0 w-1 h-1 rounded-full ${dayIsProfit ? 'bg-emerald-500' : dayIsLoss ? 'bg-rose-500' : 'bg-zinc-400 dark:bg-zinc-600'}`} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Modal de Detalhes do Dia */}
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
