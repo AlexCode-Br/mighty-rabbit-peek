@@ -105,7 +105,9 @@ export default function DashboardApp() {
     );
   }
 
-  const todayCompleted = activeData.cycles.filter(c => c.completed).length;
+  const todayCompleted = activeData.cycles.filter(c => r => r.completed).length;
+  const totalCyclesCount = activeData.cycles.length;
+  const completedCyclesCount = activeData.cycles.filter(c => c.completed).length;
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
@@ -275,7 +277,7 @@ export default function DashboardApp() {
                   </button>
                   
                   <div className="flex flex-col items-center justify-center cursor-pointer select-none px-4" onClick={() => setActiveDate(new Date())}>
-                    <span className={`text-[13px] font-black tracking-widest ${isToday(activeDate) ? 'text-zinc-950 dark:text-white' : 'text-cyan-400'}`}>
+                    <span className={`text-[13px] font-black tracking-widest ${isToday(activeDate) ? 'text-zinc-950 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}`}>
                       {isToday(activeDate) ? 'HOJE' : format(activeDate, "dd 'de' MMM", { locale: ptBR }).toUpperCase()}
                     </span>
                     {!isToday(activeDate) && (
@@ -308,8 +310,8 @@ export default function DashboardApp() {
                 <div className="mt-8 mb-4 flex items-center justify-between px-2 lg:px-0">
                   <div className="flex items-center gap-3">
                     <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase tracking-wider">Operações do Dia</h3>
-                    <span className="text-[10px] font-extrabold tracking-widest uppercase text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/15">
-                      {todayCompleted} / {activeData.cycles.length}
+                    <span className="text-[10px] font-extrabold tracking-widest uppercase text-zinc-500 dark:text-zinc-400 bg-zinc-500/10 px-2.5 py-1 rounded-full border border-zinc-500/15">
+                      {completedCyclesCount} / {totalCyclesCount}
                     </span>
                   </div>
 

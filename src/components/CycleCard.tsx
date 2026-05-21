@@ -44,7 +44,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
             {/* Header do Ciclo */}
             <div className="flex justify-between items-center px-4 py-3.5 border-b border-white/5 bg-white/[0.02] dark:bg-black/10">
               <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                <div className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${cycle.completed ? (isProfit ? 'bg-emerald-400 glass-glow-emerald' : isLoss ? 'bg-rose-400 glass-glow-rose' : 'bg-zinc-400') : 'bg-cyan-400 animate-pulse'}`} />
+                <div className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${cycle.completed ? (isProfit ? 'bg-emerald-400 glass-glow-emerald' : isLoss ? 'bg-rose-400 glass-glow-rose' : 'bg-zinc-400') : 'bg-zinc-400 dark:bg-zinc-500 animate-pulse'}`} />
                 <h3 className="font-bold text-sm text-zinc-950 dark:text-zinc-100 flex items-center gap-2 truncate">
                   Ciclo {index}
                   {cycle.createdAt && (
@@ -56,14 +56,14 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
               </div>
               
               <div className="flex items-center shrink-0 gap-1">
-                <span className={`text-xs font-black tracking-tight mr-1 px-2.5 py-0.5 rounded-full ${cycle.completed ? (isProfit ? 'text-emerald-400 bg-emerald-500/10' : isLoss ? 'text-rose-400 bg-rose-500/10' : 'text-zinc-400 bg-white/5') : 'text-cyan-400 bg-cyan-500/10'}`}>
+                <span className={`text-xs font-black tracking-tight mr-1 px-2.5 py-0.5 rounded-full ${cycle.completed ? (isProfit ? 'text-emerald-400 bg-emerald-500/10' : isLoss ? 'text-rose-400 bg-rose-500/10' : 'text-zinc-400 bg-white/5') : 'text-zinc-400 bg-zinc-500/10 dark:text-zinc-400 dark:bg-zinc-500/10'}`}>
                   {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => onDuplicateCycle(cycle)}
-                  className="text-zinc-400 hover:text-cyan-400 hover:bg-white/10 h-8 w-8 rounded-full transition-all shrink-0"
+                  className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/10 h-8 w-8 rounded-full transition-all shrink-0"
                   title="Duplicar Entradas"
                 >
                   <CopyPlus size={14} strokeWidth={2.5} />
@@ -236,7 +236,7 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
       placeholder="R$ 0"
       value={inputValue}
       onChange={handleChange}
-      className="w-full text-left text-[14px] font-black text-zinc-950 dark:text-white bg-transparent outline-none placeholder:text-zinc-500 dark:placeholder:text-zinc-600 truncate transition-colors focus:text-cyan-400"
+      className="w-full text-left text-[14px] font-black text-zinc-950 dark:text-white bg-transparent outline-none placeholder:text-zinc-500 dark:placeholder:text-zinc-600 truncate transition-colors focus:text-zinc-500 dark:focus:text-zinc-400"
     />
   );
 }
