@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useOperationDays, AddCycleData } from '../hooks/useOperationDays';
+import { useOperationDays } from '../hooks/useOperationDays';
 import { Dashboard } from '../components/Dashboard';
 import { GoalSettings } from '../components/GoalSettings';
 import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
-import { NewCycleDialog } from '../components/NewCycleDialog';
 import { useAuth } from '../components/AuthProvider';
 import { LogOut, Activity, Sun, Moon, Plus, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -20,7 +19,6 @@ import { toast } from 'sonner';
 export default function DashboardApp() {
   const { data, loading, getDayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [newCycleOpen, setNewCycleOpen] = useState(false);
   
   // Controle de Data
   const [activeDate, setActiveDate] = useState(new Date());
@@ -112,7 +110,8 @@ export default function DashboardApp() {
   const weeklyWinDays = last7DaysData.filter(day => day.profit >= 0 && day.hasData).length;
   const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
 
-  const handleSaveNewCycle = (cycleData: AddCycleData) => {
+  // CRIAÇÃO INSTANTÂNEA DE CICLO (1-Click)
+  const handleQuickAddCycle = () => {
     let isoStr = new Date().toISOString();
     if (!isToday(activeDate)) {
       const pastDate = new Date(activeDate);
@@ -120,9 +119,18 @@ export default function DashboardApp() {
       isoStr = pastDate.toISOString();
     }
 
-    addCycle(activeDateId, cycleData, isoStr);
-    setNewCycleOpen(false);
-    showSuccess(isToday(activeDate) ? 'Ciclo adicionado com sucesso!' : 'Ciclo adicionado ao dia anterior!');
+    addCycle(activeDateId, {
+      maeDeposit: data.settings.defaultMaeDeposit,
+      maeWithdraw: null,
+      maeBau: true,
+      filhaDeposit: data.settings.defaultFilhaDeposit,
+      filhaWithdraw: null
+    }, isoStr);
+    
+    // Rola o carrossel de volta para o início para focar no novo ciclo
+    if (carouselRef.current) {
+      carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
   };
 
   const handleDuplicateCycle = (cycle: Cycle) => {
@@ -140,6 +148,10 @@ export default function DashboardApp() {
       filhaDeposit: cycle.operations[1].deposit,
       filhaWithdraw: null
     }, isoStr);
+    
+    if (carouselRef.current) {
+      carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
     showSuccess('Ciclo duplicado com sucesso!');
   };
 
@@ -292,10 +304,10 @@ export default function DashboardApp() {
                 <Activity size={20} className="text-zinc-300 dark:text-zinc-600 mb-2" />
                 <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-4">Nenhum ciclo registrado hoje.</p>
                 <Button 
-                  onClick={() => setNewCycleOpen(true)} 
+                  onClick={handleQuickAddCycle} 
                   className="rounded-xl h-10 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm flex items-center gap-2 px-4 text-xs"
                 >
-                  <Plus size={14} /> Adicionar Ciclo
+                  <Plus size={14} /> Iniciar Ciclo
                 </Button>
               </div>
             ) : (
@@ -310,14 +322,14 @@ export default function DashboardApp() {
                 {/* Botão Novo Ciclo com as mesmas dimensões de um ciclo */}
                 <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] flex items-stretch">
                   <button 
-                    onClick={() => setNewCycleOpen(true)}
+                    onClick={handleQuickAddCycle}
                     className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
                   >
                     <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300">
                       <Plus size={24} />
                     </div>
                     <span className="text-[14px] font-bold text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 tracking-tight">Adicionar Novo Ciclo</span>
-                    <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para registrar entradas</span>
+                    <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para adicionar rapidamente</span>
                   </button>
                 </div>
 
@@ -360,13 +372,6 @@ export default function DashboardApp() {
         onOpenChange={setSettingsOpen}
         settings={data.settings}
         onSave={handleUpdateSettings}
-      />
-
-      <NewCycleDialog 
-        open={newCycleOpen} 
-        onOpenChange={setNewCycleOpen} 
-        settings={data.settings}
-        onSave={handleSaveNewCycle} 
       />
     </div>
   );
