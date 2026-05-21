@@ -85,9 +85,9 @@ export function ExportDialog({ open, onOpenChange, data, currentMonth }: ExportD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[95vw] rounded-[32px] liquid-glass-panel border-white/20 shadow-2xl p-5 sm:p-6 [&>button]:hidden outline-none">
+      <DialogContent className="sm:max-w-md w-[95vw] rounded-[32px] liquid-glass-panel border-black/5 dark:border-white/20 shadow-2xl p-5 sm:p-6 [&>button]:hidden outline-none bg-white/90 dark:bg-zinc-950/80 backdrop-blur-2xl">
         <DialogHeader className="mb-6 relative text-left">
-          <button onClick={() => onOpenChange(false)} className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
+          <button onClick={() => onOpenChange(false)} className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
             <X size={16} strokeWidth={2.5} />
           </button>
           <div className="flex items-center gap-3 pr-10">
@@ -102,13 +102,13 @@ export function ExportDialog({ open, onOpenChange, data, currentMonth }: ExportD
         </DialogHeader>
         
         <div className="mb-6 space-y-4">
-          <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] block mb-2">Período</label>
+          <div className="bg-black/[0.03] dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-2xl p-4">
+            <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] block mb-2">Período</label>
             <Select value={exportMode} onValueChange={(val: any) => setExportMode(val)}>
-              <SelectTrigger className="w-full bg-white/5 border-white/10 h-12 rounded-xl font-bold">
+              <SelectTrigger className="w-full bg-white/50 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-xl font-bold text-zinc-900 dark:text-white">
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>
-              <SelectContent className="liquid-glass-panel border-white/20 rounded-2xl">
+              <SelectContent className="liquid-glass-panel border-black/10 dark:border-white/20 rounded-2xl">
                 <SelectItem value="month">Apenas {monthName}</SelectItem>
                 <SelectItem value="custom">Personalizado</SelectItem>
                 <SelectItem value="all">Todo o histórico</SelectItem>
@@ -119,12 +119,12 @@ export function ExportDialog({ open, onOpenChange, data, currentMonth }: ExportD
               {exportMode === 'custom' && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="grid grid-cols-2 gap-3 mt-4">
                   <div>
-                    <label className="text-[9px] font-bold text-zinc-500 uppercase mb-1 block">Início</label>
-                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-white/5 border border-white/10 h-11 rounded-xl px-3 text-sm font-bold text-zinc-900 dark:text-white outline-none dark:[color-scheme:dark]" />
+                    <label className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1 block">Início</label>
+                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-white/50 dark:bg-white/5 border border-black/10 dark:border-white/10 h-11 rounded-xl px-3 text-sm font-bold text-zinc-900 dark:text-white outline-none dark:[color-scheme:dark]" />
                   </div>
                   <div>
-                    <label className="text-[9px] font-bold text-zinc-500 uppercase mb-1 block">Fim</label>
-                    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-white/5 border border-white/10 h-11 rounded-xl px-3 text-sm font-bold text-zinc-900 dark:text-white outline-none dark:[color-scheme:dark]" />
+                    <label className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1 block">Fim</label>
+                    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-white/50 dark:bg-white/5 border border-black/10 dark:border-white/10 h-11 rounded-xl px-3 text-sm font-bold text-zinc-900 dark:text-white outline-none dark:[color-scheme:dark]" />
                   </div>
                 </motion.div>
               )}
@@ -136,7 +136,7 @@ export function ExportDialog({ open, onOpenChange, data, currentMonth }: ExportD
           <Button onClick={handleExportPDF} className="w-full h-14 rounded-2xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-black text-base shadow-xl border-white/10">
             <FileText size={18} className="mr-2" /> Gerar PDF
           </Button>
-          <Button onClick={handleExportCSV} variant="outline" className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 font-black text-base text-zinc-900 dark:text-white">
+          <Button onClick={handleExportCSV} variant="outline" className="w-full h-14 rounded-2xl border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 font-black text-base text-zinc-900 dark:text-white transition-colors">
             <FileSpreadsheet size={18} className="mr-2" /> Planilha
           </Button>
         </div>
