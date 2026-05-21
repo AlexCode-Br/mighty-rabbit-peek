@@ -39,7 +39,7 @@ export const useOperationDays = () => {
       setLoading(true);
       const { data: remoteData, error } = await supabase
         .from('app_data')
-        .select('settings, history')
+        .select('settings, history, chat_messages')
         .eq('user_id', user.id)
         .single();
 
@@ -48,9 +48,9 @@ export const useOperationDays = () => {
       }
 
       if (remoteData) {
-        // Garante que chatMessages sempre exista como array
+        // Garante que chatMessages sempre exista como array e mapeia do banco (snake_case)
         const remoteHistory = remoteData.history || {};
-        const chatMessages = (remoteData as any).chatMessages || [];
+        const chatMessages = (remoteData as any).chat_messages || [];
         
         const mergedData = {
           settings: remoteData.settings || DEFAULT_SETTINGS,
@@ -60,12 +60,14 @@ export const useOperationDays = () => {
         setData(mergedData);
         dataRef.current = mergedData;
       } else {
-        await supabase.from('app_data').insert({
+        // Cria registro inicial se não existir
+        const initialRecord = {
           user_id: user.id,
           settings: DEFAULT_SETTINGS,
           history: {},
-          chatMessages: []
-        } as any);
+          chat_messages: []
+        };
+        await supabase.from('app_data').insert(initialRecord as any);
         setData(INITIAL_DATA);
         dataRef.current = INITIAL_DATA;
       }
@@ -86,7 +88,7 @@ export const useOperationDays = () => {
       .update({
         settings: newData.settings,
         history: newData.history,
-        chatMessages: newData.chatMessages || [],
+        chat_messages: newData.chatMessages || [],
         updated_at: new Date().toISOString()
       } as any)
       .eq('user_id', user.id);
