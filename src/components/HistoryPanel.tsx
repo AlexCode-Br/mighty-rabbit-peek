@@ -8,8 +8,8 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent, Download, Edit2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent, Download, Edit2, Activity } from 'lucide-react';
+import { Dialog, DialogContent } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { Button } from './ui/button';
@@ -243,110 +243,115 @@ export function HistoryPanel({ data, onEditDay }: HistoryPanelProps) {
         </>
       )}
 
-      {/* MODAL DETALHES DO DIA (Fix de Altura para Mobile) */}
+      {/* MODAL DETALHES DO DIA (Redesign Surreal) */}
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
-        <DialogContent className="w-[95vw] sm:max-w-md rounded-[32px] max-h-[90dvh] h-[90dvh] flex flex-col p-0 bg-[#FAFAFA] dark:bg-zinc-950 border-none shadow-2xl [&>button]:hidden outline-none">
+        <DialogContent className="w-[95vw] sm:max-w-md rounded-[32px] max-h-[85dvh] flex flex-col p-0 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/50 shadow-2xl [&>button]:hidden outline-none overflow-hidden">
           
-          <DialogHeader className="p-4 sm:p-5 pb-4 shrink-0 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white dark:bg-zinc-900 rounded-t-[32px] relative text-left">
-            <button 
-              onClick={() => setSelectedDay(null)}
-              className="absolute right-3 sm:right-4 top-3 sm:top-4 h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors z-10"
-            >
-              <X size={16} strokeWidth={2.5} />
-            </button>
+          {/* HEADER TIPO DASHBOARD BANCÁRIO */}
+          <div className="relative p-6 pt-8 pb-8 bg-white dark:bg-zinc-900 border-b border-zinc-200/50 dark:border-zinc-800/50 shrink-0">
             
-            <div className="flex justify-between items-start pr-10">
-              <div className="flex flex-col min-w-0">
-                <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mb-2 truncate">
-                  {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM", { locale: ptBR })}
-                </DialogTitle>
-                
-                <DialogDescription asChild>
-                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-                    <span className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-[6px] text-[10px] font-bold text-zinc-600 dark:text-zinc-300 shrink-0">
-                      <Target size={12} className={selectedDay && selectedDay.dailyProfit >= data.settings.dailyGoal ? "text-emerald-500" : "text-zinc-400"} />
-                      {selectedDay ? Math.min((selectedDay.dailyProfit / data.settings.dailyGoal) * 100, 100).toFixed(0) : 0}% meta
-                    </span>
-                    <span className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-[6px] text-[10px] font-bold text-zinc-600 dark:text-zinc-300 shrink-0">
-                      <Percent size={12} className={selectedDayWinRate >= 50 ? "text-emerald-500" : "text-rose-500"} />
-                      {selectedDayWinRate.toFixed(0)}% win
-                    </span>
-                  </div>
-                </DialogDescription>
-              </div>
+            {/* Botões de Ação Superiores */}
+            <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
+              <button 
+                onClick={() => {
+                  if (selectedDay) {
+                    onEditDay(parseISO(selectedDay.date));
+                    setSelectedDay(null);
+                  }
+                }}
+                className="h-8 px-3 flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors text-[10px] font-bold uppercase tracking-widest"
+              >
+                <Edit2 size={12} />
+                Editar
+              </button>
+              <button 
+                onClick={() => setSelectedDay(null)}
+                className="h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              >
+                <X size={16} strokeWidth={2.5} />
+              </button>
+            </div>
 
-              <div className="flex flex-col items-end justify-center mt-0.5 shrink-0 pl-2">
-                <span className={`font-bold text-lg sm:text-xl tracking-tight leading-none ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                  {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}
-                </span>
-                
-                <button 
-                  onClick={() => {
-                    if (selectedDay) {
-                      onEditDay(parseISO(selectedDay.date));
-                      setSelectedDay(null);
-                    }
-                  }}
-                  className="flex items-center gap-1.5 mt-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 px-3 py-1.5 rounded-xl transition-colors text-[10px] font-bold uppercase tracking-widest"
-                >
-                  <Edit2 size={12} />
-                  Editar
-                </button>
+            {/* Conteúdo Central do Header */}
+            <div className="flex flex-col items-center mt-4">
+              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-2">
+                {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM, yyyy", { locale: ptBR })}
+              </span>
+              
+              <h2 className={`text-4xl sm:text-5xl font-extrabold tracking-tight mb-4 ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}
+              </h2>
+
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 px-3 py-1.5 rounded-full">
+                  <Target size={12} className={selectedDay && selectedDay.dailyProfit >= data.settings.dailyGoal ? "text-emerald-500" : "text-zinc-400"} />
+                  <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-300">
+                    {selectedDay ? Math.min((selectedDay.dailyProfit / data.settings.dailyGoal) * 100, 100).toFixed(0) : 0}% Meta
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 px-3 py-1.5 rounded-full">
+                  <Percent size={12} className={selectedDayWinRate >= 50 ? "text-emerald-500" : "text-rose-500"} />
+                  <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-300">
+                    {selectedDayWinRate.toFixed(0)}% Win
+                  </span>
+                </div>
               </div>
             </div>
-          </DialogHeader>
+          </div>
           
-          <ScrollArea className="flex-1 px-3 sm:px-6 pb-6">
-            <div className="space-y-3 pt-5">
+          {/* LISTA DE CICLOS ESTILO FEED */}
+          <ScrollArea className="flex-1 p-4 sm:p-5 bg-zinc-50/50 dark:bg-zinc-950">
+            <div className="space-y-4 pb-6">
               {selectedDay?.cycles.map((cycle, i) => {
                 const isCycleProfit = cycle.totalProfit > 0;
                 const isCycleLoss = cycle.totalProfit < 0;
                 const cycleNumber = selectedDay.cycles.length - i;
 
                 return (
-                  <div key={cycle.id} className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm rounded-[20px] overflow-hidden">
-                    <div className="flex justify-between items-center px-3 sm:px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800/50">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full shrink-0 ${cycle.completed ? (isCycleProfit ? 'bg-emerald-500' : isCycleLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-zinc-900 dark:bg-zinc-100 animate-pulse'}`} />
-                        <h4 className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                  <div key={cycle.id} className="bg-white dark:bg-zinc-900 rounded-[24px] p-4 sm:p-5 shadow-sm border border-zinc-200/60 dark:border-zinc-800/60">
+                    
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`flex items-center justify-center w-7 h-7 rounded-full ${cycle.completed ? (isCycleProfit ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : isCycleLoss ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400' : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400') : 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 animate-pulse'}`}>
+                          <Activity size={14} strokeWidth={2.5} />
+                        </div>
+                        <h4 className="font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100">
                           Ciclo {cycleNumber}
                         </h4>
                       </div>
-                      <span className={`text-xs sm:text-sm font-semibold tracking-tight ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : isCycleLoss ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100') : 'text-zinc-400 dark:text-zinc-500'}`}>
-                        {cycle.completed ? (isCycleProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
-                      </span>
+                      <div className="flex flex-col items-end">
+                        <span className={`text-base sm:text-lg font-extrabold tracking-tight ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : isCycleLoss ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100') : 'text-zinc-400 dark:text-zinc-500'}`}>
+                          {cycle.completed ? (isCycleProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
+                        </span>
+                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
+                          Resultado
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="p-1 sm:p-1.5 space-y-0.5">
+                    <div className="space-y-2">
                       {cycle.operations.map((op) => {
                         const opProfit = op.profit || 0;
                         const isOpWin = opProfit > 0;
                         const isOpLoss = opProfit < 0;
 
                         return (
-                          <div key={op.id} className="flex items-center justify-between px-2 sm:px-3 py-2.5 rounded-[14px] bg-zinc-50/50 dark:bg-zinc-800/20">
-                            <span className="text-[9px] sm:text-[10px] font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider w-[18%]">
-                              {op.type}
-                            </span>
+                          <div key={op.id} className="flex justify-between items-center p-3 sm:p-3.5 rounded-[16px] bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-100 dark:border-zinc-800/50 transition-colors hover:bg-zinc-100/50 dark:hover:bg-zinc-900/50">
+                            <div className="flex flex-col gap-1.5">
+                              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                                {op.type}
+                              </span>
+                              <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                                Entrada: <span className="text-zinc-900 dark:text-zinc-100">{formatBRL(op.deposit)}</span>
+                              </span>
+                            </div>
                             
-                            <div className="flex flex-col items-start sm:items-center w-[28%]">
-                              <span className="text-[7px] sm:text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Entrada</span>
-                              <span className="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">
-                                {formatBRL(op.deposit)}
-                              </span>
-                            </div>
-
-                            <div className="flex flex-col items-start sm:items-center w-[28%]">
-                              <span className="text-[7px] sm:text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Saque</span>
-                              <span className="text-[11px] sm:text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                                {op.withdraw !== null ? formatBRL(op.withdraw) : '-'}
-                              </span>
-                            </div>
-
-                            <div className="flex flex-col items-end w-[26%]">
-                              <span className="text-[7px] sm:text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Lucro</span>
-                              <span className={`text-[11px] sm:text-xs font-bold truncate ${op.withdraw !== null ? (isOpWin ? 'text-emerald-500' : isOpLoss ? 'text-rose-500' : 'text-zinc-400') : 'text-zinc-300 dark:text-zinc-700'}`}>
+                            <div className="flex flex-col items-end gap-1.5">
+                              <span className={`text-xs sm:text-sm font-bold ${op.withdraw !== null ? (isOpWin ? 'text-emerald-500' : isOpLoss ? 'text-rose-500' : 'text-zinc-400') : 'text-zinc-300 dark:text-zinc-700'}`}>
                                 {op.withdraw !== null ? (isOpWin ? '+' : '') + formatBRL(opProfit) : '-'}
+                              </span>
+                              <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500">
+                                Saída: <span className="text-zinc-600 dark:text-zinc-400">{op.withdraw !== null ? formatBRL(op.withdraw) : '-'}</span>
                               </span>
                             </div>
                           </div>
