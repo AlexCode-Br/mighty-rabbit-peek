@@ -32,60 +32,81 @@ export const exportToPDF = (data: AppData) => {
     if (type === 'draw') doc.setDrawColor(color[0], color[1], color[2]);
   };
 
-  // --- FILTRAGEM DE DADOS VALIDOS ---
+  // --- FILTRAGEM DE DADOS ---
   const validDays = Object.values(data.history)
     .filter(day => day.cycles && day.cycles.length > 0)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  // --- 1. CABEÇALHO EXECUTIVO ---
-  cursorY = 20;
+  // --- 1. CABEÇALHO ESCURO (ESTILO IMAGEM ANEXADA) ---
+  doc.setFillColor(24, 24, 27); // Fundo escuro (zinc-900)
+  doc.rect(0, 0, pageWidth, 40, 'F');
+
+  // Desenhando o Ícone (Círculo Branco + Carteira Vetorial)
+  const cx = 25;
+  const cy = 20;
   
-  applyColor('text', colors.textMain);
-  doc.setFontSize(22);
+  // Círculo
+  doc.setFillColor(250, 250, 250);
+  doc.circle(cx, cy, 7, 'F');
+  
+  // Vetor da Carteira
+  doc.setDrawColor(24, 24, 27);
+  doc.setLineWidth(0.7);
+  doc.roundedRect(cx - 3.5, cy - 2.5, 7, 5, 0.8, 0.8, 'S'); // Corpo
+  doc.line(cx - 3.5, cy - 0.5, cx + 1, cy - 0.5); // Linha horizontal
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(cx + 1.5, cy - 1.2, 2, 2.4, 0.5, 0.5, 'FD'); // Fecho da carteira (Fill & Draw)
+
+  // Texto: "Trade Tracker"
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('TradeTracker', 15, cursorY);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Trade', 35, 22);
+  const tradeWidth = doc.getTextWidth('Trade');
+  doc.setTextColor(161, 161, 170); // Cinza para o "Tracker"
+  doc.text('Tracker', 35 + tradeWidth + 1, 22);
 
-  applyColor('text', colors.textMuted);
-  doc.setFontSize(10);
+  // Informação de Geração
+  const todayStr = format(new Date(), "dd MMM, yyyy • HH:mm", { locale: ptBR });
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.text('Relatório de Performance Operacional', 15, cursorY + 6);
+  doc.setTextColor(161, 161, 170);
+  doc.text('Relatório Gerencial de Performance', pageWidth - 15, 18, { align: 'right' });
+  doc.text(`Gerado em: ${todayStr}`, pageWidth - 15, 24, { align: 'right' });
 
-  const todayStr = format(new Date(), "dd 'de' MMMM, yyyy", { locale: ptBR });
-  const timeStr = format(new Date(), "HH:mm");
-  
-  applyColor('text', colors.textLight);
-  doc.setFontSize(9);
-  doc.text(`Gerado em: ${todayStr} às ${timeStr}`, pageWidth - 15, cursorY + 6, { align: 'right' });
+  cursorY = 48;
 
-  cursorY += 12;
-
-  applyColor('draw', colors.border);
-  doc.setLineWidth(0.5);
-  doc.line(15, cursorY, pageWidth - 15, cursorY);
-  
-  cursorY += 12;
-
-  // --- 2. CÁLCULO DE ESTATÍSTICAS GERAIS ---
+  // --- 2. INTELIGÊNCIA DOS DADOS ---
   let totalProfit = 0;
-  let totalCycles = 0;
+  let completedCycles = 0;
   let winningCycles = 0;
+  let pendingCycles = 0;
 
   validDays.forEach(day => {
     day.cycles.forEach(cycle => {
       if (cycle.completed) {
-        totalCycles++;
+        completedCycles++;
         totalProfit += cycle.totalProfit;
         if (cycle.totalProfit > 0) winningCycles++;
+      } else {
+        pendingCycles++;
       }
     });
   });
 
-  const winRate = totalCycles > 0 ? ((winningCycles / totalCycles) * 100).toFixed(1) : '0.0';
+  const losingCycles = completedCycles - winningCycles;
+  const winRate = completedCycles > 0 ? ((winningCycles / completedCycles) * 100).toFixed(1) : '0.0';
+  
+  const profitDays = validDays.filter(d => d.dailyProfit >= 0).length;
+  const lossDays = validDays.filter(d => d.dailyProfit < 0).length;
+  
+  const bestDayVal = validDays.length > 0 ? Math.max(...validDays.map(d => d.dailyProfit)) : 0;
+  const worstDayVal = validDays.length > 0 ? Math.min(...validDays.map(d => d.dailyProfit)) : 0;
 
-  // --- 3. CARTÕES DE RESUMO (KPIs) ---
-  const drawKpiCard = (x: number, y: number, w: number, title: string, value: string, isCurrency = false, profitStatus?: 'win' | 'loss' | 'neutral') => {
-    const h = 26;
-    
+  const fC = (val: number) => `R$ ${Math.abs(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  // --- 3. CARDS AVANÇADOS (KPIs) ---
+  const drawAdvancedCard = (x: number, y: number, w: number, h: number, title: string, value: string, subLeft: string, subRight: string, valColor: number[]) => {
     applyColor('fill', colors.bgLight);
     applyColor('draw', colors.border);
     doc.roundedRect(x, y, w, h, 3, 3, 'FD');
@@ -93,44 +114,64 @@ export const exportToPDF = (data: AppData) => {
     applyColor('text', colors.textMuted);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.text(title.toUpperCase(), x + 6, y + 8);
+    doc.text(title, x + 5, y + 7);
 
+    applyColor('text', valColor);
     doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    
-    if (profitStatus === 'win') applyColor('text', colors.profit);
-    else if (profitStatus === 'loss') applyColor('text', colors.loss);
-    else applyColor('text', colors.textMain);
+    doc.text(value, x + 5, y + 16);
 
-    doc.text(value, x + 6, y + 19);
+    applyColor('draw', colors.border);
+    doc.setLineWidth(0.2);
+    doc.line(x + 5, y + 21, x + w - 5, y + 21);
 
-    if (isCurrency && profitStatus) {
-      doc.setFontSize(10);
-      const sign = profitStatus === 'win' ? '+' : '';
-      doc.text(sign, x + 4, y + 19);
-    }
+    applyColor('text', colors.textMuted);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text(subLeft, x + 5, y + 26);
+    doc.text(subRight, x + w - 5, y + 26, { align: 'right' });
   };
 
-  const cardW = (pageWidth - 40) / 3;
-  
-  const profitStr = `R$ ${Math.abs(totalProfit).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const pStatus = totalProfit > 0 ? 'win' : totalProfit < 0 ? 'loss' : 'neutral';
-  
-  drawKpiCard(15, cursorY, cardW, 'Lucro Líquido Total', profitStr, true, pStatus);
-  drawKpiCard(15 + cardW + 5, cursorY, cardW, 'Taxa de Acerto', `${winRate}%`);
-  drawKpiCard(15 + (cardW * 2) + 10, cursorY, cardW, 'Ciclos Finalizados', `${totalCycles}`);
+  const cW = 58; // Largura dos cards
+  const cH = 30; // Altura dos cards
+  const gap = 3; // Espaçamento
 
-  cursorY += 40;
+  const pColor = totalProfit > 0 ? colors.profit : totalProfit < 0 ? colors.loss : colors.textMain;
+  
+  drawAdvancedCard(15, cursorY, cW, cH, 
+    'RESULTADO LÍQUIDO', 
+    `${totalProfit > 0 ? '+' : totalProfit < 0 ? '-' : ''}${fC(totalProfit)}`, 
+    `Melhor: ${bestDayVal > 0 ? '+' : ''}${fC(bestDayVal)}`, 
+    `Pior: ${worstDayVal < 0 ? '-' : ''}${fC(worstDayVal)}`, 
+    pColor
+  );
 
-  // --- 4. GRÁFICO DE BARRAS INTELIGENTE (Últimos 7 dias válidos) ---
-  const chartDays = validDays.slice(-7);
+  drawAdvancedCard(15 + cW + gap, cursorY, cW, cH, 
+    'TAXA DE ACERTO (WIN RATE)', 
+    `${winRate}%`, 
+    `Dias: ${profitDays}W / ${lossDays}L`, 
+    `Ciclos: ${winningCycles}W / ${losingCycles}L`, 
+    colors.textMain
+  );
+
+  drawAdvancedCard(15 + (cW * 2) + (gap * 2), cursorY, cW, cH, 
+    'VOLUME OPERACIONAL', 
+    `${completedCycles} Ciclos`, 
+    `Pendentes: ${pendingCycles}`, 
+    `Média/dia: ${validDays.length > 0 ? (completedCycles / validDays.length).toFixed(1) : '0'}`, 
+    colors.textMain
+  );
+
+  cursorY += cH + 12;
+
+  // --- 4. GRÁFICO DE BARRAS DINÂMICO (Até 14 dias) ---
+  const chartDays = validDays.slice(-14);
 
   applyColor('text', colors.textMain);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Evolução Recente (Últimos dias operados)', 15, cursorY);
+  doc.text('Evolução Financeira Diária', 15, cursorY);
   
-  cursorY += 8;
+  cursorY += 6;
   
   const chartHeight = 45;
   const chartWidth = pageWidth - 30;
@@ -143,83 +184,63 @@ export const exportToPDF = (data: AppData) => {
     const maxAbsVal = Math.max(...chartDays.map(d => Math.abs(d.dailyProfit)), 10);
     const zeroY = cursorY + (chartHeight / 2);
     
+    // Eixo zero
     applyColor('draw', colors.textLight);
     doc.setLineWidth(0.5);
     doc.line(15, zeroY, 15 + chartWidth, zeroY);
 
-    // Usa setLineDashPattern ao invés de setDrawDashPattern
+    // Linhas Guia
     doc.setLineDashPattern([1, 2], 0);
     applyColor('draw', colors.border);
     doc.setLineWidth(0.3);
     doc.line(15, cursorY + 10, 15 + chartWidth, cursorY + 10);
     doc.line(15, cursorY + chartHeight - 10, 15 + chartWidth, cursorY + chartHeight - 10);
-    doc.setLineDashPattern([], 0); // Reseta para linha sólida
+    doc.setLineDashPattern([], 0); 
 
     const barSpacing = chartWidth / Math.max(chartDays.length, 7);
     const maxBarHeight = (chartHeight / 2) - 8;
-    const barWidth = 8;
+    const barWidth = Math.min(8, barSpacing - 2);
 
     chartDays.forEach((day, index) => {
       const isProfit = day.dailyProfit >= 0;
       const barH = (Math.abs(day.dailyProfit) / maxAbsVal) * maxBarHeight;
-      
       const startX = 15 + ((chartWidth - (chartDays.length * barSpacing)) / 2);
       const barX = startX + (index * barSpacing) + (barSpacing / 2) - (barWidth / 2);
-      
       const barY = isProfit ? zeroY - barH : zeroY;
 
       if (day.dailyProfit !== 0) {
-        if (isProfit) applyColor('fill', colors.profit);
-        else applyColor('fill', colors.loss);
-        
+        applyColor('fill', isProfit ? colors.profit : colors.loss);
         doc.rect(barX, barY, barWidth, Math.max(barH, 1), 'F');
       }
 
       applyColor('text', colors.textMuted);
-      doc.setFontSize(7);
+      doc.setFontSize(6.5);
       doc.setFont('helvetica', 'normal');
-      const dayLabel = format(parseISO(day.date), 'dd/MM');
-      doc.text(dayLabel, barX + (barWidth / 2), cursorY + chartHeight - 2, { align: 'center' });
+      doc.text(format(parseISO(day.date), 'dd/MM'), barX + (barWidth / 2), cursorY + chartHeight - 2, { align: 'center' });
       
       if (day.dailyProfit !== 0) {
-        if (isProfit) applyColor('text', colors.profit);
-        else applyColor('text', colors.loss);
-        
+        applyColor('text', isProfit ? colors.profit : colors.loss);
         doc.setFont('helvetica', 'bold');
         let valLabel = Math.abs(day.dailyProfit).toFixed(0);
         if (Math.abs(day.dailyProfit) >= 1000) valLabel = (Math.abs(day.dailyProfit) / 1000).toFixed(1).replace('.0', '') + 'k';
-        
-        const textY = isProfit ? barY - 2 : barY + barH + 4;
+        const textY = isProfit ? barY - 1.5 : barY + barH + 3.5;
         doc.text(`${isProfit ? '+' : '-'}${valLabel}`, barX + (barWidth / 2), textY, { align: 'center' });
       }
     });
   } else {
     applyColor('text', colors.textLight);
     doc.setFontSize(9);
-    doc.text('Não há operações suficientes para gerar o gráfico.', pageWidth / 2, cursorY + (chartHeight/2), { align: 'center' });
+    doc.text('Não há operações suficientes.', pageWidth / 2, cursorY + (chartHeight/2), { align: 'center' });
   }
 
   cursorY += chartHeight + 15;
 
-  const defaultTableStyles = {
+  // --- CONFIGURAÇÃO PREMIUM DAS TABELAS ---
+  const tableStyles = {
     theme: 'plain' as const,
-    styles: { 
-      font: 'helvetica', 
-      fontSize: 9, 
-      cellPadding: 4,
-      textColor: colors.textMain 
-    },
-    headStyles: { 
-      fillColor: colors.bgLight, 
-      textColor: colors.textMuted, 
-      fontStyle: 'bold' as const,
-      lineWidth: { bottom: 0.5 },
-      lineColor: colors.border
-    },
-    bodyStyles: {
-      lineWidth: { bottom: 0.1 },
-      lineColor: colors.border
-    },
+    styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 3, textColor: colors.textMain },
+    headStyles: { fillColor: colors.bgLight, textColor: colors.textMuted, fontStyle: 'bold' as const, lineWidth: { bottom: 0.5 }, lineColor: colors.border },
+    bodyStyles: { lineWidth: { bottom: 0.1 }, lineColor: colors.border },
     margin: { left: 15, right: 15 },
   };
 
@@ -227,21 +248,15 @@ export const exportToPDF = (data: AppData) => {
   applyColor('text', colors.textMain);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Resumo Diário (Filtrado)', 15, cursorY);
+  doc.text('Performance Diária (Listagem)', 15, cursorY);
   cursorY += 5;
 
   const dailyTableData: any[][] = [];
   const dailyGoal = data.settings.dailyGoal;
 
-  const tableDays = [...validDays].reverse();
-
-  tableDays.forEach((day) => {
-    const dateStr = format(parseISO(day.date), 'dd/MM/yyyy');
+  [...validDays].reverse().forEach((day) => {
     const profit = day.dailyProfit;
-    const formatCurr = (val: number) => `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    
     const percent = dailyGoal > 0 ? (profit / dailyGoal) * 100 : 0;
-    const percentStr = dailyGoal > 0 ? `${percent.toFixed(0)}%` : '-';
     
     let status = 'Empate';
     if (profit > 0 && dailyGoal > 0 && profit >= dailyGoal) status = 'Meta Batida';
@@ -249,18 +264,18 @@ export const exportToPDF = (data: AppData) => {
     else if (profit < 0) status = 'Loss';
 
     dailyTableData.push([
-      dateStr,
+      format(parseISO(day.date), 'dd/MM/yyyy'),
       day.cycles.length.toString(),
-      formatCurr(profit),
-      percentStr,
+      `${profit > 0 ? '+' : profit < 0 ? '-' : ''}${fC(profit)}`,
+      dailyGoal > 0 ? `${percent.toFixed(0)}%` : '-',
       status
     ]);
   });
 
   autoTable(doc, {
-    ...defaultTableStyles,
+    ...tableStyles,
     startY: cursorY,
-    head: [['Data', 'Ciclos', 'Resultado', '% Meta', 'Status']],
+    head: [['Data', 'Ciclos Totais', 'Resultado Líquido', '% Meta', 'Status Final']],
     body: dailyTableData,
     columnStyles: {
       1: { halign: 'center' },
@@ -270,15 +285,11 @@ export const exportToPDF = (data: AppData) => {
     },
     didParseCell: (data) => {
       if (data.section === 'body') {
-        const statusVal = data.row.raw[4];
-        if (statusVal === 'Meta Batida' || statusVal === 'Lucro') {
-          if (data.column.index === 2 || data.column.index === 4) {
-            data.cell.styles.textColor = colors.profit;
-          }
-        } else if (statusVal === 'Loss') {
-          if (data.column.index === 2 || data.column.index === 4) {
-            data.cell.styles.textColor = colors.loss;
-          }
+        const s = data.row.raw[4];
+        if (s === 'Meta Batida' || s === 'Lucro') {
+          if ([2, 4].includes(data.column.index)) data.cell.styles.textColor = colors.profit;
+        } else if (s === 'Loss') {
+          if ([2, 4].includes(data.column.index)) data.cell.styles.textColor = colors.loss;
         }
       }
     }
@@ -295,36 +306,35 @@ export const exportToPDF = (data: AppData) => {
   applyColor('text', colors.textMain);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Detalhamento de Operações', 15, cursorY);
+  doc.text('Auditoria de Entradas (Ciclos)', 15, cursorY);
   cursorY += 5;
 
   const detailData: any[][] = [];
   
-  tableDays.forEach((day) => {
+  [...validDays].reverse().forEach((day) => {
     (day.cycles || []).forEach(cycle => {
-      const maeOp = cycle.operations.find(op => op.type === 'MAE');
-      const filhaOp = cycle.operations.find(op => op.type === 'FILHA');
-      if (!maeOp || !filhaOp) return;
+      const m = cycle.operations.find(op => op.type === 'MAE');
+      const f = cycle.operations.find(op => op.type === 'FILHA');
+      if (!m || !f) return;
 
-      const dateStr = cycle.createdAt ? format(parseISO(cycle.createdAt), 'dd/MM/yy') : format(parseISO(day.date), 'dd/MM/yy');
-      const timeStr = cycle.createdAt ? format(parseISO(cycle.createdAt), 'HH:mm') : '--:--';
-      
-      const fC = (val: number | null) => val !== null ? `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+      const dt = cycle.createdAt ? format(parseISO(cycle.createdAt), 'dd/MM/yy') : format(parseISO(day.date), 'dd/MM/yy');
+      const tm = cycle.createdAt ? format(parseISO(cycle.createdAt), 'HH:mm') : '--:--';
+      const c = (v: number | null) => v !== null ? fC(v) : '-';
       
       detailData.push([
-        `${dateStr}  ${timeStr}`,
-        `Ent: ${fC(maeOp.deposit)}  |  Saq: ${fC(maeOp.withdraw)}`,
-        `Ent: ${fC(filhaOp.deposit)}  |  Saq: ${fC(filhaOp.withdraw)}`,
-        fC(cycle.totalProfit),
-        cycle.completed ? (cycle.totalProfit >= 0 ? 'LUCRO' : 'LOSS') : 'PENDENTE'
+        `${dt} às ${tm}`,
+        `Entrada: ${c(m.deposit)}   |   Saída: ${c(m.withdraw)}`,
+        `Entrada: ${c(f.deposit)}   |   Saída: ${c(f.withdraw)}`,
+        `${cycle.totalProfit > 0 ? '+' : cycle.totalProfit < 0 ? '-' : ''}${c(cycle.totalProfit)}`,
+        cycle.completed ? (cycle.totalProfit >= 0 ? 'WIN' : 'LOSS') : 'PENDENTE'
       ]);
     });
   });
 
   autoTable(doc, {
-    ...defaultTableStyles,
+    ...tableStyles,
     startY: cursorY,
-    head: [['Data / Hora', 'Operação Mãe', 'Operação Filha', 'Total do Ciclo', 'Status']],
+    head: [['Registro', 'Operação Mãe', 'Operação Filha', 'Total Ciclo', 'Resultado']],
     body: detailData,
     columnStyles: {
       3: { fontStyle: 'bold', halign: 'right' },
@@ -332,19 +342,13 @@ export const exportToPDF = (data: AppData) => {
     },
     didParseCell: (data) => {
       if (data.section === 'body') {
-        const statusVal = data.row.raw[4];
-        if (statusVal === 'LUCRO') {
-          if (data.column.index === 3 || data.column.index === 4) {
-            data.cell.styles.textColor = colors.profit;
-          }
-        } else if (statusVal === 'LOSS') {
-          if (data.column.index === 3 || data.column.index === 4) {
-            data.cell.styles.textColor = colors.loss;
-          }
+        const s = data.row.raw[4];
+        if (s === 'WIN') {
+          if ([3, 4].includes(data.column.index)) data.cell.styles.textColor = colors.profit;
+        } else if (s === 'LOSS') {
+          if ([3, 4].includes(data.column.index)) data.cell.styles.textColor = colors.loss;
         } else {
-          if (data.column.index === 3 || data.column.index === 4) {
-            data.cell.styles.textColor = colors.textLight;
-          }
+          if ([3, 4].includes(data.column.index)) data.cell.styles.textColor = colors.textLight;
         }
       }
     }
