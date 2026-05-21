@@ -12,6 +12,7 @@ import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { showSuccess } from '../utils/toast';
+import { parseISO, startOfWeek, endOfWeek } from 'date-fns';
 
 export default function DashboardApp() {
   const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
@@ -32,6 +33,22 @@ export default function DashboardApp() {
       </div>
     );
   }
+
+  // --- Cálculos da Semana ---
+  const now = new Date();
+  const startOfCurrentWeek = startOfWeek(now, { weekStartsOn: 0 }); // Semana começa no Domingo
+  const endOfCurrentWeek = endOfWeek(now, { weekStartsOn: 0 });
+
+  const weeklyDays = Object.values(data.history).filter(day => {
+    const dayDate = parseISO(day.date);
+    return dayDate >= startOfCurrentWeek && dayDate <= endOfCurrentWeek;
+  });
+
+  const weeklyProfit = weeklyDays.reduce((acc, day) => acc + day.dailyProfit, 0);
+  const weeklyActiveDays = weeklyDays.filter(day => day.cycles.length > 0).length;
+  const weeklyWinDays = weeklyDays.filter(day => day.dailyProfit >= 0 && day.cycles.length > 0).length;
+  const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
+  // --------------------------
 
   const handleSaveNewCycle = (cycleData: AddCycleData) => {
     addCycle(cycleData);
@@ -94,6 +111,8 @@ export default function DashboardApp() {
                 dailyGoal={data.settings.dailyGoal}
                 stopLoss={data.settings.stopLoss}
                 cyclesCount={todayData.cycles.length}
+                weeklyProfit={weeklyProfit}
+                weeklyWinRate={weeklyWinRate}
                 onNewCycle={() => setNewCycleOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
               />

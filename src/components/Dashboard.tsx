@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Settings, Plus } from 'lucide-react';
+import { Settings, Plus, TrendingUp } from 'lucide-react';
 import { formatBRL } from '../utils/currency';
 import { motion } from 'framer-motion';
 
@@ -10,11 +10,22 @@ interface DashboardProps {
   dailyGoal: number;
   stopLoss: number;
   cyclesCount: number;
+  weeklyProfit: number;
+  weeklyWinRate: number;
   onNewCycle: () => void;
   onOpenSettings: () => void;
 }
 
-export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNewCycle, onOpenSettings }: DashboardProps) {
+export function Dashboard({ 
+  dailyProfit, 
+  dailyGoal, 
+  stopLoss, 
+  cyclesCount, 
+  weeklyProfit, 
+  weeklyWinRate, 
+  onNewCycle, 
+  onOpenSettings 
+}: DashboardProps) {
   const isProfit = dailyProfit >= 0;
   const isNeutral = dailyProfit === 0;
   
@@ -32,8 +43,13 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
     progressColorClass = 'bg-rose-500';
   }
 
+  const isWeeklyProfit = weeklyProfit > 0;
+  const isWeeklyLoss = weeklyProfit < 0;
+  const weeklyIconBg = isWeeklyProfit ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500' : isWeeklyLoss ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-500' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400';
+  const weeklyTextClass = isWeeklyProfit ? 'text-emerald-500' : isWeeklyLoss ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100';
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.98, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -133,6 +149,37 @@ export function Dashboard({ dailyProfit, dailyGoal, stopLoss, cyclesCount, onNew
           </div>
         </motion.div>
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="pt-2"
+      >
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Balanço Semanal</h3>
+        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-sm">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className={`w-11 h-11 rounded-full flex items-center justify-center ${weeklyIconBg}`}>
+                <TrendingUp size={22} strokeWidth={2.5} className={isWeeklyLoss ? "rotate-180" : ""} />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Nesta Semana</span>
+                <span className={`text-xl font-bold tracking-tight ${weeklyTextClass}`}>
+                  {isWeeklyProfit ? '+' : ''}{formatBRL(weeklyProfit)}
+                </span>
+              </div>
+            </div>
+
+            <div className="text-right border-l border-zinc-100 dark:border-zinc-800 pl-4 py-1">
+              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Acerto</span>
+              <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                {weeklyWinRate.toFixed(0)}%
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
