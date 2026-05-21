@@ -8,11 +8,12 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent, Download } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
-import { ImportExportPanel } from './ImportExportPanel';
+import { Button } from './ui/button';
+import { ExportDialog } from './ExportDialog';
 
 interface HistoryPanelProps {
   data: AppData;
@@ -21,6 +22,7 @@ interface HistoryPanelProps {
 export function HistoryPanel({ data }: HistoryPanelProps) {
   const [selectedDay, setSelectedDay] = useState<OperationDay | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [exportOpen, setExportOpen] = useState(false);
 
   // Todos os dias com histórico
   const historyDays = Object.values(data.history).sort((a, b) => {
@@ -227,11 +229,23 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
             </CardContent>
           </Card>
 
-          {/* Relatórios (Aparece apenas se houver dados no mês atual) */}
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Exportar Dados</h3>
-            <ImportExportPanel data={data} currentMonth={currentMonth} />
+          {/* Botão de Exportar */}
+          <div className="mt-4">
+            <Button 
+              onClick={() => setExportOpen(true)}
+              variant="outline"
+              className="w-full h-12 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold flex items-center justify-center gap-2 shadow-sm transition-colors"
+            >
+              <Download size={18} /> Exportar Relatórios
+            </Button>
           </div>
+          
+          <ExportDialog 
+            open={exportOpen} 
+            onOpenChange={setExportOpen} 
+            data={data} 
+            currentMonth={currentMonth} 
+          />
         </>
       )}
 
