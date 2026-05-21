@@ -110,6 +110,21 @@ export default function DashboardApp() {
   const weeklyWinDays = last7DaysData.filter(day => day.profit >= 0 && day.hasData).length;
   const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
 
+  // Função utilitária para rolar até o novo ciclo criado
+  const scrollToNewCycle = () => {
+    setTimeout(() => {
+      if (carouselRef.current && carouselRef.current.children[1]) {
+        const container = carouselRef.current;
+        // O índice 1 será sempre o ciclo recém-adicionado (índice 0 é o botão "Novo Ciclo")
+        const target = container.children[1] as HTMLElement;
+        container.scrollTo({
+          left: target.offsetLeft - 16, // -16px compensa o padding lateral (px-4) do contêiner
+          behavior: 'smooth'
+        });
+      }
+    }, 100); // Tempo pequeno pro React renderizar o novo elemento no DOM
+  };
+
   // CRIAÇÃO INSTANTÂNEA DE CICLO (1-Click)
   const handleQuickAddCycle = () => {
     let isoStr = new Date().toISOString();
@@ -127,10 +142,7 @@ export default function DashboardApp() {
       filhaWithdraw: null
     }, isoStr);
     
-    // Rola o carrossel de volta para o início para focar no novo ciclo
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-    }
+    scrollToNewCycle();
   };
 
   const handleDuplicateCycle = (cycle: Cycle) => {
@@ -149,10 +161,8 @@ export default function DashboardApp() {
       filhaWithdraw: null
     }, isoStr);
     
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-    }
     showSuccess('Ciclo duplicado com sucesso!');
+    scrollToNewCycle();
   };
 
   const handleUpdateOperation = (cycleId: string, operationId: string, updates: Partial<Operation>) => {
@@ -317,7 +327,7 @@ export default function DashboardApp() {
                 onMouseLeave={handleMouseLeave}
                 onMouseUp={handleMouseUp}
                 onMouseMove={handleMouseMove}
-                className={`flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing ${isDragging ? '[&_*]:pointer-events-none' : 'snap-x snap-mandatory'}`}
+                className={`relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing ${isDragging ? '[&_*]:pointer-events-none' : 'snap-x snap-mandatory'}`}
               >
                 {/* Botão Novo Ciclo com as mesmas dimensões de um ciclo */}
                 <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] flex items-stretch">
