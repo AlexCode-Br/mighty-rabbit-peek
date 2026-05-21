@@ -13,6 +13,7 @@ import { useTheme } from 'next-themes';
 import { showSuccess } from '../utils/toast';
 import { subDays, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Cycle } from '../types';
 
 export default function DashboardApp() {
   const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
@@ -62,6 +63,17 @@ export default function DashboardApp() {
     addCycle(cycleData);
     setNewCycleOpen(false);
     showSuccess('Ciclo adicionado com sucesso!');
+  };
+
+  const handleDuplicateCycle = (cycle: Cycle) => {
+    addCycle({
+      maeDeposit: cycle.operations[0].deposit,
+      maeWithdraw: null,
+      maeBau: cycle.operations[0].bau ?? false,
+      filhaDeposit: cycle.operations[1].deposit,
+      filhaWithdraw: null
+    });
+    showSuccess('Ciclo duplicado com sucesso!');
   };
 
   const handleUpdateSettings = (newSettings: any) => {
@@ -165,6 +177,7 @@ export default function DashboardApp() {
                         cycle={cycle}
                         onUpdateOperation={updateOperation}
                         onDeleteCycle={handleDeleteCycle}
+                        onDuplicateCycle={handleDuplicateCycle}
                       />
                     ))}
                   </AnimatePresence>

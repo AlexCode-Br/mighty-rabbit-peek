@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Trash2, AlertTriangle } from 'lucide-react';
+import { Trash2, AlertTriangle, CopyPlus } from 'lucide-react';
 import { Cycle, Operation } from '../types';
 import { formatBRL } from '../utils/currency';
 import { Checkbox } from './ui/checkbox';
@@ -14,9 +14,10 @@ interface CycleCardProps {
   cycle: Cycle;
   onUpdateOperation: (cycleId: string, operationId: string, updates: Partial<Operation>) => void;
   onDeleteCycle: (cycleId: string) => void;
+  onDuplicateCycle: (cycle: Cycle) => void;
 }
 
-export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: CycleCardProps) {
+export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDuplicateCycle }: CycleCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isProfit = cycle.totalProfit > 0;
   const isLoss = cycle.totalProfit < 0;
@@ -50,15 +51,25 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
                 </h3>
               </div>
               
-              <div className="flex items-center gap-3 shrink-0">
-                <span className={`text-sm font-semibold tracking-tight ${cycle.completed ? (isProfit ? 'text-emerald-500' : isLoss ? 'text-rose-500' : 'text-zinc-400 dark:text-zinc-500') : 'text-zinc-400 dark:text-zinc-500'}`}>
+              <div className="flex items-center gap-1 shrink-0">
+                <span className={`text-sm font-semibold tracking-tight mr-2 ${cycle.completed ? (isProfit ? 'text-emerald-500' : isLoss ? 'text-rose-500' : 'text-zinc-400 dark:text-zinc-500') : 'text-zinc-400 dark:text-zinc-500'}`}>
                   {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={() => onDuplicateCycle(cycle)}
+                  className="text-zinc-300 dark:text-zinc-600 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 h-8 w-8 rounded-full transition-colors shrink-0"
+                  title="Duplicar Entradas"
+                >
+                  <CopyPlus size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowDeleteConfirm(true)}
                   className="text-zinc-300 dark:text-zinc-600 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 h-8 w-8 rounded-full transition-colors -mr-2 shrink-0"
+                  title="Excluir Ciclo"
                 >
                   <Trash2 size={16} />
                 </Button>
@@ -73,9 +84,9 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
                 const isOpLoss = opProfit < 0;
 
                 return (
-                  <div key={op.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                  <div key={op.id} className="flex items-start justify-between p-3 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
                     
-                    <div className="flex items-center gap-4 w-1/3">
+                    <div className="flex items-center gap-4 w-1/3 pt-1">
                       <div className="flex flex-col gap-1">
                         <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">{op.type}</span>
                         {op.type === 'MAE' && (
@@ -94,7 +105,7 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
                       </div>
                     </div>
                     
-                    <div className="flex flex-col w-1/3 px-2">
+                    <div className="flex flex-col w-1/3 px-2 pt-1">
                       <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium mb-1 text-right">Entrada</span>
                       <CurrencyInput
                         initialValue={op.deposit}
@@ -102,20 +113,38 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle }: Cy
                       />
                     </div>
                     
-                    <div className="flex flex-col w-1/3 relative">
+                    <div className="flex flex-col w-1/3 relative pt-1">
                       <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium mb-1 text-right">Saque</span>
                       <CurrencyInput
                         initialValue={op.withdraw}
                         onChange={(val) => onUpdateOperation(cycle.id, op.id, { withdraw: val })}
                       />
-                      {isOpCompleted && (
-                        <motion.span 
+                      
+                      {!isOpCompleted ? (
+                        <div className="flex items-center justify-end gap-1 mt-2">
+                          <button 
+                            onClick={() => onUpdateOperation(cycle.id, op.id, { withdraw: 0 })}
+                            className="text-[9px] font-bold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 px-1.5 py-1 rounded border border-rose-100 dark:border-rose-500/20 active:scale-95 transition-all shadow-sm"
+                            title="Loss (R$ 0)"
+                          >
+                            R$ 0
+                          </button>
+                          <button 
+                            onClick={() => onUpdateOperation(cycle.id, op.id, { withdraw: op.deposit })}
+                            className="text-[9px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-1.5 py-1 rounded border border-zinc-200 dark:border-zinc-700 active:scale-95 transition-all shadow-sm"
+                            title="Empate (Retorno da Entrada)"
+                          >
+                            = Ent
+                          </button>
+                        </div>
+                      ) : (
+                        <motion.div 
                           initial={{ opacity: 0, y: -5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className={`absolute -bottom-4 right-0 text-[9px] font-bold tracking-wider ${isOpWin ? 'text-emerald-500' : isOpLoss ? 'text-rose-500' : 'text-zinc-400 dark:text-zinc-500'}`}
+                          className={`text-right mt-2 text-[10px] font-bold tracking-wider ${isOpWin ? 'text-emerald-500' : isOpLoss ? 'text-rose-500' : 'text-zinc-400 dark:text-zinc-500'}`}
                         >
                           {isOpWin ? '+' : ''}{formatBRL(opProfit)}
-                        </motion.span>
+                        </motion.div>
                       )}
                     </div>
 
