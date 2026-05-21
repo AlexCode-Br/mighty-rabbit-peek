@@ -35,9 +35,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-[#09090b] flex flex-col gap-4 items-center justify-center text-orange-500 font-bold">
-      <div className="w-10 h-10 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
-      <span className="text-sm tracking-widest uppercase animate-pulse">Carregando Sessão...</span>
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-zinc-950 flex flex-col gap-4 items-center justify-center">
+      <div className="w-10 h-10 border-[3px] border-zinc-200 dark:border-zinc-800 border-t-zinc-900 dark:border-t-zinc-100 rounded-full animate-spin" />
+      <span className="text-xs font-semibold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 animate-pulse">
+        Carregando...
+      </span>
     </div>
   );
 

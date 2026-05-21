@@ -14,6 +14,7 @@ import { showSuccess } from '../utils/toast';
 import { subDays, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Cycle } from '../types';
+import { formatBRL } from '../utils/currency';
 
 export default function DashboardApp() {
   const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
@@ -38,11 +39,11 @@ export default function DashboardApp() {
   // --- Cálculos do Dia Atual ---
   const todayWins = todayData.cycles.filter(c => c.completed && c.totalProfit > 0).length;
   const todayLosses = todayData.cycles.filter(c => c.completed && c.totalProfit < 0).length;
+  const todayCompleted = todayData.cycles.filter(c => c.completed).length;
 
   // --- Cálculos dos Últimos 7 Dias ---
   const now = new Date();
   const last7DaysData = Array.from({ length: 7 }).map((_, i) => {
-    // 6 - i garante a ordem cronológica (do mais antigo para o dia de hoje)
     const d = subDays(now, 6 - i);
     const dayId = format(d, 'yyyy-MM-dd');
     const dayData = data.history[dayId];
@@ -160,6 +161,24 @@ export default function DashboardApp() {
                 </div>
               ) : (
                 <div className="space-y-4">
+                  
+                  {/* Mini Resumo do Dia na aba Ciclos */}
+                  <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-4 flex items-center justify-between shadow-sm">
+                    <div>
+                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Lucro Atual</span>
+                      <span className={`text-xl font-bold tracking-tight ${todayData.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        {todayData.dailyProfit >= 0 ? '+' : ''}{formatBRL(todayData.dailyProfit)}
+                      </span>
+                    </div>
+                    <div className="h-8 w-[1px] bg-zinc-100 dark:bg-zinc-800" />
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Concluídos</span>
+                      <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                        {todayCompleted} <span className="text-sm text-zinc-400 dark:text-zinc-500">/ {todayData.cycles.length}</span>
+                      </span>
+                    </div>
+                  </div>
+
                   {/* Botão de Atalho Rápido para Novo Ciclo */}
                   <Button 
                     onClick={() => setNewCycleOpen(true)}
