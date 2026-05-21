@@ -4,9 +4,8 @@ import { Dashboard } from '../components/Dashboard';
 import { GoalSettings } from '../components/GoalSettings';
 import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
-import { ChatPanel } from '../components/ChatPanel';
 import { useAuth } from '../components/AuthProvider';
-import { LogOut, Activity, Sun, Moon, Plus, Wallet, ChevronLeft, ChevronRight, MessageSquare, X } from 'lucide-react';
+import { LogOut, Activity, Sun, Moon, Plus, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
@@ -25,14 +24,10 @@ export default function DashboardApp() {
     updateSettings, 
     addCycle, 
     updateOperation, 
-    deleteCycle,
-    addChatMessage,
-    updateChatMessage,
-    deleteChatMessage
+    deleteCycle
   } = useOperationDays();
   
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   
   // Controle de Data
   const [activeDate, setActiveDate] = useState(new Date());
@@ -441,73 +436,6 @@ export default function DashboardApp() {
           <div className="w-full lg:hidden" style={{ height: 'calc(env(safe-area-inset-bottom) + 32px)' }}></div>
         </div>
       </div>
-
-      {/* BOTÃO FLUTUANTE SUSPENSO DO CHAT */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <motion.button
-          onClick={() => setIsChatOpen(!isChatOpen)}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="w-14 h-14 rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.05)] border border-zinc-800 dark:border-zinc-200/20 transition-colors"
-        >
-          <AnimatePresence mode="wait">
-            {isChatOpen ? (
-              <motion.div
-                key="close-icon"
-                initial={{ rotate: -45, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 45, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <X size={22} strokeWidth={2.5} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="chat-icon"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <MessageSquare size={22} strokeWidth={2.5} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.button>
-      </div>
-
-      {/* PAINEL DO CHAT SUSPENSO (SLIDE-OVER) */}
-      <AnimatePresence>
-        {isChatOpen && (
-          <>
-            {/* Backdrop escuro translúcido */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsChatOpen(false)}
-              className="fixed inset-0 bg-black z-45"
-            />
-
-            {/* Container do Chat */}
-            <motion.div
-              initial={{ opacity: 0, y: 100, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 100, scale: 0.95 }}
-              transition={{ type: "spring", damping: 25, stiffness: 280 }}
-              className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-6 w-auto sm:w-[400px] z-45"
-            >
-              <ChatPanel 
-                messages={data.chatMessages || []}
-                onSendMessage={addChatMessage}
-                onUpdateMessage={updateChatMessage}
-                onDeleteMessage={deleteChatMessage}
-                onClose={() => setIsChatOpen(false)}
-              />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       <GoalSettings 
         open={settingsOpen}
