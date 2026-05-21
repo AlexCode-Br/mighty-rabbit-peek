@@ -9,7 +9,7 @@ import {
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
 import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent, Download, Edit2, Activity } from 'lucide-react';
-import { Dialog, DialogContent } from './ui/dialog';
+import { Drawer, DrawerContent, DrawerTitle } from './ui/drawer';
 import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { Button } from './ui/button';
@@ -243,12 +243,13 @@ export function HistoryPanel({ data, onEditDay }: HistoryPanelProps) {
         </>
       )}
 
-      {/* MODAL DETALHES DO DIA (Redesign Surreal) */}
-      <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
-        <DialogContent className="w-[95vw] sm:max-w-md rounded-[32px] max-h-[85dvh] flex flex-col p-0 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/50 shadow-2xl [&>button]:hidden outline-none overflow-hidden">
+      {/* BOTTOM SHEET DETALHES DO DIA (Deslizável) */}
+      <Drawer open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
+        <DrawerContent className="w-full sm:max-w-md mx-auto rounded-t-[32px] rounded-b-none max-h-[88dvh] flex flex-col p-0 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/50 shadow-2xl outline-none overflow-hidden after:hidden">
+          <DrawerTitle className="sr-only">Detalhes do Dia</DrawerTitle>
           
           {/* HEADER TIPO DASHBOARD BANCÁRIO */}
-          <div className="relative p-6 pt-8 pb-8 bg-white dark:bg-zinc-900 border-b border-zinc-200/50 dark:border-zinc-800/50 shrink-0">
+          <div className="relative p-6 pt-2 pb-6 bg-white dark:bg-zinc-900 border-b border-zinc-200/50 dark:border-zinc-800/50 shrink-0">
             
             {/* Botões de Ação Superiores */}
             <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
@@ -259,21 +260,21 @@ export function HistoryPanel({ data, onEditDay }: HistoryPanelProps) {
                     setSelectedDay(null);
                   }
                 }}
-                className="h-8 px-3 flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors text-[10px] font-bold uppercase tracking-widest"
+                className="h-8 px-3 flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors text-[10px] font-bold uppercase tracking-widest z-10"
               >
                 <Edit2 size={12} />
                 Editar
               </button>
               <button 
                 onClick={() => setSelectedDay(null)}
-                className="h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                className="h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors z-10"
               >
                 <X size={16} strokeWidth={2.5} />
               </button>
             </div>
 
             {/* Conteúdo Central do Header */}
-            <div className="flex flex-col items-center mt-4">
+            <div className="flex flex-col items-center mt-6">
               <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-2">
                 {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM, yyyy", { locale: ptBR })}
               </span>
@@ -363,8 +364,8 @@ export function HistoryPanel({ data, onEditDay }: HistoryPanelProps) {
               })}
             </div>
           </ScrollArea>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
