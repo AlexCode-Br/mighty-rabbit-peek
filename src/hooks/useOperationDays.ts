@@ -1,272 +1,192 @@
-import { useState, useEffect, useRef } from 'react';
-import { format } from 'date-fns';
-import { AppData, AppSettings, Cycle, OperationDay, Operation, ChatMessage } from '../types';
-import { calculateCycleProfit, calculateDailyProfit, calculateOperationProfit, checkDailyStatus } from '../utils/calculations';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../components/AuthProvider';
+import { AppData, OperationDay, Cycle, Operation, ChatMessage } from '../types';
+import { format } from 'date-fns';
 
-const DEFAULT_SETTINGS: AppSettings = {
-  dailyGoal: 100,
-  stopLoss: 50,
-  defaultMaeDeposit: 30,
-  defaultFilhaDeposit: 20,
+const DEFAULT_SETTINGS = {
+  dailyGoal: 0,
+  stopLoss: 0,
+  defaultMaeDeposit: 0,
+  defaultFilhaDeposit: 0
 };
 
-const INITIAL_DATA: AppData = {
-  settings: DEFAULT_SETTINGS,
-  history: {},
-  chatMessages: [],
-};
-
-export interface AddCycleData {
-  maeDeposit: number;
-  maeWithdraw: number | null;
-  maeBau: boolean;
-  filhaDeposit: number;
-  filhaWithdraw: number | null;
-}
-
-export const useOperationDays = () => {
+export function useOperationDays() {
   const { user } = useAuth();
-  const [data, setData] = useState<AppData>(INITIAL_DATA);
   const [loading, setLoading] = useState(true);
-  const dataRef = useRef<AppData>(INITIAL_DATA);
+  const [data, setData] = useState<AppData>({
+    settings: DEFAULT_SETTINGS,
+    history: {},
+    chatMessages: []
+  });
 
+  // Carregar dados iniciais
   useEffect(() => {
     if (!user) return;
-    
-    const loadData = async () => {
-      setLoading(true);
-      const { data: remoteData, error } = await supabase
-        .from('app_data')
-        .select('settings, history')
-        .eq('user_id', user.id)
-        .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading data', error);
-      }
+    async function loadData() {
+      try {
+        const { data: appData, error } = await supabase
+          .from('app_data')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-      if (remoteData) {
-        // Garante que chatMessages sempre exista como array
-        const remoteHistory = remoteData.history || {};
-        const chatMessages = (remoteData as any).chatMessages || [];
-        
-        const mergedData = {
-          settings: remoteData.settings || DEFAULT_SETTINGS,
-          history: remoteHistory,
-          chatMessages: chatMessages,
-        };
-        setData(mergedData);
-        dataRef.current = mergedData;
-      } else {
-        await supabase.from('app_data').insert({
-          user_id: user.id,
-          settings: DEFAULT_SETTINGS,
-          history: {},
-          chatMessages: []
-        } as any);
-        setData(INITIAL_DATA);
-        dataRef.current = INITIAL_DATA;
+        if (error && error.code !== 'PGRST116') throw error;
+
+        if (appData) {
+          setData({
+            settings: appData.settings || DEFAULT_SETTINGS,
+            history: appData.history || {},
+            chatMessages: appData.chat_messages || [] // Carregando da nova coluna
+          });
+        } else {
+          // Criar registro inicial se não existir
+          const initialData = {
+            user_id: user.id,
+            settings: DEFAULT_SETTINGS,
+            history: {},
+            chat_messages: []
+          };
+          await supabase.from('app_data').insert(initialData);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    };
+    }
 
     loadData();
   }, [user]);
 
-  const saveToDatabase = async (newData: AppData) => {
+  // Salvar dados no Supabase (Debounced ou por ação)
+  const persistData = useCallback(async (newData: Partial<AppData>) => {
     if (!user) return;
-    
-    setData(newData);
-    dataRef.current = newData;
 
-    const { error } = await supabase
-      .from('app_data')
-      .update({
-        settings: newData.settings,
-        history: newData.history,
-        chatMessages: newData.chatMessages || [],
-        updated_at: new Date().toISOString()
-      } as any)
-      .eq('user_id', user.id);
+    const updatePayload: any = {};
+    if (newData.settings) updatePayload.settings = newData.settings;
+    if (newData.history) updatePayload.history = newData.history;
+    if (newData.chatMessages) updatePayload.chat_messages = newData.chatMessages;
 
-    if (error) {
-      console.error('Save error:', error);
+    try {
+      const { error } = await supabase
+        .from('app_data')
+        .update(updatePayload)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error("Erro ao persistir dados:", err);
     }
-  };
-
-  const updateData = (updater: (prev: AppData) => AppData) => {
-    const newData = updater(dataRef.current);
-    saveToDatabase(newData);
-  };
+  }, [user]);
 
   const getDayData = (dateId: string): OperationDay => {
-    if (data.history[dateId]) {
-      return data.history[dateId];
-    }
+    if (data.history[dateId]) return data.history[dateId];
     return {
-      id: dateId,
-      date: new Date(`${dateId}T12:00:00`).toISOString(),
+      date: dateId,
       cycles: [],
       dailyProfit: 0,
-      goalReached: false,
-      stopLossReached: false,
+      completed: false
     };
   };
 
-  const updateSettings = (newSettings: AppSettings) => {
-    updateData((prev) => ({ ...prev, settings: newSettings }));
+  const updateSettings = (newSettings: any) => {
+    const updated = { ...data, settings: newSettings };
+    setData(updated);
+    persistData({ settings: newSettings });
   };
 
-  const addCycle = (dateId: string, customData?: AddCycleData, creationDateIso?: string) => {
-    const dayData = getDayData(dateId);
-    
+  const addCycle = (dateId: string, config: any, timestamp: string) => {
+    const day = getDayData(dateId);
     const newCycle: Cycle = {
       id: crypto.randomUUID(),
-      createdAt: creationDateIso || new Date().toISOString(),
-      operations: [
-        { 
-          id: crypto.randomUUID(), 
-          type: 'MAE', 
-          deposit: customData ? customData.maeDeposit : data.settings.defaultMaeDeposit, 
-          withdraw: customData ? customData.maeWithdraw : null, 
-          profit: 0, 
-          bau: customData ? customData.maeBau : true 
-        },
-        { 
-          id: crypto.randomUUID(), 
-          type: 'FILHA', 
-          deposit: customData ? customData.filhaDeposit : data.settings.defaultFilhaDeposit, 
-          withdraw: customData ? customData.filhaWithdraw : null, 
-          profit: 0 
-        },
-      ],
-      totalProfit: 0,
+      timestamp,
       completed: false,
+      operations: [
+        { id: crypto.randomUUID(), type: 'mae', deposit: config.maeDeposit, withdraw: config.maeWithdraw, bau: config.maeBau, completed: false, profit: 0 },
+        { id: crypto.randomUUID(), type: 'filha', deposit: config.filhaDeposit, withdraw: config.filhaWithdraw, completed: false, profit: 0 }
+      ]
     };
 
-    if (customData) {
-      newCycle.operations[0].profit = calculateOperationProfit(newCycle.operations[0].deposit, newCycle.operations[0].withdraw, true, newCycle.operations[0].bau ?? false);
-      newCycle.operations[1].profit = calculateOperationProfit(newCycle.operations[1].deposit, newCycle.operations[1].withdraw, false, false);
-      newCycle.totalProfit = calculateCycleProfit(newCycle.operations[0].profit, newCycle.operations[1].profit);
-      newCycle.completed = newCycle.operations[0].withdraw !== null && newCycle.operations[1].withdraw !== null;
-    }
+    const newHistory = {
+      ...data.history,
+      [dateId]: { ...day, cycles: [newCycle, ...day.cycles] }
+    };
 
-    const newCycles = [newCycle, ...dayData.cycles];
-    const newDailyProfit = calculateDailyProfit(newCycles);
-    const { goalReached, stopLossReached } = checkDailyStatus(newDailyProfit, data.settings.dailyGoal, data.settings.stopLoss);
-
-    updateData((prev) => ({
-      ...prev,
-      history: {
-        ...prev.history,
-        [dateId]: {
-          ...dayData,
-          cycles: newCycles,
-          dailyProfit: newDailyProfit,
-          goalReached,
-          stopLossReached,
-        },
-      },
-    }));
+    const updated = { ...data, history: newHistory };
+    setData(updated);
+    persistData({ history: newHistory });
   };
 
   const updateOperation = (dateId: string, cycleId: string, operationId: string, updates: Partial<Operation>) => {
-    const dayData = getDayData(dateId);
-
-    const newCycles = dayData.cycles.map(cycle => {
-      if (cycle.id !== cycleId) return cycle;
-
-      const newOperations = cycle.operations.map(op => {
-        if (op.id !== operationId) return op;
-        const updatedOp = { ...op, ...updates };
-        const profit = calculateOperationProfit(updatedOp.deposit, updatedOp.withdraw, updatedOp.type === 'MAE', updatedOp.bau ?? false);
-        return { ...updatedOp, profit };
-      }) as [Operation, Operation];
-
-      const totalProfit = calculateCycleProfit(newOperations[0].profit, newOperations[1].profit);
-      const completed = newOperations[0].withdraw !== null && newOperations[1].withdraw !== null;
-
-      return { ...cycle, operations: newOperations, totalProfit, completed };
+    const day = getDayData(dateId);
+    const newCycles = day.cycles.map(c => {
+      if (c.id !== cycleId) return c;
+      const newOps = c.operations.map(o => o.id === operationId ? { ...o, ...updates } : o);
+      const allCompleted = newOps.every(o => o.completed);
+      return { ...c, operations: newOps, completed: allCompleted };
     });
 
-    const newDailyProfit = calculateDailyProfit(newCycles);
-    const { goalReached, stopLossReached } = checkDailyStatus(newDailyProfit, data.settings.dailyGoal, data.settings.stopLoss);
+    const dailyProfit = newCycles.reduce((acc, c) => 
+      acc + c.operations.reduce((oAcc, o) => oAcc + (o.profit || 0), 0), 0
+    );
 
-    updateData((prev) => ({
-      ...prev,
-      history: {
-        ...prev.history,
-        [dateId]: {
-          ...dayData,
-          cycles: newCycles,
-          dailyProfit: newDailyProfit,
-          goalReached,
-          stopLossReached,
-        },
-      },
-    }));
+    const newHistory = {
+      ...data.history,
+      [dateId]: { ...day, cycles: newCycles, dailyProfit }
+    };
+
+    const updated = { ...data, history: newHistory };
+    setData(updated);
+    persistData({ history: newHistory });
   };
 
   const deleteCycle = (dateId: string, cycleId: string) => {
-    const dayData = getDayData(dateId);
-    
-    const newCycles = dayData.cycles.filter(c => c.id !== cycleId);
-    const newDailyProfit = calculateDailyProfit(newCycles);
-    const { goalReached, stopLossReached } = checkDailyStatus(newDailyProfit, data.settings.dailyGoal, data.settings.stopLoss);
+    const day = getDayData(dateId);
+    const newCycles = day.cycles.filter(c => c.id !== cycleId);
+    const dailyProfit = newCycles.reduce((acc, c) => 
+      acc + c.operations.reduce((oAcc, o) => oAcc + (o.profit || 0), 0), 0
+    );
 
-    updateData((prev) => ({
-      ...prev,
-      history: {
-        ...prev.history,
-        [dateId]: {
-          ...dayData,
-          cycles: newCycles,
-          dailyProfit: newDailyProfit,
-          goalReached,
-          stopLossReached,
-        },
-      },
-    }));
+    const newHistory = {
+      ...data.history,
+      [dateId]: { ...day, cycles: newCycles, dailyProfit }
+    };
+
+    const updated = { ...data, history: newHistory };
+    setData(updated);
+    persistData({ history: newHistory });
   };
 
-  // --- FUNÇÕES DO CHAT ---
-  const addChatMessage = (text: string, category: 'sinal' | 'meta' | 'anotacao' | 'geral' = 'geral') => {
+  // CHAT LOGIC
+  const addChatMessage = (text: string, category: string) => {
     const newMessage: ChatMessage = {
       id: crypto.randomUUID(),
       text,
-      category,
-      createdAt: new Date().toISOString(),
+      category: category as any,
+      createdAt: new Date().toISOString()
     };
-
-    updateData((prev) => ({
-      ...prev,
-      chatMessages: [...(prev.chatMessages || []), newMessage],
-    }));
+    const newMessages = [...(data.chatMessages || []), newMessage];
+    setData(prev => ({ ...prev, chatMessages: newMessages }));
+    persistData({ chatMessages: newMessages });
   };
 
   const updateChatMessage = (id: string, text: string) => {
-    updateData((prev) => ({
-      ...prev,
-      chatMessages: (prev.chatMessages || []).map((msg) =>
-        msg.id === id ? { ...msg, text, updatedAt: new Date().toISOString() } : msg
-      ),
-    }));
+    const newMessages = (data.chatMessages || []).map(m => m.id === id ? { ...m, text } : m);
+    setData(prev => ({ ...prev, chatMessages: newMessages }));
+    persistData({ chatMessages: newMessages });
   };
 
   const deleteChatMessage = (id: string) => {
-    updateData((prev) => ({
-      ...prev,
-      chatMessages: (prev.chatMessages || []).filter((msg) => msg.id !== id),
-    }));
+    const newMessages = (data.chatMessages || []).filter(m => m.id !== id);
+    setData(prev => ({ ...prev, chatMessages: newMessages }));
+    persistData({ chatMessages: newMessages });
   };
 
   const clearChatMessages = () => {
-    updateData((prev) => ({
-      ...prev,
-      chatMessages: [],
-    }));
+    setData(prev => ({ ...prev, chatMessages: [] }));
+    persistData({ chatMessages: [] });
   };
 
   return {
@@ -280,6 +200,6 @@ export const useOperationDays = () => {
     addChatMessage,
     updateChatMessage,
     deleteChatMessage,
-    clearChatMessages,
+    clearChatMessages
   };
-};
+}
