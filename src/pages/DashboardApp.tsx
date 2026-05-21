@@ -231,12 +231,12 @@ export default function DashboardApp() {
   return (
     <div className="h-[100dvh] w-full bg-[#FAFAFA] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-800 overflow-hidden flex flex-col items-center">
       
-      {/* WRAPPER PRINCIPAL */}
-      <div className="w-full max-w-7xl h-full flex flex-col relative bg-[#FAFAFA] dark:bg-zinc-950 sm:border-x border-zinc-200/50 dark:border-zinc-800/50 shadow-2xl transition-all duration-300">
+      {/* WRAPPER PRINCIPAL (Expandido e sem caixas no Desktop) */}
+      <div className="w-full max-w-[1600px] h-full flex flex-col relative transition-all duration-300">
         
         {/* TOPO FIXO */}
         <div 
-          className="px-4 lg:px-8 shrink-0 z-20 sticky top-0 bg-[#FAFAFA] dark:bg-zinc-950 w-full"
+          className="px-4 lg:px-8 xl:px-10 shrink-0 z-20 sticky top-0 w-full"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: '12px' }}
         >
           <header className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-200/60 dark:border-zinc-800/60 rounded-full px-4 lg:px-6 py-2.5 flex items-center justify-between">
@@ -267,7 +267,7 @@ export default function DashboardApp() {
             .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           `}} />
 
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 px-4 lg:px-8 pb-12">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 xl:gap-12 px-4 lg:px-8 xl:px-10 pb-12">
             
             {/* LADO ESQUERDO: Dashboard e Operações */}
             <div className="flex-1 min-w-0 flex flex-col">
@@ -314,7 +314,7 @@ export default function DashboardApp() {
                 />
               </motion.div>
 
-              {/* 3. OPERAÇÕES DO DIA */}
+              {/* 3. OPERAÇÕES DO DIA (Carrossel Horizontal) */}
               <div className="mt-8 mb-3 flex items-center justify-between px-2 lg:px-0">
                 <div className="flex items-center gap-3">
                   <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
@@ -323,7 +323,7 @@ export default function DashboardApp() {
                   </span>
                 </div>
 
-                {/* BOTÕES DE NAVEGAÇÃO DESKTOP / MOBILE */}
+                {/* BOTÕES DE NAVEGAÇÃO (Visíveis em qualquer tela) */}
                 {activeData.cycles.length > 0 && (
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <Button 
@@ -366,7 +366,6 @@ export default function DashboardApp() {
                     onMouseUp={handleMouseUp}
                     onMouseMove={handleMouseMove}
                     onTouchStart={() => {
-                      // Garante que o toque nativo do celular funcione 100% sem interferência
                       isMouseDown.current = false;
                       setIsDragging(false);
                     }}
@@ -377,7 +376,7 @@ export default function DashboardApp() {
                     `}
                   >
                     {/* Botão Novo Ciclo */}
-                    <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-[360px] flex items-stretch">
+                    <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] flex items-stretch">
                       <button 
                         onClick={handleQuickAddCycle}
                         className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
@@ -394,7 +393,7 @@ export default function DashboardApp() {
                       {activeData.cycles.map((cycle, index) => (
                         <CycleCard 
                           key={cycle.id}
-                          className="snap-center shrink-0 w-[92vw] sm:w-[360px] lg:w-[360px] h-full" 
+                          className="snap-center shrink-0 w-[92vw] sm:w-[360px] h-full" 
                           index={activeData.cycles.length - index} 
                           cycle={cycle}
                           onUpdateOperation={handleUpdateOperation}
