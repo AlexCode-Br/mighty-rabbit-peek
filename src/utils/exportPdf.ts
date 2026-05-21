@@ -12,157 +12,251 @@ export const exportToPDF = (data: AppData) => {
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   let cursorY = 0;
 
-  // --- 1. CABEÇALHO COM IDENTIDADE VISUAL ---
-  doc.setFillColor(24, 24, 27); // bg-zinc-900
-  doc.rect(0, 0, pageWidth, 45, 'F');
-  
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
-  doc.text('TradeTracker', 15, 22);
+  // --- CORES DA PALETA ---
+  const colors = {
+    textMain: [24, 24, 27],     // zinc-900
+    textMuted: [113, 113, 122], // zinc-500
+    textLight: [161, 161, 170], // zinc-400
+    border: [228, 228, 231],    // zinc-200
+    bgLight: [250, 250, 250],   // zinc-50
+    profit: [16, 185, 129],     // emerald-500
+    loss: [244, 63, 94],        // rose-500
+  };
 
+  const applyColor = (type: 'text' | 'fill' | 'draw', color: number[]) => {
+    if (type === 'text') doc.setTextColor(color[0], color[1], color[2]);
+    if (type === 'fill') doc.setFillColor(color[0], color[1], color[2]);
+    if (type === 'draw') doc.setDrawColor(color[0], color[1], color[2]);
+  };
+
+  // --- FILTRAGEM DE DADOS VALIDOS ---
+  // CORREÇÃO: Pega apenas dias que realmente tiveram ciclos registrados
+  const validDays = Object.values(data.history)
+    .filter(day => day.cycles && day.cycles.length > 0)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Crescente (mais antigo pro mais novo)
+
+  // --- 1. CABEÇALHO EXECUTIVO ---
+  cursorY = 20;
+  
+  applyColor('text', colors.textMain);
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('TradeTracker', 15, cursorY);
+
+  applyColor('text', colors.textMuted);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(161, 161, 170); // text-zinc-400
-  doc.text('Relatório de Performance Operacional', 15, 30);
+  doc.text('Relatório de Performance Operacional', 15, cursorY + 6);
 
-  const todayStr = format(new Date(), "dd 'de' MMMM, yyyy • HH:mm", { locale: ptBR });
+  const todayStr = format(new Date(), "dd 'de' MMMM, yyyy", { locale: ptBR });
+  const timeStr = format(new Date(), "HH:mm");
+  
+  applyColor('text', colors.textLight);
   doc.setFontSize(9);
-  doc.text(`Gerado em: ${todayStr}`, pageWidth - 15, 22, { align: 'right' });
+  doc.text(`Gerado em: ${todayStr} às ${timeStr}`, pageWidth - 15, cursorY + 6, { align: 'right' });
 
-  cursorY = 55;
+  cursorY += 12;
 
-  // --- 2. CÁLCULO DE ESTATÍSTICAS ---
+  // Linha separadora do cabeçalho
+  applyColor('draw', colors.border);
+  doc.setLineWidth(0.5);
+  doc.line(15, cursorY, pageWidth - 15, cursorY);
+  
+  cursorY += 12;
+
+  // --- 2. CÁLCULO DE ESTATÍSTICAS GERAIS ---
   let totalProfit = 0;
   let totalCycles = 0;
   let winningCycles = 0;
 
-  const allCycles = Object.values(data.history).flatMap(day => day.cycles || []);
-  allCycles.forEach(cycle => {
-    if (cycle.completed) {
-      totalCycles++;
-      totalProfit += cycle.totalProfit;
-      if (cycle.totalProfit > 0) winningCycles++;
-    }
+  validDays.forEach(day => {
+    day.cycles.forEach(cycle => {
+      if (cycle.completed) {
+        totalCycles++;
+        totalProfit += cycle.totalProfit;
+        if (cycle.totalProfit > 0) winningCycles++;
+      }
+    });
   });
 
   const winRate = totalCycles > 0 ? ((winningCycles / totalCycles) * 100).toFixed(1) : '0.0';
 
-  // --- 3. CARTÕES DE RESUMO ---
-  const drawCard = (x: number, y: number, w: number, h: number, title: string, value: string, isPositive?: boolean) => {
-    doc.setDrawColor(228, 228, 231);
-    doc.setFillColor(250, 250, 250);
+  // --- 3. CARTÕES DE RESUMO (KPIs) ---
+  const drawKpiCard = (x: number, y: number, w: number, title: string, value: string, isCurrency = false, profitStatus?: 'win' | 'loss' | 'neutral') => {
+    const h = 26;
+    
+    // Fundo do card
+    applyColor('fill', colors.bgLight);
+    applyColor('draw', colors.border);
     doc.roundedRect(x, y, w, h, 3, 3, 'FD');
 
-    doc.setFontSize(9);
-    doc.setTextColor(113, 113, 122);
-    doc.text(title, x + 5, y + 8);
+    // Título
+    applyColor('text', colors.textMuted);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title.toUpperCase(), x + 6, y + 8);
 
-    doc.setFontSize(14);
+    // Valor
+    doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     
-    if (isPositive === true) doc.setTextColor(16, 185, 129); // emerald-500
-    else if (isPositive === false) doc.setTextColor(244, 63, 94); // rose-500
-    else doc.setTextColor(24, 24, 27);
+    if (profitStatus === 'win') applyColor('text', colors.profit);
+    else if (profitStatus === 'loss') applyColor('text', colors.loss);
+    else applyColor('text', colors.textMain);
 
-    doc.text(value, x + 5, y + 18);
-    doc.setFont('helvetica', 'normal');
+    doc.text(value, x + 6, y + 19);
+
+    if (isCurrency && profitStatus) {
+      doc.setFontSize(10);
+      const sign = profitStatus === 'win' ? '+' : '';
+      doc.text(sign, x + 4, y + 19); // Ajuste fino para o sinal
+    }
   };
 
   const cardW = (pageWidth - 40) / 3;
-  drawCard(15, cursorY, cardW, 25, 'LUCRO LÍQUIDO', `R$ ${totalProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, totalProfit === 0 ? undefined : totalProfit > 0);
-  drawCard(15 + cardW + 5, cursorY, cardW, 25, 'TAXA DE ACERTO', `${winRate}%`);
-  drawCard(15 + (cardW * 2) + 10, cursorY, cardW, 25, 'CICLOS TOTAIS', `${totalCycles}`);
+  
+  const profitStr = `R$ ${Math.abs(totalProfit).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const pStatus = totalProfit > 0 ? 'win' : totalProfit < 0 ? 'loss' : 'neutral';
+  
+  drawKpiCard(15, cursorY, cardW, 'Lucro Líquido Total', profitStr, true, pStatus);
+  drawKpiCard(15 + cardW + 5, cursorY, cardW, 'Taxa de Acerto', `${winRate}%`);
+  drawKpiCard(15 + (cardW * 2) + 10, cursorY, cardW, 'Ciclos Finalizados', `${totalCycles}`);
 
   cursorY += 40;
 
-  // --- 4. GRÁFICO DE BARRAS (ÚLTIMOS 7 DIAS DE OPERAÇÃO) ---
-  doc.setFontSize(12);
-  doc.setTextColor(24, 24, 27);
+  // --- 4. GRÁFICO DE BARRAS INTELIGENTE (Últimos 7 dias válidos) ---
+  const chartDays = validDays.slice(-7); // Pega os últimos 7 COM operações
+
+  applyColor('text', colors.textMain);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Performance Recente (Últimos 7 dias)', 15, cursorY);
+  doc.text('Evolução Recente (Últimos dias operados)', 15, cursorY);
   
-  cursorY += 10;
+  cursorY += 8;
   
-  const chartHeight = 40;
-  doc.setFillColor(248, 250, 252);
-  doc.setDrawColor(228, 228, 231);
-  doc.roundedRect(15, cursorY, pageWidth - 30, chartHeight, 3, 3, 'FD');
+  const chartHeight = 45;
+  const chartWidth = pageWidth - 30;
+  
+  // Caixa do gráfico
+  applyColor('fill', colors.bgLight);
+  applyColor('draw', colors.border);
+  doc.roundedRect(15, cursorY, chartWidth, chartHeight, 3, 3, 'FD');
 
-  const zeroY = cursorY + (chartHeight / 2);
-  doc.setDrawColor(212, 212, 216);
-  doc.setLineWidth(0.5);
-  doc.line(15, zeroY, pageWidth - 15, zeroY);
-
-  const sortedDays = Object.values(data.history)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 7)
-    .reverse();
-
-  if (sortedDays.length > 0) {
-    const maxVal = Math.max(...sortedDays.map(d => Math.abs(d.dailyProfit)), 10); // Evita divisão por zero
-    const barSpacing = (pageWidth - 40) / 7;
+  if (chartDays.length > 0) {
+    // Encontrar o maior valor absoluto para simetria do eixo Y
+    const maxAbsVal = Math.max(...chartDays.map(d => Math.abs(d.dailyProfit)), 10);
     
-    sortedDays.forEach((day, index) => {
+    // O eixo zero fica exatamente no meio
+    const zeroY = cursorY + (chartHeight / 2);
+    
+    // Grid line do Zero
+    applyColor('draw', colors.textLight);
+    doc.setLineWidth(0.5);
+    doc.line(15, zeroY, 15 + chartWidth, zeroY);
+
+    // Linhas guias superior e inferior tracejadas (sugestão visual)
+    doc.setDrawDashPattern([1, 2], 0);
+    applyColor('draw', colors.border);
+    doc.setLineWidth(0.3);
+    doc.line(15, cursorY + 10, 15 + chartWidth, cursorY + 10); // Linha +Max
+    doc.line(15, cursorY + chartHeight - 10, 15 + chartWidth, cursorY + chartHeight - 10); // Linha -Max
+    doc.setDrawDashPattern([], 0); // Reseta
+
+    const barSpacing = chartWidth / Math.max(chartDays.length, 7);
+    const maxBarHeight = (chartHeight / 2) - 8; // Margem para os textos
+    const barWidth = 8;
+
+    chartDays.forEach((day, index) => {
       const isProfit = day.dailyProfit >= 0;
-      const barH = (Math.abs(day.dailyProfit) / maxVal) * (chartHeight / 2 - 5);
-      const barX = 25 + (index * barSpacing);
+      // Proporção baseada no valor máximo absoluto
+      const barH = (Math.abs(day.dailyProfit) / maxAbsVal) * maxBarHeight;
+      
+      // Centraliza as barras dinamicamente dependendo da quantidade de dias
+      const startX = 15 + ((chartWidth - (chartDays.length * barSpacing)) / 2);
+      const barX = startX + (index * barSpacing) + (barSpacing / 2) - (barWidth / 2);
+      
       const barY = isProfit ? zeroY - barH : zeroY;
 
-      if (isProfit) doc.setFillColor(16, 185, 129);
-      else doc.setFillColor(244, 63, 94);
-      
-      doc.rect(barX, barY, 10, Math.max(barH, 1), 'F');
-
-      doc.setFontSize(7);
-      doc.setTextColor(113, 113, 122);
-      const dayLabel = format(parseISO(day.date), 'dd/MM');
-      doc.text(dayLabel, barX + 5, chartHeight + cursorY - 2, { align: 'center' });
-      
       if (day.dailyProfit !== 0) {
-        doc.setTextColor(isProfit ? 16 : 244, isProfit ? 185 : 63, isProfit ? 129 : 94);
+        if (isProfit) applyColor('fill', colors.profit);
+        else applyColor('fill', colors.loss);
         
-        // Exibição mais compacta do valor (ex: +1.2k ou +1500)
-        let valLabel = day.dailyProfit.toFixed(0);
-        if (Math.abs(day.dailyProfit) >= 1000) {
-          valLabel = (day.dailyProfit / 1000).toFixed(1).replace('.0', '') + 'k';
-        }
+        // Desenha a barra
+        doc.rect(barX, barY, barWidth, Math.max(barH, 1), 'F');
+      }
+
+      // Rótulo da Data (Sempre em baixo do gráfico para ficar alinhado)
+      applyColor('text', colors.textMuted);
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      const dayLabel = format(parseISO(day.date), 'dd/MM');
+      doc.text(dayLabel, barX + (barWidth / 2), cursorY + chartHeight - 2, { align: 'center' });
+      
+      // Rótulo do Valor
+      if (day.dailyProfit !== 0) {
+        if (isProfit) applyColor('text', colors.profit);
+        else applyColor('text', colors.loss);
         
-        const finalLabel = `${isProfit ? '+' : ''}${valLabel}`;
-        doc.text(finalLabel, barX + 5, isProfit ? barY - 2 : barY + barH + 4, { align: 'center' });
+        doc.setFont('helvetica', 'bold');
+        let valLabel = Math.abs(day.dailyProfit).toFixed(0);
+        if (Math.abs(day.dailyProfit) >= 1000) valLabel = (Math.abs(day.dailyProfit) / 1000).toFixed(1).replace('.0', '') + 'k';
+        
+        const textY = isProfit ? barY - 2 : barY + barH + 4;
+        doc.text(`${isProfit ? '+' : '-'}${valLabel}`, barX + (barWidth / 2), textY, { align: 'center' });
       }
     });
   } else {
+    applyColor('text', colors.textLight);
     doc.setFontSize(9);
-    doc.setTextColor(161, 161, 170);
-    doc.text('Sem dados suficientes para o gráfico.', pageWidth / 2, cursorY + 20, { align: 'center' });
+    doc.text('Não há operações suficientes para gerar o gráfico.', pageWidth / 2, cursorY + (chartHeight/2), { align: 'center' });
   }
 
   cursorY += chartHeight + 15;
 
-  // --- 5. RESUMO DIÁRIO ---
-  doc.setFontSize(12);
-  doc.setTextColor(24, 24, 27);
+  // --- FUNÇÃO AUXILIAR PARA TABELAS MODERNAS ---
+  const defaultTableStyles = {
+    theme: 'plain' as const,
+    styles: { 
+      font: 'helvetica', 
+      fontSize: 9, 
+      cellPadding: 4,
+      textColor: colors.textMain 
+    },
+    headStyles: { 
+      fillColor: colors.bgLight, 
+      textColor: colors.textMuted, 
+      fontStyle: 'bold' as const,
+      lineWidth: { bottom: 0.5 },
+      lineColor: colors.border
+    },
+    bodyStyles: {
+      lineWidth: { bottom: 0.1 },
+      lineColor: colors.border
+    },
+    margin: { left: 15, right: 15 },
+  };
+
+  // --- 5. TABELA DE RESUMO DIÁRIO ---
+  applyColor('text', colors.textMain);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Desempenho Diário', 15, cursorY);
-  
+  doc.text('Resumo Diário (Filtrado)', 15, cursorY);
   cursorY += 5;
 
   const dailyTableData: any[][] = [];
   const dailyGoal = data.settings.dailyGoal;
-  
-  const allSortedDates = Object.keys(data.history).sort((a, b) => b.localeCompare(a));
-  allSortedDates.forEach((dateKey) => {
-    const day = data.history[dateKey];
-    if (!day.cycles || day.cycles.length === 0) return;
 
+  // Inverte os dias válidos para mostrar o mais recente no topo da tabela
+  const tableDays = [...validDays].reverse();
+
+  tableDays.forEach((day) => {
     const dateStr = format(parseISO(day.date), 'dd/MM/yyyy');
     const profit = day.dailyProfit;
     const formatCurr = (val: number) => `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     
-    // Evita infinity/NaN se a meta for 0
     const percent = dailyGoal > 0 ? (profit / dailyGoal) * 100 : 0;
     const percentStr = dailyGoal > 0 ? `${percent.toFixed(0)}%` : '-';
     
@@ -181,43 +275,26 @@ export const exportToPDF = (data: AppData) => {
   });
 
   autoTable(doc, {
+    ...defaultTableStyles,
     startY: cursorY,
-    head: [['Data', 'Ciclos', 'Resultado', '% da Meta', 'Status']],
+    head: [['Data', 'Ciclos', 'Resultado', '% Meta', 'Status']],
     body: dailyTableData,
-    theme: 'grid',
-    headStyles: {
-      fillColor: [24, 24, 27], // zinc-900
-      textColor: 255,
-      fontStyle: 'bold',
-      halign: 'center'
+    columnStyles: {
+      1: { halign: 'center' },
+      2: { fontStyle: 'bold' },
+      3: { halign: 'right' },
+      4: { halign: 'right', fontStyle: 'bold' }
     },
-    bodyStyles: {
-      textColor: [39, 39, 42],
-      valign: 'middle',
-      halign: 'center'
-    },
-    alternateRowStyles: {
-      fillColor: [250, 250, 250]
-    },
-    styles: {
-      cellPadding: 3,
-      fontSize: 9,
-      lineColor: [228, 228, 231],
-      lineWidth: 0.1,
-    },
-    // Método CORRETO para customizar cores de células específicas (não afeta global)
     didParseCell: (data) => {
       if (data.section === 'body') {
         const statusVal = data.row.raw[4];
         if (statusVal === 'Meta Batida' || statusVal === 'Lucro') {
-          if ([2, 3, 4].includes(data.column.index)) {
-            data.cell.styles.textColor = [16, 185, 129]; // emerald
-            data.cell.styles.fontStyle = 'bold';
+          if (data.column.index === 2 || data.column.index === 4) {
+            data.cell.styles.textColor = colors.profit;
           }
         } else if (statusVal === 'Loss') {
-          if ([2, 3, 4].includes(data.column.index)) {
-            data.cell.styles.textColor = [244, 63, 94]; // rose
-            data.cell.styles.fontStyle = 'bold';
+          if (data.column.index === 2 || data.column.index === 4) {
+            data.cell.styles.textColor = colors.loss;
           }
         }
       }
@@ -226,18 +303,22 @@ export const exportToPDF = (data: AppData) => {
 
   cursorY = (doc as any).lastAutoTable.finalY + 15;
 
-  // --- 6. TABELA DE CICLOS DETALHADOS ---
-  doc.setFontSize(12);
-  doc.setTextColor(24, 24, 27);
+  // Verifica se precisa de nova página
+  if (cursorY > pageHeight - 40) {
+    doc.addPage();
+    cursorY = 20;
+  }
+
+  // --- 6. TABELA DE DETALHAMENTO DE CICLOS ---
+  applyColor('text', colors.textMain);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Histórico Detalhado (Operações)', 15, cursorY);
-  
+  doc.text('Detalhamento de Operações', 15, cursorY);
   cursorY += 5;
 
-  const tableData: any[][] = [];
+  const detailData: any[][] = [];
   
-  allSortedDates.forEach((dateKey) => {
-    const day = data.history[dateKey];
+  tableDays.forEach((day) => {
     (day.cycles || []).forEach(cycle => {
       const maeOp = cycle.operations.find(op => op.type === 'MAE');
       const filhaOp = cycle.operations.find(op => op.type === 'FILHA');
@@ -246,64 +327,48 @@ export const exportToPDF = (data: AppData) => {
       const dateStr = cycle.createdAt ? format(parseISO(cycle.createdAt), 'dd/MM/yy') : format(parseISO(day.date), 'dd/MM/yy');
       const timeStr = cycle.createdAt ? format(parseISO(cycle.createdAt), 'HH:mm') : '--:--';
       
-      const formatCurr = (val: number | null) => val !== null ? `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+      const fC = (val: number | null) => val !== null ? `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
       
-      tableData.push([
-        `${dateStr}\n${timeStr}`,
-        `E: ${formatCurr(maeOp.deposit)}\nS: ${formatCurr(maeOp.withdraw)}`,
-        `E: ${formatCurr(filhaOp.deposit)}\nS: ${formatCurr(filhaOp.withdraw)}`,
-        formatCurr(cycle.totalProfit),
-        cycle.completed ? (cycle.totalProfit >= 0 ? 'Lucro' : 'Loss') : 'Pendente'
+      detailData.push([
+        `${dateStr}  ${timeStr}`,
+        `Ent: ${fC(maeOp.deposit)}  |  Saq: ${fC(maeOp.withdraw)}`,
+        `Ent: ${fC(filhaOp.deposit)}  |  Saq: ${fC(filhaOp.withdraw)}`,
+        fC(cycle.totalProfit),
+        cycle.completed ? (cycle.totalProfit >= 0 ? 'LUCRO' : 'LOSS') : 'PENDENTE'
       ]);
     });
   });
 
   autoTable(doc, {
+    ...defaultTableStyles,
     startY: cursorY,
-    head: [['Data', 'Mãe', 'Filha', 'Lucro Total', 'Status']],
-    body: tableData,
-    theme: 'grid',
-    headStyles: {
-      fillColor: [24, 24, 27],
-      textColor: 255,
-      fontStyle: 'bold',
-      halign: 'center'
-    },
-    bodyStyles: {
-      textColor: [39, 39, 42],
-      valign: 'middle',
-      halign: 'center'
-    },
-    alternateRowStyles: {
-      fillColor: [250, 250, 250]
-    },
-    styles: {
-      cellPadding: 3,
-      fontSize: 9,
-      lineColor: [228, 228, 231],
-      lineWidth: 0.1,
+    head: [['Data / Hora', 'Operação Mãe', 'Operação Filha', 'Total do Ciclo', 'Status']],
+    body: detailData,
+    columnStyles: {
+      3: { fontStyle: 'bold', halign: 'right' },
+      4: { fontStyle: 'bold', halign: 'right' }
     },
     didParseCell: (data) => {
       if (data.section === 'body') {
         const statusVal = data.row.raw[4];
-        if (statusVal === 'Lucro') {
+        if (statusVal === 'LUCRO') {
           if (data.column.index === 3 || data.column.index === 4) {
-            data.cell.styles.textColor = [16, 185, 129]; // emerald
-            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.textColor = colors.profit;
           }
-        } else if (statusVal === 'Loss') {
+        } else if (statusVal === 'LOSS') {
           if (data.column.index === 3 || data.column.index === 4) {
-            data.cell.styles.textColor = [244, 63, 94]; // rose
-            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.textColor = colors.loss;
+          }
+        } else {
+          if (data.column.index === 3 || data.column.index === 4) {
+            data.cell.styles.textColor = colors.textLight;
           }
         }
       }
     }
   });
 
-  // Salvar PDF
+  // Salvar PDF de forma direta
   const fileName = `TradeTracker_Relatorio_${format(new Date(), 'ddMMyyyy_HHmm')}.pdf`;
-  
-  // Agora apenas fazemos o download direto do arquivo. Evita bugs no celular e bloqueadores de pop-up no Desktop.
   doc.save(fileName);
 };
