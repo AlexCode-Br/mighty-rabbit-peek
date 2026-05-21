@@ -262,6 +262,13 @@ export const useOperationDays = () => {
     }));
   };
 
+  const clearChatMessages = () => {
+    updateData((prev) => ({
+      ...prev,
+      chatMessages: [],
+    }));
+  };
+
   return {
     data,
     loading,
@@ -273,5 +280,6 @@ export const useOperationDays = () => {
     addChatMessage,
     updateChatMessage,
     deleteChatMessage,
+    clearChatMessages,
   };
 };

@@ -28,7 +28,8 @@ export default function DashboardApp() {
     deleteCycle,
     addChatMessage,
     updateChatMessage,
-    deleteChatMessage
+    deleteChatMessage,
+    clearChatMessages
   } = useOperationDays();
   
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -487,6 +488,7 @@ export default function DashboardApp() {
                 onSendMessage={addChatMessage}
                 onUpdateMessage={updateChatMessage}
                 onDeleteMessage={deleteChatMessage}
+                onClearChat={clearChatMessages}
                 onClose={() => setIsChatOpen(false)}
               />
             </motion.div>

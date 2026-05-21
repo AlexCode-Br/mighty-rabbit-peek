@@ -3,25 +3,27 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
 import { Button } from './ui/button';
-import { Send, Copy, Edit2, Trash2, X, MessageSquare, Check } from 'lucide-react';
+import { Send, Copy, Edit2, Trash2, X, MessageSquare, Check, AlertTriangle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { showSuccess } from '../utils/toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
 
 interface ChatPanelProps {
   messages: ChatMessage[];
   onSendMessage: (text: string, category: 'sinal' | 'meta' | 'anotacao' | 'geral') => void;
   onUpdateMessage: (id: string, text: string) => void;
   onDeleteMessage: (id: string) => void;
+  onClearChat: () => void;
   onClose?: () => void;
 }
 
-export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDeleteMessage, onClose }: ChatPanelProps) {
+export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDeleteMessage, onClearChat, onClose }: ChatPanelProps) {
   const [inputText, setInputText] = useState('');
   const [activeMessage, setActiveMessage] = useState<ChatMessage | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState('');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -62,6 +64,12 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
     showSuccess('Mensagem excluída.');
   };
 
+  const handleConfirmClear = () => {
+    onClearChat();
+    setShowClearConfirm(false);
+    showSuccess('Todas as anotações foram apagadas.');
+  };
+
   return (
     <div className="flex flex-col h-[60dvh] sm:h-[500px] bg-white dark:bg-zinc-900 border-t sm:border border-zinc-200/60 dark:border-zinc-800/60 rounded-t-[32px] sm:rounded-[28px] overflow-hidden shadow-2xl">
       
@@ -77,14 +85,25 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
           </div>
         </div>
         
-        {onClose && (
-          <button 
-            onClick={onClose}
-            className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-          >
-            <X size={18} strokeWidth={2.5} />
-          </button>
-        )}
+        <div className="flex items-center gap-1.5">
+          {messages.length > 0 && (
+            <button 
+              onClick={() => setShowClearConfirm(true)}
+              className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-500 transition-colors"
+              title="Apagar tudo"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            >
+              <X size={18} strokeWidth={2.5} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Área de Mensagens */}
@@ -239,6 +258,36 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
             )}
           </AnimatePresence>
 
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG DE CONFIRMAÇÃO PARA APAGAR TUDO */}
+      <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <DialogContent className="sm:max-w-xs w-[90vw] rounded-[24px] p-6 bg-white dark:bg-zinc-900 border-none shadow-2xl [&>button]:hidden outline-none text-center">
+          <div className="mx-auto w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center mb-4">
+            <AlertTriangle className="text-rose-500" size={24} strokeWidth={2} />
+          </div>
+          <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mb-2">
+            Apagar tudo?
+          </DialogTitle>
+          <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
+            Você tem certeza que deseja apagar <strong>todas as anotações</strong>? Esta ação é permanente e não pode ser desfeita.
+          </DialogDescription>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => setShowClearConfirm(false)} 
+              variant="outline" 
+              className="flex-1 rounded-[14px] h-11 border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 font-medium"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleConfirmClear} 
+              className="flex-1 rounded-[14px] h-11 bg-rose-500 hover:bg-rose-600 text-white border-none font-medium shadow-[0_4px_14px_0_rgb(244,63,94,0.3)]"
+            >
+              Apagar Tudo
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
