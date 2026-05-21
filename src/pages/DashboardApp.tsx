@@ -4,7 +4,6 @@ import { Dashboard } from '../components/Dashboard';
 import { GoalSettings } from '../components/GoalSettings';
 import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
-import { ImportExportPanel } from '../components/ImportExportPanel';
 import { NewCycleDialog } from '../components/NewCycleDialog';
 import { useAuth } from '../components/AuthProvider';
 import { LogOut, Activity, CalendarDays, Home, Sun, Moon } from 'lucide-react';
@@ -116,11 +115,6 @@ export default function DashboardApp() {
                 onNewCycle={() => setNewCycleOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
               />
-
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Relatórios</h3>
-                <ImportExportPanel data={data} />
-              </div>
             </motion.div>
           )}
 

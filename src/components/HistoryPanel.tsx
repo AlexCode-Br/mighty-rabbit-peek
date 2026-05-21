@@ -8,10 +8,11 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { ChevronLeft, ChevronRight, X, Target, BarChart2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Target, BarChart2, TrendingUp, TrendingDown, Scale } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
+import { ImportExportPanel } from './ImportExportPanel';
 
 interface HistoryPanelProps {
   data: AppData;
@@ -51,19 +52,21 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
   // Cálculo dos dados do mês atual para o gráfico e os cards
   const monthlyData = useMemo(() => {
     const daysInMonth = historyDays.filter(day => {
-      return isSameMonth(parseISO(day.date), currentMonth);
+      return isSameMonth(parseISO(day.date), currentMonth) && day.cycles.length > 0;
     }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     let totalProfit = 0;
     let winDays = 0;
-    let totalDays = 0;
+    let totalDays = daysInMonth.length;
+    let bestDayProfit = totalDays > 0 ? -Infinity : 0;
+    let worstDayProfit = totalDays > 0 ? Infinity : 0;
 
     const chartData = daysInMonth.map(day => {
       totalProfit += day.dailyProfit;
-      if (day.cycles.length > 0) {
-        totalDays++;
-        if (day.dailyProfit >= 0) winDays++;
-      }
+      if (day.dailyProfit >= 0) winDays++;
+      if (day.dailyProfit > bestDayProfit) bestDayProfit = day.dailyProfit;
+      if (day.dailyProfit < worstDayProfit) worstDayProfit = day.dailyProfit;
+      
       return {
         name: format(parseISO(day.date), 'dd/MM'),
         profit: day.dailyProfit,
@@ -71,14 +74,15 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
     });
 
     const winRate = totalDays > 0 ? (winDays / totalDays) * 100 : 0;
+    const avgProfit = totalDays > 0 ? totalProfit / totalDays : 0;
 
-    return { chartData, totalProfit, winRate, totalDays };
+    return { chartData, totalProfit, winRate, totalDays, bestDayProfit, worstDayProfit, avgProfit };
   }, [historyDays, currentMonth]);
 
   const hasMonthlyData = monthlyData.totalDays > 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-4">
       {/* Controle de Mês */}
       <div className="flex items-center justify-between px-2 mb-2">
         <button onClick={prevMonth} className="h-10 w-10 flex items-center justify-center rounded-full text-zinc-400 dark:text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
@@ -223,8 +227,52 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Estatísticas Detalhadas */}
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Estatísticas Detalhadas</h3>
+            <div className="grid grid-cols-3 gap-2">
+              <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-2xl">
+                <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
+                  <div className="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-1.5">
+                    <TrendingUp size={12} strokeWidth={3} />
+                  </div>
+                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Melhor Dia</span>
+                  <span className="text-sm font-bold text-emerald-500">+{formatBRL(monthlyData.bestDayProfit)}</span>
+                </CardContent>
+              </Card>
+
+              <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-2xl">
+                <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
+                  <div className="w-6 h-6 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center mb-1.5">
+                    <TrendingDown size={12} strokeWidth={3} />
+                  </div>
+                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Pior Dia</span>
+                  <span className="text-sm font-bold text-rose-500">{formatBRL(monthlyData.worstDayProfit)}</span>
+                </CardContent>
+              </Card>
+
+              <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-2xl">
+                <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
+                  <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-500 flex items-center justify-center mb-1.5">
+                    <Scale size={12} strokeWidth={3} />
+                  </div>
+                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Média Diária</span>
+                  <span className={`text-sm font-bold ${monthlyData.avgProfit > 0 ? 'text-emerald-500' : monthlyData.avgProfit < 0 ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                    {monthlyData.avgProfit > 0 ? '+' : ''}{formatBRL(monthlyData.avgProfit)}
+                  </span>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </>
       )}
+
+      {/* Relatórios (movido para cá) */}
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Exportar Dados</h3>
+        <ImportExportPanel data={data} />
+      </div>
 
       {/* Modal de Detalhes do Dia */}
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
