@@ -278,7 +278,6 @@ export default function DashboardApp() {
               weeklyProfit={weeklyProfit}
               weeklyWinRate={weeklyWinRate}
               weeklyChartData={last7DaysData}
-              onNewCycle={() => setNewCycleOpen(true)}
               onOpenSettings={() => setSettingsOpen(true)}
             />
           </motion.div>
@@ -326,13 +325,16 @@ export default function DashboardApp() {
                   ))}
                 </AnimatePresence>
                 
-                {/* Botão de Adicionar ao final do carrossel */}
-                <div className="snap-center shrink-0 w-[20vw] sm:w-[100px] flex items-center justify-center pr-2">
+                {/* Cartão de Adicionar ao final do carrossel */}
+                <div className="snap-center shrink-0 w-[70vw] sm:w-[260px] flex items-stretch">
                   <button 
                     onClick={() => setNewCycleOpen(true)}
-                    className="w-14 h-14 rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex items-center justify-center transition-all"
+                    className="w-full rounded-[32px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
                   >
-                    <Plus size={24} />
+                    <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-2 group-hover:rotate-90 transition-transform duration-300">
+                      <Plus size={24} />
+                    </div>
+                    <span className="text-sm font-semibold">Novo Ciclo</span>
                   </button>
                 </div>
               </div>

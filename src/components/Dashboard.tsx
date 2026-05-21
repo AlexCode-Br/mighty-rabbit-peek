@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Settings, Plus, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { Settings, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { formatBRL } from '../utils/currency';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -16,7 +16,6 @@ interface DashboardProps {
   weeklyProfit: number;
   weeklyWinRate: number;
   weeklyChartData: { name: string; profit: number; hasData: boolean }[];
-  onNewCycle: () => void;
   onOpenSettings: () => void;
 }
 
@@ -30,7 +29,6 @@ export function Dashboard({
   weeklyProfit, 
   weeklyWinRate,
   weeklyChartData,
-  onNewCycle, 
   onOpenSettings 
 }: DashboardProps) {
   const isProfit = dailyProfit >= 0;
@@ -156,23 +154,6 @@ export function Dashboard({
           <span className="text-xl font-bold text-rose-500 leading-none mb-1 z-10">{todayLosses}</span>
           <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest text-center z-10">Derrotas</span>
         </div>
-      </motion.div>
-
-      {/* BOTÃO NOVO CICLO LARGURA TOTAL */}
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
-      >
-        <Button
-          onClick={onNewCycle}
-          className="w-full h-14 rounded-[20px] bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] dark:shadow-[0_4px_14px_0_rgb(255,255,255,0.05)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 font-medium border-none text-base group"
-        >
-          <div className="w-6 h-6 rounded-full bg-white/20 dark:bg-zinc-900/20 flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-            <Plus size={16} strokeWidth={3} />
-          </div>
-          Novo Ciclo de Operação
-        </Button>
       </motion.div>
       
       {/* BALANÇO ÚLTIMOS 7 DIAS COM GRÁFICO */}
