@@ -12,6 +12,8 @@ interface DashboardProps {
   onOpenSettings: () => void;
 }
 
+const MotionSettings = motion(Settings);
+
 export function Dashboard({ 
   dailyProfit, 
   dailyGoal, 
@@ -76,14 +78,20 @@ export function Dashboard({
                   {isProfit && !isNeutral ? '+' : ''}{formatBRL(dailyProfit)}
                 </motion.h2>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onOpenSettings}
-                className="text-zinc-400/80 hover:text-zinc-100 hover:bg-white/10 dark:hover:bg-white/5 rounded-full h-9 w-9 transition-colors -mr-2 -mt-2 shrink-0 border border-transparent hover:border-white/5"
+              <motion.div
+                whileHover={{ rotate: 90, scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
               >
-                <Settings size={18} strokeWidth={2.5} />
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onOpenSettings}
+                  className="text-zinc-400/80 hover:text-zinc-100 hover:bg-white/10 dark:hover:bg-white/5 rounded-full h-9 w-9 transition-colors -mr-2 -mt-2 shrink-0 border border-transparent hover:border-white/5"
+                >
+                  <Settings size={18} strokeWidth={2.5} />
+                </Button>
+              </motion.div>
             </div>
             
             <div className="space-y-4">
