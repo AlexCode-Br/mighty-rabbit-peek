@@ -8,12 +8,13 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatBRL } from '../utils/currency';
-import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Target, BarChart2, Percent, Download, Wallet } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { Button } from './ui/button';
 import { ExportDialog } from './ExportDialog';
+import { motion } from 'framer-motion';
 
 interface HistoryPanelProps {
   data: AppData;
@@ -52,6 +53,29 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
     end: endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 })
   });
 
+  // --- CÁLCULOS GERAIS (ALL-TIME) ---
+  const allTimeData = useMemo(() => {
+    let profit = 0;
+    let completedCycles = 0;
+    let wonCycles = 0;
+
+    historyDays.forEach(day => {
+      day.cycles.forEach(cycle => {
+        if (cycle.completed) {
+          completedCycles++;
+          profit += cycle.totalProfit;
+          if (cycle.totalProfit > 0) wonCycles++;
+        }
+      });
+    });
+
+    return {
+      profit,
+      winRate: completedCycles > 0 ? (wonCycles / completedCycles) * 100 : 0,
+      totalCycles: completedCycles
+    };
+  }, [historyDays]);
+
   // --- CÁLCULO MENSAL (Apenas para o Gráfico e Resumo do Mês) ---
   const monthlyData = useMemo(() => {
     const daysInMonth = historyDays.filter(day => {
@@ -84,8 +108,38 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
 
   return (
     <div className="space-y-4 pb-4">
+
+      {/* Cartão de Lucro Total Acumulado (Sempre visível) */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-100 dark:to-zinc-300 rounded-[28px] overflow-hidden relative">
+          <div className="absolute -right-4 -bottom-6 opacity-10 dark:opacity-[0.05]">
+            <Wallet size={120} />
+          </div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 dark:bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Lucro Total Acumulado</span>
+            </div>
+            <h2 className={`text-4xl tracking-tighter font-semibold mb-3 ${allTimeData.profit >= 0 ? 'text-emerald-400 dark:text-emerald-600' : 'text-rose-400 dark:text-rose-600'}`}>
+              {allTimeData.profit >= 0 ? '+' : ''}{formatBRL(allTimeData.profit)}
+            </h2>
+            <div className="flex gap-4 border-t border-white/10 dark:border-black/10 pt-3">
+              <div>
+                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Taxa de Acerto</span>
+                <span className="text-sm font-semibold text-white dark:text-zinc-900">{allTimeData.winRate.toFixed(1)}%</span>
+              </div>
+              <div className="w-[1px] bg-white/10 dark:bg-black/10" />
+              <div>
+                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Ciclos Operados</span>
+                <span className="text-sm font-semibold text-white dark:text-zinc-900">{allTimeData.totalCycles}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Controle de Mês */}
-      <div className="flex items-center justify-between px-2 mb-2">
+      <div className="flex items-center justify-between px-2 mb-2 mt-6">
         <button onClick={prevMonth} className="h-10 w-10 flex items-center justify-center rounded-full text-zinc-400 dark:text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
           <ChevronLeft size={20} />
         </button>
