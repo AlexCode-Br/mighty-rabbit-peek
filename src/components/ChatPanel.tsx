@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
 import { Button } from './ui/button';
-import { Send, Copy, Edit2, Trash2, X, MessageSquare, Check, AlertTriangle } from 'lucide-react';
+import { Send, Copy, Edit2, Trash2, X, MessageSquare, AlertTriangle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { showSuccess } from '../utils/toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -89,6 +89,7 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
             <button 
               onClick={() => setShowClearConfirm(true)}
               className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-rose-500/10 hover:text-rose-500 transition-colors"
+              title="Apagar tudo"
             >
               <Trash2 size={16} />
             </button>
@@ -166,41 +167,75 @@ export function ChatPanel({ messages = [], onSendMessage, onUpdateMessage, onDel
         </form>
       </div>
 
+      {/* Dialog de Opções da Mensagem */}
       <Dialog open={!!activeMessage} onOpenChange={(open) => {
         if (!open) {
           setActiveMessage(null);
           setIsEditing(false);
         }
       }}>
-        <DialogContent className="sm:max-w-xs w-[90vw] rounded-[24px] p-5 liquid-glass-panel border-white/20 shadow-2xl [&>button]:hidden outline-none">
+        <DialogContent className="sm:max-w-xs w-[90vw] rounded-[24px] p-5 bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-2xl outline-none">
           <DialogTitle className="sr-only">Opções da Mensagem</DialogTitle>
           <AnimatePresence mode="wait">
             {isEditing ? (
               <motion.div key="edit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">Editar</h4>
+                  <h4 className="text-sm font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-widest">Editar</h4>
                   <button onClick={() => setIsEditing(false)} className="text-zinc-400 hover:text-zinc-600"><X size={16} /></button>
                 </div>
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-zinc-900 dark:text-zinc-100 outline-none resize-none h-24"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 text-sm text-zinc-950 dark:text-zinc-100 outline-none resize-none h-24"
                 />
                 <Button onClick={handleSaveEdit} className="w-full h-11 rounded-xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-bold">Salvar</Button>
               </motion.div>
             ) : (
               <motion.div key="menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1.5">
                 <div className="flex justify-between items-center mb-3 px-1">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Ações</span>
-                  <button onClick={() => setActiveMessage(null)} className="text-zinc-400"><X size={16} /></button>
+                  <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Ações</span>
                 </div>
-                <button onClick={() => activeMessage && handleCopy(activeMessage.text)} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100"><Copy size={16} /> Copiar Texto</button>
-                <button onClick={() => activeMessage && handleStartEdit(activeMessage)} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100"><Edit2 size={16} /> Editar</button>
-                <div className="h-[1px] bg-white/5 my-1" />
+                <button onClick={() => activeMessage && handleCopy(activeMessage.text)} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100"><Copy size={16} /> Copiar Texto</button>
+                <button onClick={() => activeMessage && handleStartEdit(activeMessage)} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100"><Edit2 size={16} /> Editar</button>
+                <div className="h-[1px] bg-zinc-100 dark:bg-white/5 my-1" />
                 <button onClick={() => activeMessage && handleDelete(activeMessage.id)} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-rose-500/10 text-rose-500 text-xs sm:text-sm font-bold"><Trash2 size={16} /> Excluir</button>
               </motion.div>
             )}
           </AnimatePresence>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação para Limpar Tudo */}
+      <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <DialogContent className="sm:max-w-[320px] w-[90vw] rounded-[28px] p-6 bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-2xl outline-none">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center border border-rose-100 dark:border-rose-500/20">
+              <AlertTriangle size={28} />
+            </div>
+            
+            <div className="space-y-1">
+              <DialogTitle className="text-xl font-black text-zinc-950 dark:text-zinc-50">Apagar tudo?</DialogTitle>
+              <DialogDescription className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                Esta ação removerá permanentemente todas as suas anotações.
+              </DialogDescription>
+            </div>
+
+            <div className="flex flex-col w-full gap-2 pt-2">
+              <Button 
+                onClick={handleConfirmClear}
+                className="w-full h-12 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black"
+              >
+                Sim, apagar tudo
+              </Button>
+              <Button 
+                variant="ghost"
+                onClick={() => setShowClearConfirm(false)}
+                className="w-full h-12 rounded-xl font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
