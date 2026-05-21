@@ -25,11 +25,8 @@ export default function DashboardApp() {
   const [activeTab, setActiveTab] = useState<'ciclos' | 'home' | 'historico'>('home');
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
-
-  // Referência para controlar o estado anterior do lucro (para disparar o confete só 1 vez)
   const prevProfitRef = useRef<number | null>(null);
 
-  // Monitora mudanças no lucro diário para disparar notificações
   useEffect(() => {
     if (loading) return;
 
@@ -39,7 +36,6 @@ export default function DashboardApp() {
     const stop = data.settings.stopLoss;
 
     if (prevProfit !== null) {
-      // Bateu a Meta (cruzou o limite para cima)
       if (goal > 0 && currentProfit >= goal && prevProfit < goal) {
         confetti({
           particleCount: 150,
@@ -54,7 +50,6 @@ export default function DashboardApp() {
         });
       }
 
-      // Bateu o Stop Loss (cruzou o limite para baixo)
       if (stop > 0 && currentProfit <= -stop && prevProfit > -stop) {
         toast.error('Stop Loss Atingido ⚠️', {
           description: 'Limite diário alcançado. É hora de parar e proteger o capital.',
@@ -78,12 +73,10 @@ export default function DashboardApp() {
     );
   }
 
-  // --- Cálculos do Dia Atual ---
   const todayWins = todayData.cycles.filter(c => c.completed && c.totalProfit > 0).length;
   const todayLosses = todayData.cycles.filter(c => c.completed && c.totalProfit < 0).length;
   const todayCompleted = todayData.cycles.filter(c => c.completed).length;
 
-  // --- Cálculos dos Últimos 7 Dias ---
   const now = new Date();
   const last7DaysData = Array.from({ length: 7 }).map((_, i) => {
     const d = subDays(now, 6 - i);
@@ -100,7 +93,6 @@ export default function DashboardApp() {
   const weeklyActiveDays = last7DaysData.filter(day => day.hasData).length;
   const weeklyWinDays = last7DaysData.filter(day => day.profit >= 0 && day.hasData).length;
   const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
-  // --------------------------
 
   const handleSaveNewCycle = (cycleData: AddCycleData) => {
     addCycle(cycleData);
@@ -137,19 +129,22 @@ export default function DashboardApp() {
     <div className="h-[100dvh] w-full bg-[#FAFAFA] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-800 overflow-hidden flex flex-col items-center">
       <div className="w-full max-w-md h-full flex flex-col relative bg-[#FAFAFA] dark:bg-zinc-950 sm:border-x border-zinc-200/50 dark:border-zinc-800/50 shadow-2xl">
         
-        {/* TOPO FIXO */}
-        <div className="px-4 pt-4 pb-4 shrink-0">
-          <header className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-200/60 dark:border-zinc-800/60 rounded-full px-5 py-2.5 flex items-center justify-between">
+        {/* TOPO FIXO com Safe Area do iOS */}
+        <div 
+          className="px-4 shrink-0 z-20 sticky top-0 bg-[#FAFAFA] dark:bg-zinc-950"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: '12px' }}
+        >
+          <header className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-200/60 dark:border-zinc-800/60 rounded-full px-4 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-sm">
+              <div className="w-7 h-7 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-sm shrink-0">
                 <Wallet size={15} strokeWidth={2.5} className="text-white dark:text-zinc-900" />
               </div>
-              <h1 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-[2px]">
+              <h1 className="text-[15px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-[2px] truncate">
                 <span>Trade</span><span className="text-zinc-500 dark:text-zinc-400">Tracker</span>
               </h1>
             </div>
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full h-8 w-8 transition-colors">
                 {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
               </Button>
@@ -160,15 +155,15 @@ export default function DashboardApp() {
           </header>
         </div>
 
-        {/* MEIO */}
-        <div className="flex-1 px-4 overflow-y-auto no-scrollbar relative z-0 pb-4">
+        {/* MEIO: Área rolavel */}
+        <div className="flex-1 px-4 overflow-y-auto no-scrollbar relative z-0 pb-6">
           <style dangerouslySetInnerHTML={{__html: `
             .no-scrollbar::-webkit-scrollbar { display: none; }
             .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           `}} />
 
           {activeTab === 'home' && (
-            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} className="space-y-6">
+            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} className="space-y-5">
               <Dashboard 
                 dailyProfit={todayData.dailyProfit}
                 dailyGoal={data.settings.dailyGoal}
@@ -193,7 +188,7 @@ export default function DashboardApp() {
                     <Activity size={24} strokeWidth={1.5} />
                   </div>
                   <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 mb-1">Nenhum ciclo hoje</h3>
-                  <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[250px]">Nenhuma operação registrada ainda. Que tal começar agora?</p>
+                  <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[250px] mx-auto">Nenhuma operação registrada ainda. Que tal começar agora?</p>
                   <Button 
                     onClick={() => setNewCycleOpen(true)} 
                     className="mt-6 rounded-2xl h-12 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] flex items-center gap-2 px-6"
@@ -203,25 +198,22 @@ export default function DashboardApp() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  
-                  {/* Mini Resumo do Dia na aba Ciclos */}
                   <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-4 flex items-center justify-between shadow-sm">
-                    <div>
-                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Lucro Atual</span>
-                      <span className={`text-xl font-bold tracking-tight ${todayData.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5 truncate">Lucro Atual</span>
+                      <span className={`text-xl font-bold tracking-tight truncate block ${todayData.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                         {todayData.dailyProfit >= 0 ? '+' : ''}{formatBRL(todayData.dailyProfit)}
                       </span>
                     </div>
-                    <div className="h-8 w-[1px] bg-zinc-100 dark:bg-zinc-800" />
-                    <div className="text-right">
-                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5">Concluídos</span>
-                      <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                    <div className="h-8 w-[1px] bg-zinc-100 dark:bg-zinc-800 shrink-0 mx-2" />
+                    <div className="text-right min-w-0">
+                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-0.5 truncate">Concluídos</span>
+                      <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 truncate block">
                         {todayCompleted} <span className="text-sm text-zinc-400 dark:text-zinc-500">/ {todayData.cycles.length}</span>
                       </span>
                     </div>
                   </div>
 
-                  {/* Botão de Atalho Rápido para Novo Ciclo */}
                   <Button 
                     onClick={() => setNewCycleOpen(true)}
                     variant="outline"
@@ -254,10 +246,10 @@ export default function DashboardApp() {
           )}
         </div>
 
-        {/* BASE FIXA */}
+        {/* BASE FIXA com Safe Area do iOS */}
         <div 
-          className="shrink-0 bg-white dark:bg-zinc-900 border-t border-zinc-200/60 dark:border-zinc-800/60 px-8 py-2 flex justify-between items-center shadow-[0_-4px_20px_rgb(0,0,0,0.02)] z-10"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+          className="shrink-0 bg-white dark:bg-zinc-900 border-t border-zinc-200/60 dark:border-zinc-800/60 px-6 sm:px-8 flex justify-between items-center shadow-[0_-4px_20px_rgb(0,0,0,0.02)] z-20"
+          style={{ paddingTop: '8px', paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
         >
           <NavButton 
             active={activeTab === 'ciclos'} 
@@ -302,7 +294,7 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
   return (
     <button 
       onClick={onClick}
-      className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all duration-200 relative ${
+      className={`flex flex-col items-center justify-center w-16 h-12 rounded-2xl transition-all duration-200 relative ${
         active ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 dark:text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-600 dark:hover:text-zinc-300'
       }`}
     >
@@ -313,7 +305,7 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
         {label}
       </span>
       {active && (
-        <motion.div layoutId="nav-indicator" className="absolute -top-2 w-8 h-1 bg-zinc-900 dark:bg-zinc-100 rounded-b-full" />
+        <motion.div layoutId="nav-indicator" className="absolute -top-1 w-8 h-1 bg-zinc-900 dark:bg-zinc-100 rounded-b-full" />
       )}
     </button>
   );

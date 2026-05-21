@@ -24,7 +24,6 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [exportOpen, setExportOpen] = useState(false);
 
-  // Todos os dias com histórico
   const historyDays = Object.values(data.history).sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
@@ -52,7 +51,6 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
     end: endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 })
   });
 
-  // --- CÁLCULO MENSAL (Apenas para o Gráfico e Resumo do Mês) ---
   const monthlyData = useMemo(() => {
     const daysInMonth = historyDays.filter(day => {
       return isSameMonth(parseISO(day.date), currentMonth) && day.cycles.length > 0;
@@ -77,7 +75,6 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
 
   const hasMonthlyData = monthlyData.totalDays > 0;
 
-  // --- Estatísticas do Dia Selecionado ---
   const selectedDayCompletedCycles = selectedDay?.cycles.filter(c => c.completed).length || 0;
   const selectedDayWins = selectedDay?.cycles.filter(c => c.completed && c.totalProfit > 0).length || 0;
   const selectedDayWinRate = selectedDayCompletedCycles > 0 ? (selectedDayWins / selectedDayCompletedCycles) * 100 : 0;
@@ -109,24 +106,23 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
         </div>
       ) : (
         <>
-          {/* Cartões de Resumo do Mês */}
           <div className="grid grid-cols-2 gap-3">
             <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
-              <CardContent className="p-5 flex flex-col justify-center">
-                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">Resultado do Mês</span>
-                <span className={`text-2xl font-bold tracking-tight ${monthlyData.totalProfit > 0 ? 'text-emerald-500' : monthlyData.totalProfit < 0 ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+              <CardContent className="p-4 sm:p-5 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 truncate">Resultado do Mês</span>
+                <span className={`text-xl sm:text-2xl font-bold tracking-tight truncate ${monthlyData.totalProfit > 0 ? 'text-emerald-500' : monthlyData.totalProfit < 0 ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
                   {monthlyData.totalProfit > 0 ? '+' : ''}{formatBRL(monthlyData.totalProfit)}
                 </span>
               </CardContent>
             </Card>
             <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
-              <CardContent className="p-5 flex flex-col justify-center">
-                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">Dias de Ganho</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+              <CardContent className="p-4 sm:p-5 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 truncate">Dias de Ganho</span>
+                <div className="flex items-baseline gap-1 truncate">
+                  <span className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                     {monthlyData.winRate.toFixed(0)}%
                   </span>
-                  <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                  <span className="text-[10px] sm:text-xs font-medium text-zinc-400 dark:text-zinc-500">
                     ({monthlyData.totalDays} dias)
                   </span>
                 </div>
@@ -134,9 +130,8 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
             </Card>
           </div>
 
-          {/* Gráfico do Mês */}
-          <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
-            <CardContent className="p-4 pt-6 h-52">
+          <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden mt-4">
+            <CardContent className="p-3 pt-5 h-52">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyData.chartData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
                   <ReferenceLine y={0} stroke="#a1a1aa" strokeWidth={1} opacity={0.3} />
@@ -181,9 +176,8 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
             </CardContent>
           </Card>
 
-          {/* Calendário */}
           <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden mt-4">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="w-full max-w-sm mx-auto select-none">
                 <div className="grid grid-cols-7 mb-4">
                   {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
@@ -229,12 +223,11 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
             </CardContent>
           </Card>
 
-          {/* Botão de Exportar */}
           <div className="mt-4">
             <Button 
               onClick={() => setExportOpen(true)}
               variant="outline"
-              className="w-full h-12 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold flex items-center justify-center gap-2 shadow-sm transition-colors"
+              className="w-full h-12 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold flex items-center justify-center gap-2 shadow-sm transition-colors text-[13px] sm:text-sm"
             >
               <Download size={18} /> Exportar Relatórios
             </Button>
@@ -249,32 +242,31 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
         </>
       )}
 
-      {/* Modal de Detalhes do Dia */}
+      {/* MODAL DETALHES DO DIA (Fix de Altura para Mobile) */}
       <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
-        <DialogContent className="sm:max-w-md rounded-[32px] h-[85vh] flex flex-col p-0 bg-[#FAFAFA] dark:bg-zinc-950 border-none shadow-2xl [&>button]:hidden outline-none">
+        <DialogContent className="w-[95vw] sm:max-w-md rounded-[32px] max-h-[90dvh] h-[90dvh] flex flex-col p-0 bg-[#FAFAFA] dark:bg-zinc-950 border-none shadow-2xl [&>button]:hidden outline-none">
           
-          {/* Cabeçalho Compacto */}
-          <DialogHeader className="p-5 pb-4 shrink-0 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white dark:bg-zinc-900 rounded-t-[32px] relative text-left">
+          <DialogHeader className="p-4 sm:p-5 pb-4 shrink-0 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white dark:bg-zinc-900 rounded-t-[32px] relative text-left">
             <button 
               onClick={() => setSelectedDay(null)}
-              className="absolute right-4 top-4 h-7 w-7 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              className="absolute right-3 sm:right-4 top-3 sm:top-4 h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors z-10"
             >
-              <X size={14} strokeWidth={2.5} />
+              <X size={16} strokeWidth={2.5} />
             </button>
             
-            <div className="flex justify-between items-start pr-8">
-              <div className="flex flex-col">
-                <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mb-2">
+            <div className="flex justify-between items-start pr-10">
+              <div className="flex flex-col min-w-0">
+                <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mb-2 truncate">
                   {selectedDay && format(parseISO(selectedDay.date), "dd 'de' MMMM", { locale: ptBR })}
                 </DialogTitle>
                 
                 <DialogDescription asChild>
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-[6px] text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                    <span className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-[6px] text-[10px] font-bold text-zinc-600 dark:text-zinc-300 shrink-0">
                       <Target size={12} className={selectedDay && selectedDay.dailyProfit >= data.settings.dailyGoal ? "text-emerald-500" : "text-zinc-400"} />
                       {selectedDay ? Math.min((selectedDay.dailyProfit / data.settings.dailyGoal) * 100, 100).toFixed(0) : 0}% meta
                     </span>
-                    <span className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-[6px] text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
+                    <span className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-[6px] text-[10px] font-bold text-zinc-600 dark:text-zinc-300 shrink-0">
                       <Percent size={12} className={selectedDayWinRate >= 50 ? "text-emerald-500" : "text-rose-500"} />
                       {selectedDayWinRate.toFixed(0)}% win
                     </span>
@@ -282,19 +274,19 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
                 </DialogDescription>
               </div>
 
-              <div className="flex flex-col items-end justify-center mt-0.5">
-                <span className={`font-bold text-xl tracking-tight leading-none ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              <div className="flex flex-col items-end justify-center mt-0.5 shrink-0 pl-2">
+                <span className={`font-bold text-lg sm:text-xl tracking-tight leading-none ${selectedDay && selectedDay.dailyProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {selectedDay && (selectedDay.dailyProfit >= 0 ? '+' : '')}{selectedDay && formatBRL(selectedDay.dailyProfit)}
                 </span>
-                <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-bold mt-1">
+                <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-bold mt-1.5">
                   {selectedDay?.cycles.length} ciclos
                 </span>
               </div>
             </div>
           </DialogHeader>
           
-          <ScrollArea className="flex-1 px-4 sm:px-6 pb-6">
-            <div className="space-y-3 pt-6">
+          <ScrollArea className="flex-1 px-3 sm:px-6 pb-6">
+            <div className="space-y-3 pt-5">
               {selectedDay?.cycles.map((cycle, i) => {
                 const isCycleProfit = cycle.totalProfit > 0;
                 const isCycleLoss = cycle.totalProfit < 0;
@@ -302,52 +294,47 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
 
                 return (
                   <div key={cycle.id} className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm rounded-[20px] overflow-hidden">
-                    <div className="flex justify-between items-center px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800/50">
+                    <div className="flex justify-between items-center px-3 sm:px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800/50">
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full shrink-0 ${cycle.completed ? (isCycleProfit ? 'bg-emerald-500' : isCycleLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-zinc-900 dark:bg-zinc-100 animate-pulse'}`} />
-                        <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <h4 className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                           Ciclo {cycleNumber}
-                          {cycle.createdAt && (
-                            <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                              • {format(parseISO(cycle.createdAt), 'HH:mm')}
-                            </span>
-                          )}
                         </h4>
                       </div>
-                      <span className={`text-sm font-semibold tracking-tight ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : isCycleLoss ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100') : 'text-zinc-400 dark:text-zinc-500'}`}>
+                      <span className={`text-xs sm:text-sm font-semibold tracking-tight ${cycle.completed ? (isCycleProfit ? 'text-emerald-500' : isCycleLoss ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100') : 'text-zinc-400 dark:text-zinc-500'}`}>
                         {cycle.completed ? (isCycleProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
                       </span>
                     </div>
 
-                    <div className="p-1.5 space-y-0.5">
+                    <div className="p-1 sm:p-1.5 space-y-0.5">
                       {cycle.operations.map((op) => {
                         const opProfit = op.profit || 0;
                         const isOpWin = opProfit > 0;
                         const isOpLoss = opProfit < 0;
 
                         return (
-                          <div key={op.id} className="flex items-center justify-between px-3 py-2 rounded-[14px] bg-zinc-50/50 dark:bg-zinc-800/20">
-                            <span className="text-[10px] font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider w-[20%]">
+                          <div key={op.id} className="flex items-center justify-between px-2 sm:px-3 py-2.5 rounded-[14px] bg-zinc-50/50 dark:bg-zinc-800/20">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider w-[18%]">
                               {op.type}
                             </span>
                             
-                            <div className="flex flex-col items-center w-[30%]">
-                              <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Entrada</span>
-                              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            <div className="flex flex-col items-start sm:items-center w-[28%]">
+                              <span className="text-[7px] sm:text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Entrada</span>
+                              <span className="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">
                                 {formatBRL(op.deposit)}
                               </span>
                             </div>
 
-                            <div className="flex flex-col items-center w-[30%]">
-                              <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Saque</span>
-                              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                            <div className="flex flex-col items-start sm:items-center w-[28%]">
+                              <span className="text-[7px] sm:text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Saque</span>
+                              <span className="text-[11px] sm:text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                                 {op.withdraw !== null ? formatBRL(op.withdraw) : '-'}
                               </span>
                             </div>
 
-                            <div className="flex flex-col items-end w-[20%]">
-                              <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Lucro</span>
-                              <span className={`text-xs font-bold ${op.withdraw !== null ? (isOpWin ? 'text-emerald-500' : isOpLoss ? 'text-rose-500' : 'text-zinc-400') : 'text-zinc-300 dark:text-zinc-700'}`}>
+                            <div className="flex flex-col items-end w-[26%]">
+                              <span className="text-[7px] sm:text-[8px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Lucro</span>
+                              <span className={`text-[11px] sm:text-xs font-bold truncate ${op.withdraw !== null ? (isOpWin ? 'text-emerald-500' : isOpLoss ? 'text-rose-500' : 'text-zinc-400') : 'text-zinc-300 dark:text-zinc-700'}`}>
                                 {op.withdraw !== null ? (isOpWin ? '+' : '') + formatBRL(opProfit) : '-'}
                               </span>
                             </div>

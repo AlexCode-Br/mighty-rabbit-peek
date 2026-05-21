@@ -95,41 +95,41 @@ export function ExportDialog({ open, onOpenChange, data, currentMonth }: ExportD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[92vw] rounded-[28px] bg-white dark:bg-zinc-900 border-none shadow-2xl p-5 [&>button]:hidden outline-none">
+      <DialogContent className="sm:max-w-md w-[95vw] max-h-[90dvh] overflow-y-auto rounded-[28px] bg-white dark:bg-zinc-900 border-none shadow-2xl p-4 sm:p-5 [&>button]:hidden outline-none">
         <DialogHeader className="mb-4 relative text-left">
           <button 
             onClick={() => onOpenChange(false)}
-            className="absolute right-0 top-0 h-7 w-7 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors z-10"
+            className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors z-10"
           >
-            <X size={14} strokeWidth={2.5} />
+            <X size={16} strokeWidth={2.5} />
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pr-10">
             <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
               <FileText size={20} />
             </div>
-            <div>
-              <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Exportar Dados</DialogTitle>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Gere PDFs ou planilhas do seu histórico</p>
+            <div className="min-w-0">
+              <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight truncate">Exportar Dados</DialogTitle>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">Gere PDFs ou planilhas do seu histórico</p>
             </div>
           </div>
         </DialogHeader>
         
-        <div className="mb-5 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3 border border-zinc-100 dark:border-zinc-800/60">
+        <div className="mb-5 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3.5 border border-zinc-100 dark:border-zinc-800/60">
           <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-2 ml-1">
             Filtro de Período
           </label>
           <Select value={exportMode} onValueChange={(val: 'month' | 'custom' | 'all') => setExportMode(val)}>
-            <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 h-10 rounded-xl text-sm font-medium shadow-sm">
+            <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 h-11 rounded-xl text-[13px] sm:text-sm font-medium shadow-sm">
               <SelectValue placeholder="Selecione o período" />
             </SelectTrigger>
             <SelectContent className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl">
-              <SelectItem value="month" className="rounded-lg text-sm font-medium focus:bg-zinc-100 dark:focus:bg-zinc-800 cursor-pointer">
+              <SelectItem value="month" className="rounded-lg text-[13px] sm:text-sm font-medium focus:bg-zinc-100 dark:focus:bg-zinc-800 cursor-pointer">
                 Apenas {monthName}
               </SelectItem>
-              <SelectItem value="custom" className="rounded-lg text-sm font-medium focus:bg-zinc-100 dark:focus:bg-zinc-800 cursor-pointer">
+              <SelectItem value="custom" className="rounded-lg text-[13px] sm:text-sm font-medium focus:bg-zinc-100 dark:focus:bg-zinc-800 cursor-pointer">
                 Personalizado (Data inicial e final)
               </SelectItem>
-              <SelectItem value="all" className="rounded-lg text-sm font-medium focus:bg-zinc-100 dark:focus:bg-zinc-800 cursor-pointer">
+              <SelectItem value="all" className="rounded-lg text-[13px] sm:text-sm font-medium focus:bg-zinc-100 dark:focus:bg-zinc-800 cursor-pointer">
                 Todo o histórico completo
               </SelectItem>
             </SelectContent>
@@ -144,21 +144,21 @@ export function ExportDialog({ open, onOpenChange, data, currentMonth }: ExportD
                 className="grid grid-cols-2 gap-3 overflow-hidden"
               >
                 <div>
-                  <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-1 ml-1">Data Inicial</label>
+                  <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-1.5 ml-1">Data Inicial</label>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 h-10 rounded-xl px-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-blue-500 transition-colors shadow-sm dark:[color-scheme:dark]"
+                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 h-11 rounded-xl px-2 sm:px-3 text-[13px] sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-blue-500 transition-colors shadow-sm dark:[color-scheme:dark]"
                   />
                 </div>
                 <div>
-                  <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-1 ml-1">Data Final</label>
+                  <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-1.5 ml-1">Data Final</label>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 h-10 rounded-xl px-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-blue-500 transition-colors shadow-sm dark:[color-scheme:dark]"
+                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 h-11 rounded-xl px-2 sm:px-3 text-[13px] sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-blue-500 transition-colors shadow-sm dark:[color-scheme:dark]"
                   />
                 </div>
               </motion.div>
@@ -166,19 +166,19 @@ export function ExportDialog({ open, onOpenChange, data, currentMonth }: ExportD
           </AnimatePresence>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Button 
             onClick={handleExportPDF} 
-            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium gap-2 border-none shadow-[0_4px_14px_0_rgb(37,99,235,0.2)] transition-all"
+            className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium gap-2 border-none shadow-[0_4px_14px_0_rgb(37,99,235,0.2)] transition-all text-base"
           >
-            <FileText size={16} /> Gerar PDF
+            <FileText size={18} /> Gerar PDF
           </Button>
           <Button 
             onClick={handleExportCSV} 
             variant="outline" 
-            className="w-full h-11 rounded-xl border-zinc-200 dark:border-zinc-700 font-medium gap-2 bg-white text-zinc-900 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 transition-all shadow-sm"
+            className="w-full h-12 rounded-xl border-zinc-200 dark:border-zinc-700 font-medium gap-2 bg-white text-zinc-900 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 transition-all shadow-sm text-base"
           >
-            <FileSpreadsheet size={16} /> Planilha CSV
+            <FileSpreadsheet size={18} /> Planilha CSV
           </Button>
         </div>
       </DialogContent>

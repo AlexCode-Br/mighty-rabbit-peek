@@ -35,41 +35,41 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[92vw] rounded-[28px] bg-white dark:bg-zinc-900 border-none shadow-2xl p-5 [&>button]:hidden outline-none">
+      <DialogContent className="sm:max-w-md w-[95vw] max-h-[85dvh] overflow-y-auto rounded-[28px] bg-white dark:bg-zinc-900 border-none shadow-2xl p-4 sm:p-5 [&>button]:hidden outline-none">
         <DialogHeader className="mb-4 relative text-left">
           <button 
             onClick={() => onOpenChange(false)}
-            className="absolute right-0 top-0 h-7 w-7 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
           >
-            <X size={14} strokeWidth={2.5} />
+            <X size={16} strokeWidth={2.5} />
           </button>
-          <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight pr-8">Ajustes</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight pr-10">Ajustes</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div className="space-y-2.5">
             <h4 className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">Diário</h4>
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3 border border-zinc-100 dark:border-zinc-800/60">
-                <Label className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1 block">Meta</Label>
+              <div className="bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3.5 border border-zinc-100 dark:border-zinc-800/60">
+                <Label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1.5 block">Meta</Label>
                 <Input
                   name="dailyGoal"
                   type="number"
                   inputMode="decimal"
                   value={formData.dailyGoal || ''}
                   onChange={handleChange}
-                  className="h-8 p-0 border-none bg-transparent text-zinc-900 dark:text-zinc-100 font-semibold shadow-none focus-visible:ring-0 text-base"
+                  className="h-8 p-0 border-none bg-transparent text-zinc-900 dark:text-zinc-100 font-semibold shadow-none focus-visible:ring-0 text-base min-w-0"
                 />
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3 border border-zinc-100 dark:border-zinc-800/60">
-                <Label className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1 block">Stop Loss</Label>
+              <div className="bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3.5 border border-zinc-100 dark:border-zinc-800/60">
+                <Label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1.5 block">Stop Loss</Label>
                 <Input
                   name="stopLoss"
                   type="number"
                   inputMode="decimal"
                   value={formData.stopLoss || ''}
                   onChange={handleChange}
-                  className="h-8 p-0 border-none bg-transparent text-rose-500 font-semibold shadow-none focus-visible:ring-0 text-base"
+                  className="h-8 p-0 border-none bg-transparent text-rose-500 font-semibold shadow-none focus-visible:ring-0 text-base min-w-0"
                 />
               </div>
             </div>
@@ -78,26 +78,26 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
           <div className="space-y-2.5">
             <h4 className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">Valores Padrão</h4>
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3 border border-zinc-100 dark:border-zinc-800/60">
-                <Label className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1 block">Entrada MÃE</Label>
+              <div className="bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3.5 border border-zinc-100 dark:border-zinc-800/60">
+                <Label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1.5 block">Entrada MÃE</Label>
                 <Input
                   name="defaultMaeDeposit"
                   type="number"
                   inputMode="decimal"
                   value={formData.defaultMaeDeposit || ''}
                   onChange={handleChange}
-                  className="h-8 p-0 border-none bg-transparent text-zinc-900 dark:text-zinc-100 font-semibold shadow-none focus-visible:ring-0 text-base"
+                  className="h-8 p-0 border-none bg-transparent text-zinc-900 dark:text-zinc-100 font-semibold shadow-none focus-visible:ring-0 text-base min-w-0"
                 />
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3 border border-zinc-100 dark:border-zinc-800/60">
-                <Label className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1 block">Entrada FILHA</Label>
+              <div className="bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl p-3.5 border border-zinc-100 dark:border-zinc-800/60">
+                <Label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1.5 block">Entrada FILHA</Label>
                 <Input
                   name="defaultFilhaDeposit"
                   type="number"
                   inputMode="decimal"
                   value={formData.defaultFilhaDeposit || ''}
                   onChange={handleChange}
-                  className="h-8 p-0 border-none bg-transparent text-zinc-900 dark:text-zinc-100 font-semibold shadow-none focus-visible:ring-0 text-base"
+                  className="h-8 p-0 border-none bg-transparent text-zinc-900 dark:text-zinc-100 font-semibold shadow-none focus-visible:ring-0 text-base min-w-0"
                 />
               </div>
             </div>
@@ -105,7 +105,7 @@ export function GoalSettings({ open, onOpenChange, settings, onSave }: GoalSetti
         </div>
 
         <div className="mt-6">
-          <Button onClick={handleSave} className="w-full h-11 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm">
+          <Button onClick={handleSave} className="w-full h-12 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm text-base">
             Salvar
           </Button>
         </div>
