@@ -238,7 +238,7 @@ export default function DashboardApp() {
                           className="snap-center shrink-0 w-[92vw] sm:w-[360px] h-full" 
                           index={activeData.cycles.length - index} 
                           cycle={cycle}
-                          onUpdateOperation={updateOperation}
+                          onUpdateOperation={(cycleId, opId, updates) => updateOperation(activeDateId, cycleId, opId, updates)}
                           onDeleteCycle={(id) => { deleteCycle(activeDateId, id); showSuccess('Ciclo removido.'); }}
                           onDuplicateCycle={(c) => { 
                             let iso = new Date().toISOString();
