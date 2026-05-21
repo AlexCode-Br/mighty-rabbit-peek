@@ -3,6 +3,7 @@ import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../components/AuthProvider';
 import { AppData, OperationDay, Cycle, Operation, ChatMessage } from '../types';
 import { format } from 'date-fns';
+import { calculateOperationProfit, calculateCycleProfit } from '../utils/calculations';
 
 const DEFAULT_SETTINGS = {
   dailyGoal: 0,
@@ -38,10 +39,9 @@ export function useOperationDays() {
           setData({
             settings: appData.settings || DEFAULT_SETTINGS,
             history: appData.history || {},
-            chatMessages: appData.chat_messages || [] // Carregando da nova coluna
+            chatMessages: appData.chat_messages || []
           });
         } else {
-          // Criar registro inicial se não existir
           const initialData = {
             user_id: user.id,
             settings: DEFAULT_SETTINGS,
@@ -60,7 +60,6 @@ export function useOperationDays() {
     loadData();
   }, [user]);
 
-  // Salvar dados no Supabase (Debounced ou por ação)
   const persistData = useCallback(async (newData: Partial<AppData>) => {
     if (!user) return;
 
@@ -84,10 +83,12 @@ export function useOperationDays() {
   const getDayData = (dateId: string): OperationDay => {
     if (data.history[dateId]) return data.history[dateId];
     return {
+      id: dateId,
       date: dateId,
       cycles: [],
       dailyProfit: 0,
-      completed: false
+      goalReached: false,
+      stopLossReached: false
     };
   };
 
@@ -101,11 +102,25 @@ export function useOperationDays() {
     const day = getDayData(dateId);
     const newCycle: Cycle = {
       id: crypto.randomUUID(),
-      timestamp,
+      createdAt: timestamp,
       completed: false,
+      totalProfit: 0,
       operations: [
-        { id: crypto.randomUUID(), type: 'mae', deposit: config.maeDeposit, withdraw: config.maeWithdraw, bau: config.maeBau, completed: false, profit: 0 },
-        { id: crypto.randomUUID(), type: 'filha', deposit: config.filhaDeposit, withdraw: config.filhaWithdraw, completed: false, profit: 0 }
+        { 
+          id: crypto.randomUUID(), 
+          type: 'MAE', 
+          deposit: config.maeDeposit, 
+          withdraw: config.maeWithdraw, 
+          bau: config.maeBau, 
+          profit: 0 
+        },
+        { 
+          id: crypto.randomUUID(), 
+          type: 'FILHA', 
+          deposit: config.filhaDeposit, 
+          withdraw: config.filhaWithdraw, 
+          profit: 0 
+        }
       ]
     };
 
@@ -114,8 +129,7 @@ export function useOperationDays() {
       [dateId]: { ...day, cycles: [newCycle, ...day.cycles] }
     };
 
-    const updated = { ...data, history: newHistory };
-    setData(updated);
+    setData(prev => ({ ...prev, history: newHistory }));
     persistData({ history: newHistory });
   };
 
@@ -123,43 +137,68 @@ export function useOperationDays() {
     const day = getDayData(dateId);
     const newCycles = day.cycles.map(c => {
       if (c.id !== cycleId) return c;
-      const newOps = c.operations.map(o => o.id === operationId ? { ...o, ...updates } : o);
-      const allCompleted = newOps.every(o => o.completed);
-      return { ...c, operations: newOps, completed: allCompleted };
+      
+      const updatedOps = c.operations.map(o => {
+        if (o.id !== operationId) return o;
+        const newOp = { ...o, ...updates };
+        // Recalcular lucro da operação individual
+        newOp.profit = calculateOperationProfit(
+          newOp.deposit, 
+          newOp.withdraw, 
+          newOp.type === 'MAE', 
+          newOp.bau
+        );
+        return newOp;
+      }) as [Operation, Operation];
+
+      const allCompleted = updatedOps.every(o => o.withdraw !== null);
+      const totalCycleProfit = calculateCycleProfit(updatedOps[0].profit, updatedOps[1].profit);
+
+      return { 
+        ...c, 
+        operations: updatedOps, 
+        completed: allCompleted,
+        totalProfit: totalCycleProfit
+      };
     });
 
-    const dailyProfit = newCycles.reduce((acc, c) => 
-      acc + c.operations.reduce((oAcc, o) => oAcc + (o.profit || 0), 0), 0
-    );
+    const dailyProfit = newCycles.reduce((acc, c) => acc + c.totalProfit, 0);
 
     const newHistory = {
       ...data.history,
-      [dateId]: { ...day, cycles: newCycles, dailyProfit }
+      [dateId]: { 
+        ...day, 
+        cycles: newCycles, 
+        dailyProfit,
+        goalReached: dailyProfit >= data.settings.dailyGoal && data.settings.dailyGoal > 0,
+        stopLossReached: dailyProfit <= -data.settings.stopLoss && data.settings.stopLoss > 0
+      }
     };
 
-    const updated = { ...data, history: newHistory };
-    setData(updated);
+    setData(prev => ({ ...prev, history: newHistory }));
     persistData({ history: newHistory });
   };
 
   const deleteCycle = (dateId: string, cycleId: string) => {
     const day = getDayData(dateId);
     const newCycles = day.cycles.filter(c => c.id !== cycleId);
-    const dailyProfit = newCycles.reduce((acc, c) => 
-      acc + c.operations.reduce((oAcc, o) => oAcc + (o.profit || 0), 0), 0
-    );
+    const dailyProfit = newCycles.reduce((acc, c) => acc + c.totalProfit, 0);
 
     const newHistory = {
       ...data.history,
-      [dateId]: { ...day, cycles: newCycles, dailyProfit }
+      [dateId]: { 
+        ...day, 
+        cycles: newCycles, 
+        dailyProfit,
+        goalReached: dailyProfit >= data.settings.dailyGoal && data.settings.dailyGoal > 0,
+        stopLossReached: dailyProfit <= -data.settings.stopLoss && data.settings.stopLoss > 0
+      }
     };
 
-    const updated = { ...data, history: newHistory };
-    setData(updated);
+    setData(prev => ({ ...prev, history: newHistory }));
     persistData({ history: newHistory });
   };
 
-  // CHAT LOGIC
   const addChatMessage = (text: string, category: string) => {
     const newMessage: ChatMessage = {
       id: crypto.randomUUID(),

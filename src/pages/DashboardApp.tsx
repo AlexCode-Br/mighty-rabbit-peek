@@ -36,11 +36,9 @@ export default function DashboardApp() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   
-  // Controle de Data
   const [activeDate, setActiveDate] = useState(new Date());
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Controle de Scroll Horizontal com Mouse (Desktop)
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const isMouseDown = useRef(false);
@@ -105,7 +103,6 @@ export default function DashboardApp() {
     );
   }
 
-  const todayCompleted = activeData.cycles.filter(c => r => r.completed).length;
   const totalCyclesCount = activeData.cycles.length;
   const completedCyclesCount = activeData.cycles.filter(c => c.completed).length;
 
@@ -230,13 +227,10 @@ export default function DashboardApp() {
   return (
     <div className="h-[100dvh] w-full bg-[#030303] text-zinc-900 dark:text-zinc-100 font-sans selection:bg-white/10 overflow-hidden flex flex-col items-center relative">
       
-      {/* Background do Liquid Glass da WWDC25 */}
       <LiquidGlassBackground />
 
-      {/* WRAPPER PRINCIPAL COM POSIÇÃO RELATIVA E Z-INDEX PARA FLUTUAR SOBRE O BACKGROUND */}
       <div className="w-full max-w-[1600px] h-full flex flex-col relative z-10 transition-all duration-300">
         
-        {/* TOPO FIXO (Painel Ultra Translúcido) */}
         <div 
           className="px-4 lg:px-8 xl:px-10 shrink-0 z-20 sticky top-0 w-full"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: '12px' }}
@@ -262,15 +256,12 @@ export default function DashboardApp() {
           </header>
         </div>
 
-        {/* FEED COM LAYOUT DE COLUNAS NO DESKTOP */}
         <div className="flex-1 overflow-y-auto no-scrollbar relative z-0 pt-2" ref={scrollRef}>
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 xl:gap-12 px-4 lg:px-8 xl:px-10 pb-12">
             
-            {/* LADO ESQUERDO: Dashboard e Operações */}
             <div className="flex-1 min-w-0 flex flex-col">
               
               <div className="flex flex-col">
-                {/* 1. NAVEGADOR DE DATAS (Estilo Vidro Ativo) */}
                 <div className="flex items-center justify-between liquid-glass-panel rounded-[24px] p-1.5 mb-5 shadow-lg">
                   <button onClick={() => setActiveDate(subDays(activeDate, 1))} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 transition-colors border border-white/5">
                     <ChevronLeft size={20} />
@@ -296,7 +287,6 @@ export default function DashboardApp() {
                   </button>
                 </div>
 
-                {/* 2. DASHBOARD */}
                 <div className="space-y-5">
                   <Dashboard 
                     dailyProfit={activeData.dailyProfit}
@@ -306,7 +296,6 @@ export default function DashboardApp() {
                   />
                 </div>
 
-                {/* 3. OPERAÇÕES DO DIA */}
                 <div className="mt-8 mb-4 flex items-center justify-between px-2 lg:px-0">
                   <div className="flex items-center gap-3">
                     <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase tracking-wider">Operações do Dia</h3>
@@ -366,7 +355,6 @@ export default function DashboardApp() {
                         ${isDragging ? '[&_*]:pointer-events-none' : ''}
                       `}
                     >
-                      {/* Botão Novo Ciclo */}
                       <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] flex items-stretch">
                         <button 
                           onClick={handleQuickAddCycle}
@@ -402,7 +390,6 @@ export default function DashboardApp() {
 
             </div>
 
-            {/* LADO DIREITO: Histórico (Sidebar no Desktop) */}
             <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 mt-8 lg:mt-0">
               <div className="mb-4 px-2 lg:px-0">
                 <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase tracking-wider">Histórico & Metas</h3>
@@ -414,12 +401,10 @@ export default function DashboardApp() {
 
           </div>
 
-          {/* Spacer pro final da tela + Safe Area */}
           <div className="w-full lg:hidden" style={{ height: 'calc(env(safe-area-inset-bottom) + 32px)' }}></div>
         </div>
       </div>
 
-      {/* BOTÃO FLUTUANTE SUSPENSO DO CHAT */}
       <AnimatePresence>
         {!isChatOpen && (
           <div className="fixed bottom-6 right-6 z-30">
@@ -439,11 +424,9 @@ export default function DashboardApp() {
         )}
       </AnimatePresence>
 
-      {/* PAINEL DO CHAT SUSPENSO (SLIDE-OVER) */}
       <AnimatePresence>
         {isChatOpen && (
           <>
-            {/* Backdrop escuro translúcido */}
             <motion.div
               key="chat-backdrop"
               initial={{ opacity: 0 }}
@@ -453,7 +436,6 @@ export default function DashboardApp() {
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[40]"
             />
 
-            {/* Container do Chat */}
             <motion.div
               key="chat-panel-container"
               initial={{ opacity: 0, y: "100%" }}
