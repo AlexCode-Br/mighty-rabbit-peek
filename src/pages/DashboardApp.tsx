@@ -105,26 +105,7 @@ export default function DashboardApp() {
     );
   }
 
-  const todayWins = activeData.cycles.filter(c => c.completed && c.totalProfit > 0).length;
-  const todayLosses = activeData.cycles.filter(c => c.completed && c.totalProfit < 0).length;
   const todayCompleted = activeData.cycles.filter(c => c.completed).length;
-
-  const now = new Date();
-  const last7DaysData = Array.from({ length: 7 }).map((_, i) => {
-    const d = subDays(now, 6 - i);
-    const dayId = format(d, 'yyyy-MM-dd');
-    const dayData = data.history[dayId];
-    return {
-      name: format(d, 'EE', { locale: ptBR }).substring(0, 3),
-      profit: dayData ? dayData.dailyProfit : 0,
-      hasData: !!dayData && dayData.cycles.length > 0
-    };
-  });
-
-  const weeklyProfit = last7DaysData.reduce((acc, day) => acc + day.profit, 0);
-  const weeklyActiveDays = last7DaysData.filter(day => day.hasData).length;
-  const weeklyWinDays = last7DaysData.filter(day => day.profit >= 0 && day.hasData).length;
-  const weeklyWinRate = weeklyActiveDays > 0 ? (weeklyWinDays / weeklyActiveDays) * 100 : 0;
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
@@ -319,12 +300,6 @@ export default function DashboardApp() {
                     dailyProfit={activeData.dailyProfit}
                     dailyGoal={data.settings.dailyGoal}
                     stopLoss={data.settings.stopLoss}
-                    cyclesCount={activeData.cycles.length}
-                    todayWins={todayWins}
-                    todayLosses={todayLosses}
-                    weeklyProfit={weeklyProfit}
-                    weeklyWinRate={weeklyWinRate}
-                    weeklyChartData={last7DaysData}
                     onOpenSettings={() => setSettingsOpen(true)}
                   />
                 </div>
