@@ -6,7 +6,7 @@ import { CycleCard } from '../components/CycleCard';
 import { HistoryPanel } from '../components/HistoryPanel';
 import { NewCycleDialog } from '../components/NewCycleDialog';
 import { useAuth } from '../components/AuthProvider';
-import { LogOut, Activity, CalendarDays, Home, Sun, Moon } from 'lucide-react';
+import { LogOut, Activity, CalendarDays, Home, Sun, Moon, Plus } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
@@ -126,17 +126,25 @@ export default function DashboardApp() {
                     <Activity size={24} strokeWidth={1.5} />
                   </div>
                   <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 mb-1">Nenhum ciclo hoje</h3>
-                  <p className="text-zinc-500 dark:text-zinc-400 text-sm">Vá para o Início e adicione um Novo Ciclo.</p>
+                  <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[250px]">Nenhuma operação registrada ainda. Que tal começar agora?</p>
                   <Button 
-                    onClick={() => setActiveTab('home')} 
-                    variant="outline" 
-                    className="mt-6 rounded-xl border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                    onClick={() => setNewCycleOpen(true)} 
+                    className="mt-6 rounded-2xl h-12 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] flex items-center gap-2 px-6"
                   >
-                    Voltar ao Início
+                    <Plus size={18} /> Adicionar Primeiro Ciclo
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {/* Botão de Atalho Rápido para Novo Ciclo */}
+                  <Button 
+                    onClick={() => setNewCycleOpen(true)}
+                    variant="outline"
+                    className="w-full h-14 rounded-3xl border-dashed border-2 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 font-semibold flex items-center justify-center gap-2 mb-2 transition-all"
+                  >
+                    <Plus size={18} /> Adicionar Novo Ciclo
+                  </Button>
+                  
                   <AnimatePresence mode="popLayout">
                     {todayData.cycles.map((cycle, index) => (
                       <CycleCard 
