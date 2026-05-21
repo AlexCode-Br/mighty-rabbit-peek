@@ -184,6 +184,15 @@ export default function DashboardApp() {
     scrollToNewCycle();
   };
 
+  const handleUpdateOperation = (cycleId: string, operationId: string, updates: Partial<Operation>) => {
+    updateOperation(activeDateId, cycleId, operationId, updates);
+  };
+
+  const handleDeleteCycle = (cycleId: string) => {
+    deleteCycle(activeDateId, cycleId);
+    showSuccess('Ciclo removido.');
+  };
+
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   const handleMouseDown = (e: React.MouseEvent) => {
