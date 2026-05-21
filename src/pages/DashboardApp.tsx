@@ -307,19 +307,6 @@ export default function DashboardApp() {
                 onMouseMove={handleMouseMove}
                 className={`flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing ${isDragging ? '[&_*]:pointer-events-none' : 'snap-x snap-mandatory'}`}
               >
-                {/* Botão Novo Ciclo como o PRIMEIRO item (à esquerda) */}
-                <div className="snap-center shrink-0 w-[24vw] sm:w-[100px] flex items-stretch">
-                  <button 
-                    onClick={() => setNewCycleOpen(true)}
-                    className="w-full rounded-[24px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-2 group-hover:rotate-90 transition-transform duration-300">
-                      <Plus size={20} />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300">Novo</span>
-                  </button>
-                </div>
-
                 <AnimatePresence mode="popLayout">
                   {activeData.cycles.map((cycle, index) => (
                     <CycleCard 
@@ -333,6 +320,22 @@ export default function DashboardApp() {
                     />
                   ))}
                 </AnimatePresence>
+
+                {/* Botão Novo Ciclo como o ÚLTIMO item (à direita) */}
+                <div className="snap-center shrink-0 w-[24vw] sm:w-[100px] flex items-stretch">
+                  <button 
+                    onClick={() => setNewCycleOpen(true)}
+                    className="w-full rounded-[24px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-2 group-hover:rotate-90 transition-transform duration-300">
+                      <Plus size={20} />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300">Novo</span>
+                  </button>
+                </div>
+                
+                {/* Espaçador para manter a margem direita correta no scroll */}
+                <div className="w-1 shrink-0" />
               </div>
             )}
           </motion.div>
