@@ -10,6 +10,8 @@ interface DashboardProps {
   dailyGoal: number;
   stopLoss: number;
   cyclesCount: number;
+  todayWins: number;
+  todayLosses: number;
   weeklyProfit: number;
   weeklyWinRate: number;
   onNewCycle: () => void;
@@ -21,6 +23,8 @@ export function Dashboard({
   dailyGoal, 
   stopLoss, 
   cyclesCount, 
+  todayWins,
+  todayLosses,
   weeklyProfit, 
   weeklyWinRate, 
   onNewCycle, 
@@ -50,6 +54,7 @@ export function Dashboard({
 
   return (
     <div className="space-y-4">
+      {/* CARD PRINCIPAL (LUCRO DIÁRIO) */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.98, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -122,34 +127,42 @@ export function Dashboard({
         </Card>
       </motion.div>
 
-      <div className="flex gap-3">
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex-1"
-        >
-          <Button
-            onClick={onNewCycle}
-            className="w-full h-12 rounded-2xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] dark:shadow-[0_4px_14px_0_rgb(255,255,255,0.05)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 font-medium border-none"
-          >
-            <Plus size={18} /> Novo Ciclo
-          </Button>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="w-20 shrink-0"
-        >
-          <div className="w-full h-12 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 flex flex-col items-center justify-center shadow-sm">
-            <span className="text-base font-semibold text-zinc-900 dark:text-zinc-100 leading-none mb-0.5">{cyclesCount}</span>
-            <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Ciclos</span>
-          </div>
-        </motion.div>
-      </div>
+      {/* ESTATÍSTICAS RÁPIDAS DO DIA */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="grid grid-cols-3 gap-2"
+      >
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-3 flex flex-col items-center justify-center shadow-sm">
+          <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100 leading-none mb-1">{cyclesCount}</span>
+          <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest text-center">Operações</span>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-3 flex flex-col items-center justify-center shadow-sm">
+          <span className="text-lg font-bold text-emerald-500 leading-none mb-1">{todayWins}</span>
+          <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest text-center">Vitórias</span>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-3 flex flex-col items-center justify-center shadow-sm">
+          <span className="text-lg font-bold text-rose-500 leading-none mb-1">{todayLosses}</span>
+          <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest text-center">Derrotas</span>
+        </div>
+      </motion.div>
 
+      {/* BOTÃO NOVO CICLO LARGURA TOTAL */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+      >
+        <Button
+          onClick={onNewCycle}
+          className="w-full h-14 rounded-[20px] bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] dark:shadow-[0_4px_14px_0_rgb(255,255,255,0.05)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 font-medium border-none text-base"
+        >
+          <Plus size={20} /> Novo Ciclo de Operação
+        </Button>
+      </motion.div>
+      
+      {/* BALANÇO SEMANAL */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

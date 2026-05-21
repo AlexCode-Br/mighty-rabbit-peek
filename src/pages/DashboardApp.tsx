@@ -33,6 +33,10 @@ export default function DashboardApp() {
     );
   }
 
+  // --- Cálculos do Dia Atual ---
+  const todayWins = todayData.cycles.filter(c => c.completed && c.totalProfit > 0).length;
+  const todayLosses = todayData.cycles.filter(c => c.completed && c.totalProfit < 0).length;
+
   // --- Cálculos da Semana ---
   const now = new Date();
   const startOfCurrentWeek = startOfWeek(now, { weekStartsOn: 0 }); // Semana começa no Domingo
@@ -110,6 +114,8 @@ export default function DashboardApp() {
                 dailyGoal={data.settings.dailyGoal}
                 stopLoss={data.settings.stopLoss}
                 cyclesCount={todayData.cycles.length}
+                todayWins={todayWins}
+                todayLosses={todayLosses}
                 weeklyProfit={weeklyProfit}
                 weeklyWinRate={weeklyWinRate}
                 onNewCycle={() => setNewCycleOpen(true)}
