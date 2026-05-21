@@ -16,6 +16,7 @@ import { ptBR } from 'date-fns/locale';
 import { Cycle, Operation } from '../types';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
+import { LiquidGlassBackground } from '../components/LiquidGlassBackground';
 
 export default function DashboardApp() {
   const { 
@@ -244,32 +245,35 @@ export default function DashboardApp() {
   };
 
   return (
-    <div className="h-[100dvh] w-full bg-[#FAFAFA] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-800 overflow-hidden flex flex-col items-center">
+    <div className="h-[100dvh] w-full bg-[#030303] text-zinc-900 dark:text-zinc-100 font-sans selection:bg-white/10 overflow-hidden flex flex-col items-center relative">
       
-      {/* WRAPPER PRINCIPAL */}
-      <div className="w-full max-w-[1600px] h-full flex flex-col relative transition-all duration-300">
+      {/* Background do Liquid Glass da WWDC25 */}
+      <LiquidGlassBackground />
+
+      {/* WRAPPER PRINCIPAL COM POSIÇÃO RELATIVA E Z-INDEX PARA FLUTUAR SOBRE O BACKGROUND */}
+      <div className="w-full max-w-[1600px] h-full flex flex-col relative z-10 transition-all duration-300">
         
-        {/* TOPO FIXO */}
+        {/* TOPO FIXO (Painel Ultra Translúcido) */}
         <div 
           className="px-4 lg:px-8 xl:px-10 shrink-0 z-20 sticky top-0 w-full"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: '12px' }}
         >
-          <header className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-200/60 dark:border-zinc-800/60 rounded-full px-4 lg:px-6 py-2.5 flex items-center justify-between">
+          <header className="liquid-glass-panel rounded-full px-4 lg:px-6 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-sm shrink-0">
-                <Wallet size={15} strokeWidth={2.5} className="text-white dark:text-zinc-900" />
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#1d1d36] to-[#0a0a14] dark:from-white/10 dark:to-white/5 flex items-center justify-center shadow-lg shrink-0 border border-white/10">
+                <Wallet size={16} strokeWidth={2.5} className="text-white dark:text-zinc-200" />
               </div>
-              <h1 className="text-[15px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-[2px] truncate">
-                <span>Trade</span><span className="text-zinc-500 dark:text-zinc-400">Tracker</span>
+              <h1 className="text-base font-extrabold tracking-tight text-zinc-950 dark:text-zinc-100 flex items-center gap-[2px] truncate">
+                <span>Trade</span><span className="text-zinc-500/80 dark:text-zinc-400">Tracker</span>
               </h1>
             </div>
             
-            <div className="flex items-center gap-1 shrink-0">
-              <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full h-8 w-8 transition-colors">
-                {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-white/10 rounded-full h-8 w-8 transition-colors">
+                {theme === 'dark' ? <Sun size={16} strokeWidth={2.5} /> : <Moon size={16} strokeWidth={2.5} />}
               </Button>
-              <Button variant="ghost" size="icon" onClick={signOut} className="text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-full h-8 w-8 transition-colors">
-                <LogOut size={16} strokeWidth={2} />
+              <Button variant="ghost" size="icon" onClick={signOut} className="text-zinc-500 hover:text-rose-400 dark:text-zinc-400 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-full h-8 w-8 transition-colors">
+                <LogOut size={16} strokeWidth={2.5} />
               </Button>
             </div>
           </header>
@@ -277,29 +281,24 @@ export default function DashboardApp() {
 
         {/* FEED COM LAYOUT DE COLUNAS NO DESKTOP */}
         <div className="flex-1 overflow-y-auto no-scrollbar relative z-0 pt-2" ref={scrollRef}>
-          <style dangerouslySetInnerHTML={{__html: `
-            .no-scrollbar::-webkit-scrollbar { display: none; }
-            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-          `}} />
-
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 xl:gap-12 px-4 lg:px-8 xl:px-10 pb-12">
             
             {/* LADO ESQUERDO: Dashboard e Operações */}
             <div className="flex-1 min-w-0 flex flex-col">
               
               <div className="flex flex-col">
-                {/* 1. NAVEGADOR DE DATAS */}
-                <div className="flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-1.5 mb-5 shadow-sm">
-                  <button onClick={() => setActiveDate(subDays(activeDate, 1))} className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                {/* 1. NAVEGADOR DE DATAS (Estilo Vidro Ativo) */}
+                <div className="flex items-center justify-between liquid-glass-panel rounded-[24px] p-1.5 mb-5 shadow-lg">
+                  <button onClick={() => setActiveDate(subDays(activeDate, 1))} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 transition-colors border border-white/5">
                     <ChevronLeft size={20} />
                   </button>
                   
                   <div className="flex flex-col items-center justify-center cursor-pointer select-none px-4" onClick={() => setActiveDate(new Date())}>
-                    <span className={`text-[13px] font-bold tracking-tight ${isToday(activeDate) ? 'text-zinc-900 dark:text-zinc-100' : 'text-blue-500 dark:text-blue-400'}`}>
+                    <span className={`text-[13px] font-black tracking-widest ${isToday(activeDate) ? 'text-zinc-950 dark:text-white' : 'text-cyan-400'}`}>
                       {isToday(activeDate) ? 'HOJE' : format(activeDate, "dd 'de' MMM", { locale: ptBR }).toUpperCase()}
                     </span>
                     {!isToday(activeDate) && (
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mt-0.5">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mt-0.5">
                         Voltar p/ Hoje
                       </span>
                     )}
@@ -308,7 +307,7 @@ export default function DashboardApp() {
                   <button 
                     onClick={() => setActiveDate(addDays(activeDate, 1))} 
                     disabled={isToday(activeDate)}
-                    className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 transition-colors disabled:opacity-20 disabled:cursor-not-allowed border border-white/5"
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -331,10 +330,10 @@ export default function DashboardApp() {
                 </div>
 
                 {/* 3. OPERAÇÕES DO DIA */}
-                <div className="mt-8 mb-3 flex items-center justify-between px-2 lg:px-0">
+                <div className="mt-8 mb-4 flex items-center justify-between px-2 lg:px-0">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Operações do Dia</h3>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1 rounded-md">
+                    <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase tracking-wider">Operações do Dia</h3>
+                    <span className="text-[10px] font-extrabold tracking-widest uppercase text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/15">
                       {todayCompleted} / {activeData.cycles.length}
                     </span>
                   </div>
@@ -345,7 +344,7 @@ export default function DashboardApp() {
                         variant="outline" 
                         size="icon" 
                         onClick={() => scrollCarousel('left')}
-                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
+                        className="h-8 w-8 rounded-full border-white/10 bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 shadow-sm transition-all"
                       >
                         <ChevronLeft size={16} />
                       </Button>
@@ -353,7 +352,7 @@ export default function DashboardApp() {
                         variant="outline" 
                         size="icon" 
                         onClick={() => scrollCarousel('right')}
-                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
+                        className="h-8 w-8 rounded-full border-white/10 bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 shadow-sm transition-all"
                       >
                         <ChevronRight size={16} />
                       </Button>
@@ -363,14 +362,14 @@ export default function DashboardApp() {
 
                 <div>
                   {activeData.cycles.length === 0 ? (
-                    <div className="bg-white dark:bg-zinc-900 border border-dashed border-zinc-200/60 dark:border-zinc-800/60 rounded-[20px] p-6 flex flex-col items-center justify-center text-center shadow-sm">
-                      <Activity size={20} className="text-zinc-300 dark:text-zinc-600 mb-2" />
-                      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-4">Nenhum ciclo registrado hoje.</p>
+                    <div className="liquid-glass-panel border-white/10 rounded-[24px] p-8 flex flex-col items-center justify-center text-center shadow-lg">
+                      <Activity size={24} className="text-zinc-500 mb-2.5 animate-pulse" />
+                      <p className="text-xs font-semibold text-zinc-400 mb-4">Nenhum ciclo ativo registrado para hoje.</p>
                       <Button 
                         onClick={handleQuickAddCycle} 
-                        className="rounded-xl h-10 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm flex items-center gap-2 px-4 text-xs"
+                        className="rounded-xl h-11 bg-zinc-950 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-100 text-white dark:text-zinc-950 font-bold shadow-lg flex items-center gap-2 px-5 text-xs transition-transform hover:scale-[1.02] active:scale-[0.98]"
                       >
-                        <Plus size={14} /> Iniciar Ciclo
+                        <Plus size={16} strokeWidth={2.5} /> Iniciar Novo Ciclo
                       </Button>
                     </div>
                   ) : (
@@ -385,7 +384,7 @@ export default function DashboardApp() {
                         setIsDragging(false);
                       }}
                       className={`
-                        relative flex overflow-x-auto gap-3 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory touch-pan-x
+                        relative flex overflow-x-auto gap-4.5 no-scrollbar pb-6 pt-1 -mx-4 px-4 items-stretch cursor-grab active:cursor-grabbing snap-x snap-mandatory touch-pan-x
                         lg:mx-0 lg:px-0 lg:snap-none
                         ${isDragging ? '[&_*]:pointer-events-none' : ''}
                       `}
@@ -394,13 +393,13 @@ export default function DashboardApp() {
                       <div className="snap-center shrink-0 w-[92vw] sm:w-[360px] flex items-stretch">
                         <button 
                           onClick={handleQuickAddCycle}
-                          className="w-full min-h-[180px] rounded-[20px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col items-center justify-center transition-all group"
+                          className="w-full min-h-[190px] rounded-[24px] border border-dashed border-white/20 hover:border-white/40 text-zinc-400 hover:text-white bg-white/[0.01] hover:bg-white/[0.04] flex flex-col items-center justify-center transition-all duration-300 group"
                         >
-                          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300">
-                            <Plus size={24} />
+                          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300 border border-white/10 shadow-inner">
+                            <Plus size={24} strokeWidth={2.5} />
                           </div>
-                          <span className="text-[14px] font-bold text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 tracking-tight">Adicionar Novo Ciclo</span>
-                          <span className="text-[12px] text-zinc-400 mt-1 font-medium">Toque para adicionar rapidamente</span>
+                          <span className="text-sm font-bold tracking-tight text-zinc-300">Novo Ciclo</span>
+                          <span className="text-xs text-zinc-500 mt-1 font-medium">Toque para adicionar rapidamente</span>
                         </button>
                       </div>
 
@@ -429,7 +428,7 @@ export default function DashboardApp() {
             {/* LADO DIREITO: Histórico (Sidebar no Desktop) */}
             <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 mt-8 lg:mt-0">
               <div className="mb-4 px-2 lg:px-0">
-                <h3 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Visão Mensal</h3>
+                <h3 className="text-sm font-black text-zinc-950 dark:text-white uppercase tracking-wider">Histórico & Metas</h3>
               </div>
               <div className="space-y-4">
                 <HistoryPanel data={data} onEditDay={handleEditPastDay} />
@@ -454,7 +453,7 @@ export default function DashboardApp() {
               exit={{ scale: 0, opacity: 0 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-14 h-14 rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.05)] border border-zinc-800 dark:border-zinc-200/20 transition-colors"
+              className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#15152b] to-[#0d0d18] dark:from-white dark:to-zinc-100 text-white dark:text-zinc-950 flex items-center justify-center shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-white/15 dark:border-white/5 transition-all"
             >
               <MessageSquare size={22} strokeWidth={2.5} />
             </motion.button>
@@ -472,7 +471,7 @@ export default function DashboardApp() {
               animate={{ opacity: 0.4 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsChatOpen(false)}
-              className="fixed inset-0 bg-black z-45"
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-45"
             />
 
             {/* Container do Chat */}
