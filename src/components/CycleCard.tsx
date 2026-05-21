@@ -38,25 +38,25 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
         transition={{ type: "spring", stiffness: 500, damping: 40 }}
         className={className}
       >
-        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-md bg-white dark:bg-zinc-900 rounded-[24px] overflow-hidden group relative h-full flex flex-col">
+        <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-md bg-white dark:bg-zinc-900 rounded-[20px] overflow-hidden group relative h-full flex flex-col">
           <CardContent className="p-0 flex-1 flex flex-col">
             
-            {/* Header do Ciclo */}
-            <div className="flex justify-between items-center px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/30 dark:bg-zinc-800/10">
-              <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                <div className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-blue-500 animate-pulse'}`} />
-                <h3 className="font-bold text-[14px] text-zinc-900 dark:text-zinc-100 flex items-center gap-2 truncate">
+            {/* Header do Ciclo (Mais Fino) */}
+            <div className="flex justify-between items-center px-3.5 py-2 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/30 dark:bg-zinc-800/10">
+              <div className="flex items-center gap-2 min-w-0 pr-2">
+                <div className={`w-2 h-2 rounded-full shrink-0 shadow-sm ${cycle.completed ? (isProfit ? 'bg-emerald-500' : isLoss ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700') : 'bg-blue-500 animate-pulse'}`} />
+                <h3 className="font-bold text-[13px] text-zinc-900 dark:text-zinc-100 flex items-center gap-2 truncate">
                   Ciclo {index}
                   {cycle.createdAt && (
-                    <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 shrink-0 hidden xs:inline bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md">
+                    <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 shrink-0 hidden xs:inline bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md">
                       {format(parseISO(cycle.createdAt), 'HH:mm')}
                     </span>
                   )}
                 </h3>
               </div>
               
-              <div className="flex items-center shrink-0 gap-1">
-                <span className={`text-[13px] sm:text-sm font-bold tracking-tight mr-1 px-2 py-0.5 rounded-md ${cycle.completed ? (isProfit ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10' : isLoss ? 'text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/10' : 'text-zinc-500 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800') : 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10'}`}>
+              <div className="flex items-center shrink-0 gap-0.5">
+                <span className={`text-[12px] font-bold tracking-tight mr-1 px-2 py-0.5 rounded-md ${cycle.completed ? (isProfit ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10' : isLoss ? 'text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/10' : 'text-zinc-500 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800') : 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10'}`}>
                   {cycle.completed ? (isProfit ? '+' : '') + formatBRL(cycle.totalProfit) : 'Pendente'}
                 </span>
                 <Button
@@ -66,22 +66,22 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                   className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-500/10 h-7 w-7 rounded-full transition-colors shrink-0"
                   title="Duplicar Entradas"
                 >
-                  <CopyPlus size={14} strokeWidth={2.5} />
+                  <CopyPlus size={13} strokeWidth={2.5} />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:text-rose-400 dark:hover:bg-rose-500/10 h-7 w-7 rounded-full transition-colors shrink-0 -mr-1.5"
+                  className="text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:text-rose-400 dark:hover:bg-rose-500/10 h-7 w-7 rounded-full transition-colors shrink-0 -mr-1"
                   title="Excluir Ciclo"
                 >
-                  <Trash2 size={14} strokeWidth={2.5} />
+                  <Trash2 size={13} strokeWidth={2.5} />
                 </Button>
               </div>
             </div>
 
-            {/* Operações (Mãe e Filha) */}
-            <div className="p-2.5 flex-1 flex flex-col justify-center gap-2.5">
+            {/* Operações (Mãe e Filha) - Espaçamentos Reduzidos */}
+            <div className="p-2 flex-1 flex flex-col justify-center gap-2">
               {cycle.operations.map((op) => {
                 const isOpCompleted = op.withdraw !== null;
                 const opProfit = op.profit || 0;
@@ -89,12 +89,12 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                 const isOpLoss = opProfit < 0;
 
                 return (
-                  <div key={op.id} className="p-2.5 bg-zinc-50/80 dark:bg-zinc-800/20 border border-zinc-200/50 dark:border-zinc-800/60 rounded-[16px] transition-colors w-full">
+                  <div key={op.id} className="p-2 bg-zinc-50/80 dark:bg-zinc-800/20 border border-zinc-200/50 dark:border-zinc-800/60 rounded-[14px] transition-colors w-full">
                     
                     {/* Linha 1: Título da Operação e Status */}
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-[11px] font-extrabold text-zinc-700 dark:text-zinc-300 bg-zinc-200/60 dark:bg-zinc-700/60 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-extrabold text-zinc-700 dark:text-zinc-300 bg-zinc-200/60 dark:bg-zinc-700/60 px-1.5 py-0.5 rounded-[4px] uppercase tracking-wider">
                           {op.type}
                         </span>
                         {op.type === 'MAE' && (
@@ -103,29 +103,29 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                               id={`bau-${op.id}`}
                               checked={op.bau ?? false}
                               onCheckedChange={(checked) => onUpdateOperation(cycle.id, op.id, { bau: !!checked })}
-                              className="w-3.5 h-3.5 rounded-[4px] shrink-0 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                              className="w-3 h-3 rounded-[3px] shrink-0 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
                             />
-                            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest select-none">
+                            <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest select-none">
                               BAÚ
                             </span>
                           </div>
                         )}
                       </div>
 
-                      {/* Lucro individual da operação (mostra apenas se finalizada) */}
+                      {/* Lucro individual */}
                       {isOpCompleted && (
-                        <span className={`text-[11px] font-bold tracking-tight px-2 py-0.5 rounded-md ${isOpWin ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10' : isOpLoss ? 'text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/10' : 'text-zinc-500 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800'}`}>
+                        <span className={`text-[10px] font-bold tracking-tight px-1.5 py-0.5 rounded-[4px] ${isOpWin ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10' : isOpLoss ? 'text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/10' : 'text-zinc-500 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800'}`}>
                           {isOpWin ? '+' : ''}{formatBRL(opProfit)}
                         </span>
                       )}
                     </div>
                     
-                    {/* Linha 2: Caixas de Entrada e Saque */}
-                    <div className="flex gap-2">
+                    {/* Linha 2: Caixas de Entrada e Saque (Mais achatadas) */}
+                    <div className="flex gap-1.5">
                       
                       {/* Caixa de Entrada */}
-                      <div className="flex-1 bg-white dark:bg-zinc-900 rounded-[12px] px-2.5 py-1.5 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm flex flex-col justify-center">
-                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider mb-0.5 block">Entrada</span>
+                      <div className="flex-1 bg-white dark:bg-zinc-900 rounded-[10px] px-2 py-1.5 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm flex flex-col justify-center">
+                        <span className="text-[8px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider mb-0.5 block">Entrada</span>
                         <CurrencyInput
                           initialValue={op.deposit}
                           onChange={(val) => onUpdateOperation(cycle.id, op.id, { deposit: val || 0 })}
@@ -133,22 +133,22 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
                       </div>
                       
                       {/* Caixa de Saque */}
-                      <div className="flex-1 bg-white dark:bg-zinc-900 rounded-[12px] px-2.5 py-1.5 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm flex flex-col justify-center">
+                      <div className="flex-[1.1] bg-white dark:bg-zinc-900 rounded-[10px] px-2 py-1.5 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm flex flex-col justify-center">
                         <div className="flex justify-between items-center mb-0.5">
-                          <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Saque</span>
+                          <span className="text-[8px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider">Saque</span>
                           
-                          {/* Botões de Atalho (Aparecem apenas se não finalizado, na mesma linha do título) */}
+                          {/* Botões de Atalho */}
                           {!isOpCompleted && (
                             <div className="flex items-center gap-1">
                               <button 
                                 onClick={() => onUpdateOperation(cycle.id, op.id, { withdraw: 0 })}
-                                className="px-1.5 py-0.5 text-[8px] font-bold bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded transition-colors"
+                                className="px-1.5 py-0.5 text-[7.5px] font-bold bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-[4px] transition-colors"
                               >
                                 LOSS
                               </button>
                               <button 
                                 onClick={() => onUpdateOperation(cycle.id, op.id, { withdraw: op.deposit })}
-                                className="px-1.5 py-0.5 text-[8px] font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded transition-colors"
+                                className="px-1.5 py-0.5 text-[7.5px] font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-[4px] transition-colors"
                               >
                                 = ENT
                               </button>
@@ -171,11 +171,11 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
       </motion.div>
 
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <DialogContent className="sm:max-w-xs w-[90vw] rounded-[32px] p-6 bg-white dark:bg-zinc-900 border-none shadow-2xl [&>button]:hidden outline-none text-center">
+        <DialogContent className="sm:max-w-xs w-[90vw] rounded-[24px] p-6 bg-white dark:bg-zinc-900 border-none shadow-2xl [&>button]:hidden outline-none text-center">
           <div className="mx-auto w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center mb-4">
             <AlertTriangle className="text-rose-500" size={24} strokeWidth={2} />
           </div>
-          <DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mb-2">
+          <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mb-2">
             Excluir Ciclo?
           </DialogTitle>
           <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
@@ -185,13 +185,13 @@ export function CycleCard({ index, cycle, onUpdateOperation, onDeleteCycle, onDu
             <Button 
               onClick={() => setShowDeleteConfirm(false)} 
               variant="outline" 
-              className="flex-1 rounded-2xl h-12 border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 font-medium"
+              className="flex-1 rounded-[14px] h-11 border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 font-medium"
             >
               Cancelar
             </Button>
             <Button 
               onClick={confirmDelete} 
-              className="flex-1 rounded-2xl h-12 bg-rose-500 hover:bg-rose-600 text-white border-none font-medium shadow-[0_4px_14px_0_rgb(244,63,94,0.3)]"
+              className="flex-1 rounded-[14px] h-11 bg-rose-500 hover:bg-rose-600 text-white border-none font-medium shadow-[0_4px_14px_0_rgb(244,63,94,0.3)]"
             >
               Excluir
             </Button>
@@ -236,7 +236,7 @@ function CurrencyInput({ initialValue, onChange }: { initialValue: number | null
       placeholder="R$ 0"
       value={inputValue}
       onChange={handleChange}
-      className="w-full text-left text-[15px] font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate transition-colors focus:text-blue-600 dark:focus:text-blue-400"
+      className="w-full text-left text-[14px] font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate transition-colors focus:text-blue-600 dark:focus:text-blue-400"
     />
   );
 }
