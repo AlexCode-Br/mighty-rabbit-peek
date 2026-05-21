@@ -31,7 +31,16 @@ export interface AppSettings {
   defaultFilhaDeposit: number;
 }
 
+export interface ChatMessage {
+  id: string;
+  text: string;
+  category?: 'sinal' | 'meta' | 'anotacao' | 'geral';
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface AppData {
   settings: AppSettings;
   history: Record<string, OperationDay>; // mapped by date ID YYYY-MM-DD
+  chatMessages?: ChatMessage[]; // Mensagens do chat de anotações
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
-import { AppData, AppSettings, Cycle, OperationDay, Operation } from '../types';
+import { AppData, AppSettings, Cycle, OperationDay, Operation, ChatMessage } from '../types';
 import { calculateCycleProfit, calculateDailyProfit, calculateOperationProfit, checkDailyStatus } from '../utils/calculations';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../components/AuthProvider';
@@ -15,6 +15,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 const INITIAL_DATA: AppData = {
   settings: DEFAULT_SETTINGS,
   history: {},
+  chatMessages: [],
 };
 
 export interface AddCycleData {
@@ -47,9 +48,14 @@ export const useOperationDays = () => {
       }
 
       if (remoteData) {
+        // Garante que chatMessages sempre exista como array
+        const remoteHistory = remoteData.history || {};
+        const chatMessages = (remoteData as any).chatMessages || [];
+        
         const mergedData = {
           settings: remoteData.settings || DEFAULT_SETTINGS,
-          history: remoteData.history || {},
+          history: remoteHistory,
+          chatMessages: chatMessages,
         };
         setData(mergedData);
         dataRef.current = mergedData;
@@ -57,8 +63,9 @@ export const useOperationDays = () => {
         await supabase.from('app_data').insert({
           user_id: user.id,
           settings: DEFAULT_SETTINGS,
-          history: {}
-        });
+          history: {},
+          chatMessages: []
+        } as any);
         setData(INITIAL_DATA);
         dataRef.current = INITIAL_DATA;
       }
@@ -79,8 +86,9 @@ export const useOperationDays = () => {
       .update({
         settings: newData.settings,
         history: newData.history,
+        chatMessages: newData.chatMessages || [],
         updated_at: new Date().toISOString()
-      })
+      } as any)
       .eq('user_id', user.id);
 
     if (error) {
@@ -221,7 +229,38 @@ export const useOperationDays = () => {
         },
       },
     }));
-  }
+  };
+
+  // --- FUNÇÕES DO CHAT ---
+  const addChatMessage = (text: string, category: 'sinal' | 'meta' | 'anotacao' | 'geral' = 'geral') => {
+    const newMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      text,
+      category,
+      createdAt: new Date().toISOString(),
+    };
+
+    updateData((prev) => ({
+      ...prev,
+      chatMessages: [...(prev.chatMessages || []), newMessage],
+    }));
+  };
+
+  const updateChatMessage = (id: string, text: string) => {
+    updateData((prev) => ({
+      ...prev,
+      chatMessages: (prev.chatMessages || []).map((msg) =>
+        msg.id === id ? { ...msg, text, updatedAt: new Date().toISOString() } : msg
+      ),
+    }));
+  };
+
+  const deleteChatMessage = (id: string) => {
+    updateData((prev) => ({
+      ...prev,
+      chatMessages: (prev.chatMessages || []).filter((msg) => msg.id !== id),
+    }));
+  };
 
   return {
     data,
@@ -231,5 +270,8 @@ export const useOperationDays = () => {
     addCycle,
     updateOperation,
     deleteCycle,
+    addChatMessage,
+    updateChatMessage,
+    deleteChatMessage,
   };
 };
