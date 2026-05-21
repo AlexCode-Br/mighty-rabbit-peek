@@ -227,11 +227,7 @@ export const useOperationDays = () => {
         },
       },
     }));
-  };
-
-  const resetData = () => {
-    updateData((prev) => ({ ...prev, history: {} }));
-  };
+  }
 
   return {
     data,
@@ -241,6 +237,5 @@ export const useOperationDays = () => {
     addCycle,
     updateOperation,
     deleteCycle,
-    resetData,
   };
 };

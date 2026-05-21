@@ -17,7 +17,7 @@ import { Cycle } from '../types';
 import { formatBRL } from '../utils/currency';
 
 export default function DashboardApp() {
-  const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle, resetData } = useOperationDays();
+  const { data, loading, todayData, updateSettings, addCycle, updateOperation, deleteCycle } = useOperationDays();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newCycleOpen, setNewCycleOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'ciclos' | 'home' | 'historico'>('home');
@@ -85,11 +85,6 @@ export default function DashboardApp() {
   const handleDeleteCycle = (cycleId: string) => {
     deleteCycle(cycleId);
     showSuccess('Ciclo removido.');
-  };
-
-  const handleResetData = () => {
-    resetData();
-    showSuccess('Histórico limpo com sucesso.');
   };
 
   const toggleTheme = () => {
@@ -249,7 +244,6 @@ export default function DashboardApp() {
         onOpenChange={setSettingsOpen}
         settings={data.settings}
         onSave={handleUpdateSettings}
-        onResetData={handleResetData}
       />
 
       <NewCycleDialog 
