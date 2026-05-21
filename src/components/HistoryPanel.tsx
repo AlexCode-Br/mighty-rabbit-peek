@@ -22,6 +22,7 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
   const [selectedDay, setSelectedDay] = useState<OperationDay | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
+  // Todos os dias com histórico
   const historyDays = Object.values(data.history).sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
@@ -49,7 +50,7 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
     end: endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 })
   });
 
-  // Cálculo dos dados do mês atual para o gráfico e os cards
+  // --- CÁLCULO MENSAL (Apenas para o Gráfico e Resumo do Mês) ---
   const monthlyData = useMemo(() => {
     const daysInMonth = historyDays.filter(day => {
       return isSameMonth(parseISO(day.date), currentMonth) && day.cycles.length > 0;
@@ -58,15 +59,10 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
     let totalProfit = 0;
     let winDays = 0;
     let totalDays = daysInMonth.length;
-    let bestDayProfit = totalDays > 0 ? -Infinity : 0;
-    let worstDayProfit = totalDays > 0 ? Infinity : 0;
 
     const chartData = daysInMonth.map(day => {
       totalProfit += day.dailyProfit;
       if (day.dailyProfit >= 0) winDays++;
-      if (day.dailyProfit > bestDayProfit) bestDayProfit = day.dailyProfit;
-      if (day.dailyProfit < worstDayProfit) worstDayProfit = day.dailyProfit;
-      
       return {
         name: format(parseISO(day.date), 'dd/MM'),
         profit: day.dailyProfit,
@@ -74,10 +70,33 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
     });
 
     const winRate = totalDays > 0 ? (winDays / totalDays) * 100 : 0;
+    return { chartData, totalProfit, winRate, totalDays };
+  }, [historyDays, currentMonth]);
+
+  // --- CÁLCULO GLOBAL (Todo o período) ---
+  const globalStats = useMemo(() => {
+    const validDays = historyDays.filter(day => day.cycles.length > 0);
+    const totalDays = validDays.length;
+
+    let bestDayProfit = 0;
+    let worstDayProfit = 0;
+    let totalProfit = 0;
+
+    if (totalDays > 0) {
+      bestDayProfit = -Infinity;
+      worstDayProfit = Infinity;
+
+      validDays.forEach(day => {
+        totalProfit += day.dailyProfit;
+        if (day.dailyProfit > bestDayProfit) bestDayProfit = day.dailyProfit;
+        if (day.dailyProfit < worstDayProfit) worstDayProfit = day.dailyProfit;
+      });
+    }
+
     const avgProfit = totalDays > 0 ? totalProfit / totalDays : 0;
 
-    return { chartData, totalProfit, winRate, totalDays, bestDayProfit, worstDayProfit, avgProfit };
-  }, [historyDays, currentMonth]);
+    return { bestDayProfit, worstDayProfit, avgProfit, totalDays };
+  }, [historyDays]);
 
   const hasMonthlyData = monthlyData.totalDays > 0;
 
@@ -104,7 +123,7 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
             <BarChart2 size={24} strokeWidth={1.5} />
           </div>
           <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 mb-1">Mês sem operações</h3>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[250px]">Nenhum dado registrado para {format(currentMonth, 'MMMM', { locale: ptBR })}. Comece a operar para ver suas estatísticas aqui.</p>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[250px]">Nenhum dado registrado para {format(currentMonth, 'MMMM', { locale: ptBR })}.</p>
         </div>
       ) : (
         <>
@@ -227,48 +246,48 @@ export function HistoryPanel({ data }: HistoryPanelProps) {
               </div>
             </CardContent>
           </Card>
-
-          {/* Estatísticas Detalhadas */}
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Estatísticas Detalhadas</h3>
-            <div className="grid grid-cols-3 gap-2">
-              <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-2xl">
-                <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
-                  <div className="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-1.5">
-                    <TrendingUp size={12} strokeWidth={3} />
-                  </div>
-                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Melhor Dia</span>
-                  <span className="text-sm font-bold text-emerald-500">+{formatBRL(monthlyData.bestDayProfit)}</span>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-2xl">
-                <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
-                  <div className="w-6 h-6 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center mb-1.5">
-                    <TrendingDown size={12} strokeWidth={3} />
-                  </div>
-                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Pior Dia</span>
-                  <span className="text-sm font-bold text-rose-500">{formatBRL(monthlyData.worstDayProfit)}</span>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-2xl">
-                <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
-                  <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-500 flex items-center justify-center mb-1.5">
-                    <Scale size={12} strokeWidth={3} />
-                  </div>
-                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Média Diária</span>
-                  <span className={`text-sm font-bold ${monthlyData.avgProfit > 0 ? 'text-emerald-500' : monthlyData.avgProfit < 0 ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
-                    {monthlyData.avgProfit > 0 ? '+' : ''}{formatBRL(monthlyData.avgProfit)}
-                  </span>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
         </>
       )}
 
-      {/* Relatórios (movido para cá) */}
+      {/* Estatísticas Detalhadas Globais (Sempre Visíveis) */}
+      <div className="mt-6 pt-2">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Estatísticas Gerais (Todo o período)</h3>
+        <div className="grid grid-cols-3 gap-2">
+          <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-2xl">
+            <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
+              <div className="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-1.5">
+                <TrendingUp size={12} strokeWidth={3} />
+              </div>
+              <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Melhor Dia</span>
+              <span className="text-sm font-bold text-emerald-500">+{formatBRL(globalStats.bestDayProfit)}</span>
+            </CardContent>
+          </Card>
+
+          <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-2xl">
+            <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
+              <div className="w-6 h-6 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center mb-1.5">
+                <TrendingDown size={12} strokeWidth={3} />
+              </div>
+              <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Pior Dia</span>
+              <span className="text-sm font-bold text-rose-500">{formatBRL(globalStats.worstDayProfit)}</span>
+            </CardContent>
+          </Card>
+
+          <Card className="border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm bg-white dark:bg-zinc-900 rounded-2xl">
+            <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
+              <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-500 flex items-center justify-center mb-1.5">
+                <Scale size={12} strokeWidth={3} />
+              </div>
+              <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Média Diária</span>
+              <span className={`text-sm font-bold ${globalStats.avgProfit > 0 ? 'text-emerald-500' : globalStats.avgProfit < 0 ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                {globalStats.avgProfit > 0 ? '+' : ''}{formatBRL(globalStats.avgProfit)}
+              </span>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Relatórios (Sempre Visíveis) */}
       <div className="mt-6">
         <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2">Exportar Dados</h3>
         <ImportExportPanel data={data} />
