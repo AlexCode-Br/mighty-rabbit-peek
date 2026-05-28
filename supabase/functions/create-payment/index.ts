@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import Stripe from "https://esm.sh/stripe@14.23.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,38 +16,55 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Não autorizado' }), { status: 401, headers: corsHeaders })
     }
 
-    // Inicializa o Stripe usando a variável de ambiente segura cadastrada no painel do Supabase
-    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') || 'sk_test_mock_keys_for_preview'
-    const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' })
-
+    // Acessa o Token de Produção ou Sandbox do Mercado Pago
+    const mpAccessToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN') || 'APP_USR-mock-access-token'
     const { userId, email } = await req.json()
 
-    // Cria uma sessão oficial de Checkout no Stripe
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'pix'],
-      customer_email: email,
-      client_reference_id: userId, // Passa o ID do usuário para sabermos quem pagou no webhook
-      line_items: [
+    // Monta o payload de Preferência oficial do Mercado Pago
+    const preferenceBody = {
+      items: [
         {
-          price_data: {
-            currency: 'brl',
-            product_data: {
-              name: 'TradeTracker Premium - Acesso Vitalício',
-              description: 'Acesso completo, gráficos de performance e anotações sem limites.',
-            },
-            unit_amount: 1990, // R$ 19,90 em centavos
-          },
+          title: "TradeTracker Premium - Acesso Vitalício",
+          description: "Acesso completo, gráficos de performance e anotações sem limites.",
           quantity: 1,
-        },
+          currency_id: "BRL",
+          unit_price: 19.90
+        }
       ],
-      mode: 'payment',
-      success_url: 'https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/payment-callback?status=success',
-      cancel_url: 'https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/payment-callback?status=cancel',
+      payer: {
+        email: email
+      },
+      back_urls: {
+        success: "https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/payment-callback?status=success",
+        failure: "https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/payment-callback?status=failure",
+        pending: "https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/payment-callback?status=pending"
+      },
+      auto_return: "approved",
+      external_reference: userId, // Mantém o ID do usuário de forma segura
+      notification_url: "https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/mercadopago-webhook"
+    }
+
+    console.log("[create-payment] Criando preferência no Mercado Pago para o usuário:", userId)
+
+    const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${mpAccessToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(preferenceBody)
     })
 
-    console.log("[create-payment] Sessão criada com sucesso:", session.id)
+    const preference = await response.json()
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    if (!response.ok) {
+      throw new Error(preference.message || "Erro ao criar preferência de pagamento")
+    }
+
+    // init_point é o link oficial de checkout do Mercado Pago
+    const checkoutUrl = preference.init_point
+
+    return new Response(JSON.stringify({ url: checkoutUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })

@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../components/AuthProvider';
-import { supabase } from '../integrations/supabase/client';
 import { Navigate } from 'react-router-dom';
-import { ShieldCheck, Sparkles, CreditCard, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Sparkles, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
 import { LiquidGlassBackground } from '../components/LiquidGlassBackground';
 import { Button } from '../components/ui/button';
 import { showError } from '../utils/toast';
@@ -21,7 +20,7 @@ export default function Checkout() {
     setProcessing(true);
     
     try {
-      // Chama de forma 100% segura a nossa Supabase Edge Function responsável por criar o checkout
+      // Chama a Edge Function para gerar o checkout seguro no Mercado Pago
       const response = await fetch('https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/create-payment', {
         method: 'POST',
         headers: {
@@ -40,12 +39,12 @@ export default function Checkout() {
         throw new Error(result.error || 'Erro ao gerar o checkout');
       }
 
-      // Redireciona o usuário de forma totalmente protegida para a tela oficial do Stripe
+      // Redireciona o usuário para o Mercado Pago
       window.location.href = result.url;
 
     } catch (err: any) {
       console.error(err);
-      showError(err.message || "Não foi possível conectar ao gateway de pagamentos.");
+      showError(err.message || "Não foi possível conectar ao Mercado Pago.");
     } finally {
       setProcessing(false);
     }
@@ -112,20 +111,20 @@ export default function Checkout() {
               <Loader2 className="animate-spin mr-2" size={20} />
             ) : (
               <>
-                Ir para o Pagamento Seguro <ArrowRight size={18} />
+                Pagar com Mercado Pago <ArrowRight size={18} />
               </>
             )}
           </Button>
 
           <p className="text-[10px] text-zinc-400 text-center mt-4">
-            Aceitamos Cartão de Crédito, Pix e Boleto de forma ultra-segura.
+            Pague de forma segura usando Pix ou Cartão de Crédito.
           </p>
         </div>
 
         {/* Informações de Segurança */}
         <div className="flex items-center justify-center gap-2 text-[10px] text-zinc-400/80 uppercase font-black tracking-widest">
           <ShieldCheck size={14} className="text-indigo-500" />
-          <span>Conexão Criptografada SSL Ativa</span>
+          <span>Conexão Protegida Ativa</span>
         </div>
 
       </div>
