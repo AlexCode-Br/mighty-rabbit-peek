@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthProvider';
 import { Navigate } from 'react-router-dom';
-import { ShieldCheck, Sparkles, CheckCircle2, Loader2, Copy, Check, QrCode, Smartphone } from 'lucide-react';
+import { ShieldCheck, Sparkles, CheckCircle2, Loader2, Copy, Check, QrCode, Smartphone, LogOut } from 'lucide-react';
 import { LiquidGlassBackground } from '../components/LiquidGlassBackground';
 import { Button } from '../components/ui/button';
 import { showSuccess, showError } from '../utils/toast';
@@ -18,7 +18,7 @@ interface PixData {
 }
 
 export default function Checkout() {
-  const { session, user, isPaid, refreshPaymentStatus } = useAuth();
+  const { session, user, isPaid, refreshPaymentStatus, signOut } = useAuth();
   const [generating, setGenerating] = useState(false);
   const [pixData, setPixData] = useState<PixData | null>(null);
   const [copied, setCopied] = useState(false);
@@ -276,10 +276,20 @@ export default function Checkout() {
           </p>
         </div>
 
-        {/* Informações de Segurança */}
-        <div className="flex items-center justify-center gap-2 text-[10px] text-zinc-400/80 uppercase font-black tracking-widest">
-          <ShieldCheck size={14} className="text-indigo-500" />
-          <span>Conexão Segura e Criptografada</span>
+        {/* Informações de Segurança + Opção de Voltar/Mudar Conta */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center justify-center gap-2 text-[10px] text-zinc-400/80 uppercase font-black tracking-widest">
+            <ShieldCheck size={14} className="text-indigo-500" />
+            <span>Conexão Segura e Criptografada</span>
+          </div>
+          
+          <button 
+            onClick={signOut}
+            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400/60 hover:text-rose-500 dark:text-zinc-500 dark:hover:text-rose-400 transition-colors mt-2"
+          >
+            <LogOut size={12} />
+            <span>Sair da conta atual</span>
+          </button>
         </div>
 
       </div>
