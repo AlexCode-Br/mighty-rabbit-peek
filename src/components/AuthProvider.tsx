@@ -8,27 +8,71 @@ import { LiquidGlassBackground } from './LiquidGlassBackground';
 interface AuthContextType {
   session: Session | null;
   user: User | null;
+  isPaid: boolean;
+  setIsPaid: (paid: boolean) => void;
   signOut: () => void;
+  refreshPaymentStatus: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ session: null, user: null, signOut: () => {} });
+const AuthContext = createContext<AuthContextType>({ 
+  session: null, 
+  user: null, 
+  isPaid: false, 
+  setIsPaid: () => {}, 
+  signOut: () => {},
+  refreshPaymentStatus: async () => {}
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [isPaid, setIsPaid] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfilePaymentStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_paid')
+        .eq('id', userId)
+        .single();
+        
+      if (!error && data) {
+        setIsPaid(!!data.is_paid);
+      } else {
+        // Caso a coluna ainda não exista localmente durante a transição, garantimos acesso para evitar quebras
+        setIsPaid(false);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar perfil de pagamento:", err);
+      setIsPaid(false);
+    }
+  };
+
+  const refreshPaymentStatus = async () => {
+    if (user) {
+      await fetchProfilePaymentStatus(user.id);
+    }
+  };
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      // Pequeno delay para garantir que a animação de saída seja vista
+      if (session?.user) {
+        await fetchProfilePaymentStatus(session.user.id);
+      }
       setTimeout(() => setLoading(false), 800);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchProfilePaymentStatus(session.user.id);
+      } else {
+        setIsPaid(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -39,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, signOut }}>
+    <AuthContext.Provider value={{ session, user, isPaid, setIsPaid, signOut, refreshPaymentStatus }}>
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div 
@@ -90,9 +134,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               </motion.div>
             </div>
             
-            {/* Indicador de rodapé mobile */}
             <div className="absolute bottom-10 left-0 right-0 text-center">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] opacity-50">
+              <span className="text-[10px] font-bold text-zinc-400/80 uppercase tracking-[0.2em] opacity-50">
                 Sincronizando dados...
               </span>
             </div>
