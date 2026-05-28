@@ -16,55 +16,52 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Não autorizado' }), { status: 401, headers: corsHeaders })
     }
 
-    // Acessa o Token de Produção ou Sandbox do Mercado Pago
     const mpAccessToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN') || 'APP_USR-mock-access-token'
     const { userId, email } = await req.json()
 
-    // Monta o payload de Preferência oficial do Mercado Pago
-    const preferenceBody = {
-      items: [
-        {
-          title: "TradeTracker Premium - Acesso Vitalício",
-          description: "Acesso completo, gráficos de performance e anotações sem limites.",
-          quantity: 1,
-          currency_id: "BRL",
-          unit_price: 19.90
-        }
-      ],
+    // Payload de pagamento direto via PIX oficial do Mercado Pago
+    const paymentBody = {
+      transaction_amount: 19.90,
+      description: "TradeTracker Premium - Acesso Vitalício",
+      payment_method_id: "pix",
       payer: {
-        email: email
+        email: email,
+        first_name: "Cliente",
+        last_name: "TradeTracker"
       },
-      back_urls: {
-        success: "https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/payment-callback?status=success",
-        failure: "https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/payment-callback?status=failure",
-        pending: "https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/payment-callback?status=pending"
-      },
-      auto_return: "approved",
-      external_reference: userId, // Mantém o ID do usuário de forma segura
+      external_reference: userId,
       notification_url: "https://ijiipeugnflpckqsujkg.supabase.co/functions/v1/mercadopago-webhook"
     }
 
-    console.log("[create-payment] Criando preferência no Mercado Pago para o usuário:", userId)
+    console.log("[create-payment] Criando pagamento PIX direto no Mercado Pago para o usuário:", userId)
 
-    const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
+    const response = await fetch("https://api.mercadopago.com/v1/payments", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${mpAccessToken}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": crypto.randomUUID()
       },
-      body: JSON.stringify(preferenceBody)
+      body: JSON.stringify(paymentBody)
     })
 
-    const preference = await response.json()
+    const paymentResult = await response.json()
 
     if (!response.ok) {
-      throw new Error(preference.message || "Erro ao criar preferência de pagamento")
+      throw new Error(paymentResult.message || "Erro ao criar pagamento via PIX")
     }
 
-    // init_point é o link oficial de checkout do Mercado Pago
-    const checkoutUrl = preference.init_point
+    // Extrai o código "Copia e Cola" e a imagem base64 do QR Code gerado pelo Mercado Pago
+    const qrCode = paymentResult.point_of_interaction?.transaction_data?.qr_code
+    const qrCodeBase64 = paymentResult.point_of_interaction?.transaction_data?.qr_code_base64
+    const ticketUrl = paymentResult.point_of_interaction?.transaction_data?.ticket_url
 
-    return new Response(JSON.stringify({ url: checkoutUrl }), {
+    return new Response(JSON.stringify({ 
+      qrCode, 
+      qrCodeBase64, 
+      ticketUrl, 
+      paymentId: paymentResult.id 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
