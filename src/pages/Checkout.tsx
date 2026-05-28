@@ -24,10 +24,6 @@ export default function Checkout() {
   const [copied, setCopied] = useState(false);
   const [checking, setChecking] = useState(false);
 
-  // Redireciona caso já esteja pago ou sem login
-  if (!session) return <Navigate to="/login" replace />;
-  if (isPaid) return <Navigate to="/" replace />;
-
   // Efeito de escuta/pooling automático (Verifica o pagamento a cada 4 segundos se o Pix estiver aberto)
   useEffect(() => {
     if (!pixData || isPaid) return;
@@ -50,6 +46,10 @@ export default function Checkout() {
       });
     }
   }, [isPaid]);
+
+  // Redireciona caso já esteja pago ou sem login (Mergulhado após a declaração de TODOS os hooks)
+  if (!session) return <Navigate to="/login" replace />;
+  if (isPaid) return <Navigate to="/" replace />;
 
   const handleGeneratePix = async () => {
     if (!user) return;
