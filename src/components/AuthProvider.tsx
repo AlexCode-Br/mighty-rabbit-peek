@@ -31,16 +31,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchProfilePaymentStatus = async (userId: string) => {
     try {
+      // Busca a informação diretamente da tabela segura user_payments
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_payments')
         .select('is_paid')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single();
         
       if (!error && data) {
         setIsPaid(!!data.is_paid);
       } else {
-        // Caso a coluna ainda não exista localmente durante a transição, garantimos acesso para evitar quebras
+        // Se o registro não existir na tabela de pagamentos, significa que é um usuário novo/pendente
         setIsPaid(false);
       }
     } catch (err) {
