@@ -98,6 +98,16 @@ export default function DashboardApp() {
     }
   }, []);
 
+  const scrollToFirstCycle = useCallback(() => {
+    setTimeout(() => {
+      if (carouselRef.current && carouselRef.current.children[1]) {
+        const container = carouselRef.current;
+        const target = container.children[1] as HTMLElement;
+        container.scrollTo({ left: target.offsetLeft - 16, behavior: 'smooth' });
+      }
+    }, 100);
+  }, []);
+
   const handleQuickAddCycle = () => {
     let isoStr = new Date().toISOString();
     if (!isToday(activeDate)) {
@@ -114,13 +124,7 @@ export default function DashboardApp() {
       filhaWithdraw: null
     }, isoStr);
     
-    setTimeout(() => {
-      if (carouselRef.current && carouselRef.current.children[1]) {
-        const container = carouselRef.current;
-        const target = container.children[1] as HTMLElement;
-        container.scrollTo({ left: target.offsetLeft - 16, behavior: 'smooth' });
-      }
-    }, 100);
+    scrollToFirstCycle();
   };
 
   // Drag and Scroll Handlers
@@ -247,6 +251,7 @@ export default function DashboardApp() {
                             }
                             addCycle(activeDateId, { maeDeposit: c.operations[0].deposit, maeWithdraw: null, maeBau: c.operations[0].bau ?? false, filhaDeposit: c.operations[1].deposit, filhaWithdraw: null }, iso);
                             showSuccess('Ciclo duplicado!');
+                            scrollToFirstCycle();
                           }}
                         />
                       ))}
