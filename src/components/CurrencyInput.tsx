@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 interface CurrencyInputProps {
-  initialValue: number | null;
-  onChange: (val: number | null) => void;
-  placeholder?: string;
+  readonly initialValue: number | null;
+  readonly onChange: (val: number | null) => void;
+  readonly placeholder?: string;
 }
 
 export const CurrencyInput = React.memo(({ initialValue, onChange, placeholder = "R$ 0" }: CurrencyInputProps) => {
-  const formatIntegerBRL = (val: number) => `R$ ${val.toLocaleString('pt-BR')}`;
+  const formatIntegerBRL = useCallback((val: number) => `R$ ${val.toLocaleString('pt-BR')}`, []);
   const [inputValue, setInputValue] = useState(initialValue !== null ? formatIntegerBRL(initialValue) : '');
 
   useEffect(() => {
@@ -19,9 +19,9 @@ export const CurrencyInput = React.memo(({ initialValue, onChange, placeholder =
     } else if (inputValue !== '') {
       setInputValue('');
     }
-  }, [initialValue]);
+  }, [initialValue, formatIntegerBRL]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;
     const digits = rawValue.replace(/\D/g, '');
     
@@ -34,7 +34,7 @@ export const CurrencyInput = React.memo(({ initialValue, onChange, placeholder =
     const numValue = parseInt(digits, 10);
     setInputValue(formatIntegerBRL(numValue));
     onChange(numValue);
-  };
+  }, [onChange, formatIntegerBRL]);
 
   return (
     <input

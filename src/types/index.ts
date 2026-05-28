@@ -1,46 +1,48 @@
 export interface Operation {
-  id: string;
-  type: 'MAE' | 'FILHA';
-  deposit: number;
-  withdraw: number | null;
-  profit: number;
-  bau?: boolean;
+  readonly id: string;
+  readonly type: 'MAE' | 'FILHA';
+  readonly deposit: number;
+  readonly withdraw: number | null;
+  readonly profit: number;
+  readonly bau?: boolean;
 }
 
 export interface Cycle {
-  id: string;
-  operations: [Operation, Operation]; // Sempre MÃE e FILHA
-  totalProfit: number;
-  completed: boolean;
-  createdAt?: string;
+  readonly id: string;
+  readonly operations: readonly [Operation, Operation]; // Contrato imutável de tupla [MÃE, FILHA]
+  readonly totalProfit: number;
+  readonly completed: boolean;
+  readonly createdAt?: string;
 }
 
 export interface OperationDay {
-  id: string; // YYYY-MM-DD
-  date: string; // ISO string
-  cycles: Cycle[];
-  dailyProfit: number;
-  goalReached: boolean;
-  stopLossReached: boolean;
+  readonly id: string; // Formato YYYY-MM-DD
+  readonly date: string; // ISO String
+  readonly cycles: readonly Cycle[];
+  readonly dailyProfit: number;
+  readonly goalReached: boolean;
+  readonly stopLossReached: boolean;
 }
 
 export interface AppSettings {
-  dailyGoal: number;
-  stopLoss: number;
-  defaultMaeDeposit: number;
-  defaultFilhaDeposit: number;
+  readonly dailyGoal: number;
+  readonly stopLoss: number;
+  readonly defaultMaeDeposit: number;
+  readonly defaultFilhaDeposit: number;
 }
 
+export type ChatMessageCategory = 'sinal' | 'meta' | 'anotacao' | 'geral';
+
 export interface ChatMessage {
-  id: string;
-  text: string;
-  category?: 'sinal' | 'meta' | 'anotacao' | 'geral';
-  createdAt: string;
-  updatedAt?: string;
+  readonly id: string;
+  readonly text: string;
+  readonly category?: ChatMessageCategory;
+  readonly createdAt: string;
+  readonly updatedAt?: string;
 }
 
 export interface AppData {
-  settings: AppSettings;
-  history: Record<string, OperationDay>; // mapped by date ID YYYY-MM-DD
-  chatMessages?: ChatMessage[]; // Mensagens do chat de anotações
+  readonly settings: AppSettings;
+  readonly history: Record<string, OperationDay>;
+  readonly chatMessages?: readonly ChatMessage[];
 }

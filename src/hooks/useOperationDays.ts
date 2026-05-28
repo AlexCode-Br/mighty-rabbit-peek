@@ -23,6 +23,8 @@ export function useOperationDays() {
   useEffect(() => {
     if (!user) return;
     
+    let isMounted = true;
+    
     const loadData = async () => {
       try {
         const { data: appData, error } = await supabase
@@ -33,7 +35,7 @@ export function useOperationDays() {
 
         if (error && error.code !== 'PGRST116') throw error;
         
-        if (appData) {
+        if (isMounted && appData) {
           setData({
             settings: appData.settings || DEFAULT_SETTINGS,
             history: appData.history || {},
@@ -41,41 +43,43 @@ export function useOperationDays() {
           });
         }
       } catch (err) {
-        console.error("[useOperationDays] Load Error:", err);
+        console.error("[useOperationDays] Erro de carregamento de dados:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     
     loadData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   const persistData = useCallback(async (updates: Partial<AppData>) => {
     if (!user) return;
     
-    const payload: any = {};
-    if (updates.settings) payload.settings = updates.settings;
-    if (updates.history) payload.history = updates.history;
+    // Evita chamadas redundantes de upsert se não houver alterações
+    const payload: Record<string, any> = {
+      user_id: user.id,
+      updated_at: new Date().toISOString()
+    };
+    
+    if (updates.settings !== undefined) payload.settings = updates.settings;
+    if (updates.history !== undefined) payload.history = updates.history;
     if (updates.chatMessages !== undefined) payload.chat_messages = updates.chatMessages;
 
     try {
-      const { error: updateError } = await supabase
+      // O Supabase lida nativamente com upsert baseado na chave estrangeira primária user_id
+      const { error } = await supabase
         .from('app_data')
-        .update(payload)
-        .eq('user_id', user.id);
+        .upsert(payload, { onConflict: 'user_id' });
         
-      if (updateError) {
-        await supabase.from('app_data').upsert({
-          user_id: user.id,
-          settings: updates.settings || data.settings,
-          history: updates.history || data.history,
-          chat_messages: updates.chatMessages || data.chatMessages || []
-        });
-      }
+      if (error) throw error;
     } catch (err) {
-      console.error("[useOperationDays] Persist Error:", err);
+      console.error("[useOperationDays] Erro de persistência remota:", err);
     }
-  }, [user, data.settings, data.history, data.chatMessages]);
+  }, [user]);
 
   const getDayData = useCallback((dateId: string): OperationDay => {
     return data.history[dateId] || {
@@ -88,12 +92,15 @@ export function useOperationDays() {
     };
   }, [data.history]);
 
-  const updateSettings = (settings: AppSettings) => {
-    setData(prev => ({ ...prev, settings }));
-    persistData({ settings });
-  };
+  const updateSettings = useCallback((settings: AppSettings) => {
+    setData(prev => {
+      const nextData = { ...prev, settings };
+      persistData({ settings });
+      return nextData;
+    });
+  }, [persistData]);
 
-  const addCycle = (dateId: string, config: any, timestamp: string) => {
+  const addCycle = useCallback((dateId: string, config: { maeDeposit: number; filhaDeposit: number; maeBau: boolean }, timestamp: string) => {
     const day = getDayData(dateId);
     const newCycle: Cycle = {
       id: crypto.randomUUID(),
@@ -105,21 +112,31 @@ export function useOperationDays() {
         { id: crypto.randomUUID(), type: 'FILHA', deposit: config.filhaDeposit, withdraw: null, profit: 0 }
       ]
     };
-    const newHistory = { ...data.history, [dateId]: { ...day, cycles: [newCycle, ...day.cycles] } };
-    setData(prev => ({ ...prev, history: newHistory }));
-    persistData({ history: newHistory });
-  };
+    
+    setData(prev => {
+      const newHistory = { 
+        ...prev.history, 
+        [dateId]: { 
+          ...day, 
+          cycles: [newCycle, ...day.cycles] 
+        } 
+      };
+      persistData({ history: newHistory });
+      return { ...prev, history: newHistory };
+    });
+  }, [getDayData, persistData]);
 
-  const updateOperation = (dateId: string, cycleId: string, opId: string, updates: Partial<Operation>) => {
+  const updateOperation = useCallback((dateId: string, cycleId: string, opId: string, updates: Partial<Operation>) => {
     const day = getDayData(dateId);
     const newCycles = day.cycles.map(c => {
       if (c.id !== cycleId) return c;
       const updatedOps = c.operations.map(o => {
         if (o.id !== opId) return o;
         const op = { ...o, ...updates };
-        op.profit = calculateOperationProfit(op.deposit, op.withdraw, op.type === 'MAE', op.bau);
-        return op;
-      }) as [Operation, Operation];
+        const profit = calculateOperationProfit(op.deposit, op.withdraw, op.type === 'MAE', op.bau);
+        return { ...op, profit };
+      }) as unknown as [Operation, Operation];
+      
       return { 
         ...c, 
         operations: updatedOps, 
@@ -129,30 +146,45 @@ export function useOperationDays() {
     });
 
     const profit = newCycles.reduce((acc, c) => acc + c.totalProfit, 0);
-    const newHistory = {
-      ...data.history,
-      [dateId]: { 
-        ...day, 
-        cycles: newCycles, 
-        dailyProfit: profit,
-        goalReached: profit >= data.settings.dailyGoal && data.settings.dailyGoal > 0,
-        stopLossReached: profit <= -data.settings.stopLoss && data.settings.stopLoss > 0
-      }
-    };
-    setData(prev => ({ ...prev, history: newHistory }));
-    persistData({ history: newHistory });
-  };
+    
+    setData(prev => {
+      const newHistory = {
+        ...prev.history,
+        [dateId]: { 
+          ...day, 
+          cycles: newCycles, 
+          dailyProfit: profit,
+          goalReached: prev.settings.dailyGoal > 0 && profit >= prev.settings.dailyGoal,
+          stopLossReached: prev.settings.stopLoss > 0 && profit <= -prev.settings.stopLoss
+        }
+      };
+      persistData({ history: newHistory });
+      return { ...prev, history: newHistory };
+    });
+  }, [getDayData, persistData]);
 
-  const deleteCycle = (dateId: string, id: string) => {
+  const deleteCycle = useCallback((dateId: string, id: string) => {
     const day = getDayData(dateId);
     const cycles = day.cycles.filter(c => c.id !== id);
     const profit = cycles.reduce((acc, c) => acc + c.totalProfit, 0);
-    const newHistory = { ...data.history, [dateId]: { ...day, cycles, dailyProfit: profit } };
-    setData(prev => ({ ...prev, history: newHistory }));
-    persistData({ history: newHistory });
-  };
+    
+    setData(prev => {
+      const newHistory = { 
+        ...prev.history, 
+        [dateId]: { 
+          ...day, 
+          cycles, 
+          dailyProfit: profit,
+          goalReached: prev.settings.dailyGoal > 0 && profit >= prev.settings.dailyGoal,
+          stopLossReached: prev.settings.stopLoss > 0 && profit <= -prev.settings.stopLoss
+        } 
+      };
+      persistData({ history: newHistory });
+      return { ...prev, history: newHistory };
+    });
+  }, [getDayData, persistData]);
 
-  const addChatMessage = (text: string, category: string) => {
+  const addChatMessage = useCallback((text: string, category: string) => {
     const msg: ChatMessage = { 
       id: crypto.randomUUID(), 
       text, 
@@ -165,30 +197,30 @@ export function useOperationDays() {
       persistData({ chatMessages: newList });
       return { ...prev, chatMessages: newList };
     });
-  };
+  }, [persistData]);
 
-  const updateChatMessage = (id: string, text: string) => {
+  const updateChatMessage = useCallback((id: string, text: string) => {
     setData(prev => {
       const newList = (prev.chatMessages || []).map(m => m.id === id ? { ...m, text } : m);
       persistData({ chatMessages: newList });
       return { ...prev, chatMessages: newList };
     });
-  };
+  }, [persistData]);
 
-  const deleteChatMessage = (id: string) => {
+  const deleteChatMessage = useCallback((id: string) => {
     setData(prev => {
       const newList = (prev.chatMessages || []).filter(m => m.id !== id);
       persistData({ chatMessages: newList });
       return { ...prev, chatMessages: newList };
     });
-  };
+  }, [persistData]);
 
-  const clearChatMessages = () => {
+  const clearChatMessages = useCallback(() => {
     setData(prev => {
       persistData({ chatMessages: [] });
       return { ...prev, chatMessages: [] };
     });
-  };
+  }, [persistData]);
 
   return {
     data, 
