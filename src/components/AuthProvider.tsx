@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!error && data) {
         setIsPaid(!!data.is_paid);
       } else {
-        // Se o registro não existir na tabela de pagamentos, significa que é um usuário novo/pendente
+        // Se o registro não existir ou der erro, assume pendente de pagamento
         setIsPaid(false);
       }
     } catch (err) {
@@ -57,26 +57,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfilePaymentStatus(session.user.id);
+    let isMounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (isMounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            await fetchProfilePaymentStatus(session.user.id);
+          }
+        }
+      } catch (err) {
+        console.error("Erro na inicialização de autenticação:", err);
+      } finally {
+        if (isMounted) {
+          // Esse bloco "finally" SEMPRE roda, garantindo que o carregamento suma!
+          setTimeout(() => {
+            if (isMounted) setLoading(false);
+          }, 800);
+        }
       }
-      setTimeout(() => setLoading(false), 800);
-    });
+    };
+
+    initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfilePaymentStatus(session.user.id);
-      } else {
-        setIsPaid(false);
+      if (isMounted) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await fetchProfilePaymentStatus(session.user.id);
+        } else {
+          setIsPaid(false);
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
