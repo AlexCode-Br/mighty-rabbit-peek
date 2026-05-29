@@ -4,16 +4,12 @@ import { AuthProvider, useAuth } from './components/AuthProvider';
 import { ThemeProvider } from './components/ThemeProvider';
 import Login from './pages/Login';
 import DashboardApp from './pages/DashboardApp';
-import Checkout from './pages/Checkout';
 import { InstallPrompt } from './components/InstallPrompt';
 import { Toaster } from 'sonner';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { session, isPaid } = useAuth();
-  
+  const { session } = useAuth();
   if (!session) return <Navigate to="/login" replace />;
-  if (!isPaid) return <Navigate to="/checkout" replace />;
-  
   return <>{children}</>;
 };
 
@@ -24,7 +20,6 @@ export default function App() {
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/checkout" element={<Checkout />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <DashboardApp />

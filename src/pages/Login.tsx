@@ -39,35 +39,6 @@ export default function Login() {
         <Auth
           supabaseClient={supabase}
           providers={[]}
-          localization={{
-            variables: {
-              sign_in: {
-                email_label: 'Endereço de e-mail',
-                password_label: 'Senha',
-                button_label: 'Entrar',
-                loading_button_label: 'Entrando...',
-                link_text: 'Já tem uma conta? Entre',
-                email_input_placeholder: 'Seu e-mail',
-                password_input_placeholder: 'Sua senha',
-              },
-              sign_up: {
-                email_label: 'Endereço de e-mail',
-                password_label: 'Criar senha',
-                button_label: 'Criar conta gratuita',
-                loading_button_label: 'Criando conta...',
-                link_text: 'Não tem uma conta? Cadastre-se',
-                email_input_placeholder: 'Seu e-mail',
-                password_input_placeholder: 'Sua nova senha',
-              },
-              forgotten_password: {
-                email_label: 'Endereço de e-mail',
-                button_label: 'Recuperar senha por e-mail',
-                loading_button_label: 'Enviando link...',
-                link_text: 'Esqueceu sua senha?',
-                email_input_placeholder: 'Seu e-mail cadastrado',
-              },
-            }
-          }}
           appearance={{
             theme: ThemeSupa,
             variables: {

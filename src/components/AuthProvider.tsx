@@ -8,97 +8,30 @@ import { LiquidGlassBackground } from './LiquidGlassBackground';
 interface AuthContextType {
   session: Session | null;
   user: User | null;
-  isPaid: boolean;
-  setIsPaid: (paid: boolean) => void;
   signOut: () => void;
-  refreshPaymentStatus: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ 
-  session: null, 
-  user: null, 
-  isPaid: false, 
-  setIsPaid: () => {}, 
-  signOut: () => {},
-  refreshPaymentStatus: async () => {}
-});
+const AuthContext = createContext<AuthContextType>({ session: null, user: null, signOut: () => {} });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [isPaid, setIsPaid] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfilePaymentStatus = async (userId: string) => {
-    try {
-      // Busca a informação diretamente da tabela segura user_payments
-      const { data, error } = await supabase
-        .from('user_payments')
-        .select('is_paid')
-        .eq('user_id', userId)
-        .single();
-        
-      if (!error && data) {
-        setIsPaid(!!data.is_paid);
-      } else {
-        // Se o registro não existir ou der erro, assume pendente de pagamento
-        setIsPaid(false);
-      }
-    } catch (err) {
-      console.error("Erro ao carregar perfil de pagamento:", err);
-      setIsPaid(false);
-    }
-  };
-
-  const refreshPaymentStatus = async () => {
-    if (user) {
-      await fetchProfilePaymentStatus(user.id);
-    }
-  };
-
   useEffect(() => {
-    let isMounted = true;
-
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (isMounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await fetchProfilePaymentStatus(session.user.id);
-          }
-        }
-      } catch (err) {
-        console.error("Erro na inicialização de autenticação:", err);
-      } finally {
-        if (isMounted) {
-          // Esse bloco "finally" SEMPRE roda, garantindo que o carregamento suma!
-          setTimeout(() => {
-            if (isMounted) setLoading(false);
-          }, 800);
-        }
-      }
-    };
-
-    initializeAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (isMounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfilePaymentStatus(session.user.id);
-        } else {
-          setIsPaid(false);
-        }
-      }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      // Pequeno delay para garantir que a animação de saída seja vista
+      setTimeout(() => setLoading(false), 800);
     });
 
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
@@ -106,7 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, isPaid, setIsPaid, signOut, refreshPaymentStatus }}>
+    <AuthContext.Provider value={{ session, user, signOut }}>
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div 
@@ -157,8 +90,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               </motion.div>
             </div>
             
+            {/* Indicador de rodapé mobile */}
             <div className="absolute bottom-10 left-0 right-0 text-center">
-              <span className="text-[10px] font-bold text-zinc-400/80 uppercase tracking-[0.2em] opacity-50">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] opacity-50">
                 Sincronizando dados...
               </span>
             </div>
